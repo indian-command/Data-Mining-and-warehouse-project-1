@@ -1,0 +1,26 @@
+
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: research_commons_db
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: research_commons
+      POSTGRES_USER: research_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
+    ports:
+      - "5433:5432"
+
+    volumes:
+      - research_commons_data:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U research_user -d research_commons"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  research_commons_data:

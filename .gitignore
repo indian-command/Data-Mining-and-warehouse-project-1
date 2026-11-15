@@ -1,0 +1,22 @@
+
+# Python virtual environments
+.venv/
+.venv-dmw/
+venv/
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Local databases
+db.sqlite3
+*.sqlite3
+
+# Editor settings
+.vscode/

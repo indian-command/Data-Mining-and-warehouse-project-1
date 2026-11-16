@@ -1,0 +1,130 @@
+
+{% extends "base.html" %}
+
+{% block title %}My Dashboard | Research Commons{% endblock %}
+
+{% block content %}
+
+<section class="dashboard-section py-5">
+
+    <div class="container">
+
+        <div class="dashboard-heading mb-4">
+            <span class="section-eyebrow">RESEARCH COMMONS</span>
+            <h2>Welcome, {{ request.user.first_name|default:request.user.username }}</h2>
+            <p class="text-muted">
+                Your research and collaboration workspace
+            </p>
+        </div>
+
+        {% if profile %}
+
+            <div class="row g-4">
+
+                <div class="col-lg-4">
+                    <div class="dashboard-card">
+
+                        <div class="dashboard-avatar">
+                            {{ request.user.first_name|first|upper }}
+                        </div>
+
+                        <h4>
+                            {{ request.user.get_full_name|default:request.user.username }}
+                        </h4>
+
+                        <p class="text-muted">
+                            {{ request.user.email }}
+                        </p>
+
+                        <span class="topic-badge">
+                            {{ profile.get_role_display }}
+                        </span>
+
+                    </div>
+                </div>
+
+                <div class="col-lg-8">
+
+                    <div class="dashboard-card">
+
+                        <h4>Academic Information</h4>
+
+                        <hr>
+
+                        <p>
+                            <strong>School:</strong>
+                            {% if profile.department and profile.department.school %}
+                                {{ profile.department.school.name }}
+                            {% else %}
+                                Not assigned
+                            {% endif %}
+                        </p>
+
+                        <p>
+                            <strong>Department:</strong>
+                            {% if profile.department %}
+                                {{ profile.department.name }}
+                            {% else %}
+                                Not assigned
+                            {% endif %}
+                        </p>
+
+                        <p>
+                            <strong>About:</strong>
+                            {{ profile.bio|default:"No biography added yet." }}
+                        </p>
+
+                        <hr>
+
+                        <h5>Research Interests</h5>
+
+                        {% for topic in profile.topics.all %}
+
+                            <span class="topic-badge me-2 mb-2">
+                                {{ topic.name }}
+                            </span>
+
+                        {% empty %}
+
+                            <p class="text-muted">
+                                No research interests selected yet.
+                            </p>
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        {% else %}
+
+            <div class="alert alert-info">
+                Your profile has not been created yet.
+                Please contact the administrator.
+            </div>
+
+        {% endif %}
+
+        <div class="mt-4">
+            <a href="{% url 'accounts:profile_edit' %}"
+                class="btn btn-gold">
+                Edit My Profile
+             </a>
+
+             <a href="{% url 'accounts:members' %}"
+                class="btn btn-primary">
+                <i class="bi bi-people"></i>
+                Find University Members
+            </a>
+            <a href="{% url 'home' %}" class="btn btn-outline-primary">
+                Back to Home
+            </a>
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

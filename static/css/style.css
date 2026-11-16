@@ -1,0 +1,940 @@
+
+/* =========================================
+   CHANAKYA UNIVERSITY - RESEARCH COMMONS
+   Official-inspired visual theme
+========================================= */
+
+:root {
+    --cu-navy: #001F5F;
+    --cu-navy-dark: #001746;
+    --cu-gold: #AC8500;
+    --cu-gold-light: #D8B84F;
+
+    --cu-white: #FFFFFF;
+    --cu-ivory: #FAF8F2;
+    --cu-light: #F4F2EB;
+
+    --cu-text: #202B40;
+    --cu-muted: #687386;
+    --cu-border: #E4DFD1;
+}
+
+/* =========================================
+   GLOBAL STYLES
+========================================= */
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: "Segoe UI", Arial, sans-serif;
+    background-color: var(--cu-ivory);
+    color: var(--cu-text);
+    line-height: 1.7;
+}
+
+h1, h2, h3, h4, h5 {
+    font-family: Georgia, "Times New Roman", serif;
+    color: var(--cu-navy);
+}
+
+a {
+    text-decoration: none;
+}
+
+/* =========================================
+   NAVIGATION BAR
+========================================= */
+
+.main-navbar {
+    background-color: var(--cu-white);
+    padding: 13px 0;
+    border-bottom: 3px solid var(--cu-gold);
+    box-shadow: 0 3px 12px rgba(0, 31, 95, 0.06);
+}
+
+.main-navbar .navbar-brand {
+    color: var(--cu-navy);
+    font-size: 21px;
+    font-weight: 700;
+}
+
+.main-navbar .nav-link {
+    color: var(--cu-navy);
+    font-size: 15px;
+    font-weight: 600;
+    padding: 12px 15px !important;
+    transition: 0.25s;
+}
+
+.main-navbar .nav-link:hover,
+.main-navbar .nav-link:focus {
+    color: var(--cu-gold);
+}
+
+.main-navbar .navbar-toggler {
+    border-color: var(--cu-navy);
+}
+
+.main-navbar .navbar-toggler-icon {
+    filter: brightness(0.25);
+}
+
+.main-navbar .btn-outline-light {
+    color: var(--cu-navy);
+    border: 1px solid var(--cu-gold);
+    font-weight: 600;
+}
+
+.main-navbar .btn-outline-light:hover {
+    background-color: var(--cu-gold);
+    color: white;
+    border-color: var(--cu-gold);
+}
+
+/* Logo */
+
+.university-logo {
+    height: 55px;
+    width: auto;
+    max-width: 210px;
+    object-fit: contain;
+}
+
+.brand-divider {
+    height: 42px;
+    width: 1px;
+    background-color: var(--cu-gold);
+    margin: 0 10px;
+}
+
+.brand-product {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+}
+
+.brand-product strong {
+    color: var(--cu-navy);
+    font-family: Georgia, serif;
+    font-size: 19px;
+}
+
+.brand-product small {
+    color: var(--cu-muted);
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+/* =========================================
+   HERO SECTION
+========================================= */
+
+.hero-section {
+    background:
+        linear-gradient(
+            115deg,
+            rgba(0, 23, 70, 0.98),
+            rgba(0, 31, 95, 0.94)
+        );
+
+    color: var(--cu-white);
+    padding: 110px 20px 120px;
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+}
+
+/* Gold decorative line */
+
+.hero-section::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 130px;
+    height: 5px;
+    background-color: var(--cu-gold);
+}
+
+.hero-label {
+    color: var(--cu-gold-light);
+    font-size: 13px;
+    letter-spacing: 3px;
+    font-weight: 700;
+}
+
+.hero-title {
+    color: var(--cu-white);
+    font-family: Georgia, serif;
+    font-size: clamp(38px, 6vw, 66px);
+    font-weight: 600;
+    line-height: 1.17;
+}
+
+.hero-description {
+    max-width: 720px;
+    margin: 20px auto;
+    color: #E3E8F2;
+    font-size: 17px;
+    line-height: 1.9;
+}
+
+.hero-accent {
+    color: var(--cu-gold-light);
+}
+
+/* =========================================
+   SEARCH BOX
+========================================= */
+
+.search-box {
+    display: flex;
+    max-width: 680px;
+    margin: auto;
+    padding: 8px;
+    background-color: white;
+    border: 2px solid var(--cu-gold);
+    border-radius: 4px;
+    gap: 8px;
+}
+
+.search-box input {
+    border: none;
+    padding: 13px;
+    box-shadow: none !important;
+    color: var(--cu-navy);
+    background: transparent;
+}
+
+.search-box input::placeholder {
+    color: #8790A0;
+}
+
+.search-btn {
+    background-color: var(--cu-gold);
+    color: white;
+    padding: 12px 28px;
+    border-radius: 3px;
+    font-weight: 700;
+    transition: 0.25s;
+}
+
+.search-btn:hover {
+    background-color: #896900;
+    color: white;
+}
+
+.search-hint {
+    color: #D7DCE8;
+    font-size: 13px;
+}
+
+/* =========================================
+   BUTTONS
+========================================= */
+
+.btn-primary {
+    background-color: var(--cu-navy);
+    border-color: var(--cu-navy);
+}
+
+.btn-primary:hover {
+    background-color: var(--cu-navy-dark);
+    border-color: var(--cu-navy-dark);
+}
+
+.btn-gold {
+    background-color: var(--cu-gold);
+    color: white;
+    border: none;
+    padding: 11px 25px;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+.btn-gold:hover {
+    background-color: #896900;
+    color: white;
+}
+
+/* =========================================
+   SECTION HEADINGS
+========================================= */
+
+.section-title {
+    font-family: Georgia, serif;
+    font-weight: 700;
+    color: var(--cu-navy);
+    font-size: 34px;
+}
+
+.section-subtitle {
+    color: var(--cu-muted);
+    max-width: 700px;
+    margin: 12px auto;
+}
+
+.section-eyebrow {
+    color: var(--cu-gold);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+/* =========================================
+   FEATURE CARDS
+========================================= */
+
+.feature-card {
+    background: white;
+    padding: 32px 25px;
+    border: 1px solid var(--cu-border);
+    border-bottom: 3px solid transparent;
+    border-radius: 5px;
+    height: 100%;
+    transition: 0.3s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    border-bottom-color: var(--cu-gold);
+    box-shadow: 0 10px 28px rgba(0, 31, 95, 0.09);
+}
+
+.feature-icon {
+    width: 65px;
+    height: 65px;
+    background-color: #F5F0DF;
+    color: var(--cu-gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 31px;
+    margin-bottom: 22px;
+    border-radius: 50%;
+}
+
+.feature-card h5 {
+    color: var(--cu-navy);
+    font-family: Georgia, serif;
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 13px;
+}
+
+.feature-card p {
+    color: var(--cu-muted);
+    line-height: 1.8;
+}
+
+/* =========================================
+   ABOUT SECTION
+========================================= */
+
+.about-section {
+    background-color: var(--cu-light);
+    padding: 75px 20px;
+    border-top: 1px solid var(--cu-border);
+    border-bottom: 1px solid var(--cu-border);
+}
+
+.about-section h2 {
+    font-family: Georgia, serif;
+    color: var(--cu-navy);
+    font-size: 36px;
+}
+
+.about-section p {
+    color: var(--cu-muted);
+    max-width: 750px;
+    margin: 18px auto;
+}
+
+/* =========================================
+   RESEARCH CONTENT / PAPER CARDS
+========================================= */
+
+.paper-card {
+    background: white;
+    border: 1px solid var(--cu-border);
+    border-radius: 5px;
+    padding: 24px;
+    transition: 0.25s;
+}
+
+.paper-card:hover {
+    border-color: var(--cu-gold);
+    box-shadow: 0 6px 20px rgba(0, 31, 95, 0.07);
+}
+
+.paper-card h5 {
+    color: var(--cu-navy);
+    font-weight: 700;
+}
+
+.paper-meta {
+    color: var(--cu-muted);
+    font-size: 13px;
+}
+
+.topic-badge {
+    display: inline-block;
+    background-color: #F5F0DF;
+    color: var(--cu-navy);
+    padding: 5px 12px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* =========================================
+   FORMS AND INPUTS
+========================================= */
+
+.form-control,
+.form-select {
+    border: 1px solid #D8D5CC;
+    border-radius: 4px;
+    padding: 11px 13px;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--cu-gold);
+    box-shadow: 0 0 0 0.2rem rgba(172, 133, 0, 0.12);
+}
+
+.form-label {
+    color: var(--cu-navy);
+    font-weight: 600;
+}
+
+/* =========================================
+   AUTHENTICATION PAGES
+========================================= */
+
+.auth-section {
+    min-height: 75vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--cu-ivory);
+    padding: 45px 15px;
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 480px;
+    background: white;
+    padding: 38px;
+    border: 1px solid var(--cu-border);
+    border-top: 4px solid var(--cu-gold);
+    box-shadow: 0 8px 25px rgba(0, 31, 95, 0.07);
+}
+
+/* =========================================
+   FOOTER
+========================================= */
+
+.main-footer {
+    background-color: var(--cu-navy-dark);
+    color: white;
+    border-top: 4px solid var(--cu-gold);
+    padding: 45px 20px;
+}
+
+.main-footer h5 {
+    color: var(--cu-gold-light);
+    font-family: Georgia, serif;
+}
+
+.main-footer p {
+    color: #E1E6F0;
+}
+
+.main-footer small {
+    color: #C4CCDA;
+}
+
+.main-footer a {
+    color: var(--cu-gold-light);
+}
+
+/* =========================================
+   TABLES
+========================================= */
+
+.table thead th {
+    background-color: var(--cu-navy);
+    color: white;
+    font-weight: 600;
+    border-color: var(--cu-navy);
+}
+
+.table tbody tr:hover {
+    background-color: #F5F0DF;
+}
+
+/* =========================================
+   LINKS AND SELECTION
+========================================= */
+
+a:not(.btn):not(.navbar-brand) {
+    color: var(--cu-navy);
+}
+
+a:not(.btn):not(.navbar-brand):hover {
+    color: var(--cu-gold);
+}
+
+::selection {
+    background-color: var(--cu-gold);
+    color: white;
+}
+
+/* =========================================
+   MOBILE RESPONSIVENESS
+========================================= */
+
+@media (max-width: 768px) {
+
+    .hero-section {
+        padding: 75px 18px 90px;
+    }
+
+    .hero-title {
+        font-size: 40px;
+    }
+
+    .section-title {
+        font-size: 28px;
+    }
+
+    .university-logo {
+        height: 43px;
+        max-width: 145px;
+    }
+
+    .brand-divider {
+        margin: 0 5px;
+    }
+
+    .brand-product strong {
+        font-size: 15px;
+    }
+
+    .brand-product small {
+        font-size: 8px;
+    }
+
+    .auth-card {
+        padding: 25px 20px;
+    }
+}
+
+@media (max-width: 576px) {
+
+    .search-box {
+        flex-direction: column;
+    }
+
+    .search-btn {
+        width: 100%;
+    }
+
+    .hero-title {
+        font-size: 35px;
+    }
+
+    .hero-description {
+        font-size: 15px;
+    }
+
+    .brand-divider {
+        display: none;
+    }
+
+    .brand-product {
+        margin-left: 5px;
+    }
+}
+
+
+/* CHANAKYA UNIVERSITY ADMIN THEME */
+
+:root {
+    --cu-navy: #001F5F;
+    --cu-gold: #AC8500;
+    --cu-ivory: #FAF8F2;
+    --cu-text: #202B40;
+    --cu-border: #E4DFD1;
+}
+
+/* Main background */
+
+html,
+body {
+    background: var(--cu-ivory) !important;
+    color: var(--cu-text) !important;
+}
+
+/* Header */
+
+#header {
+    background: var(--cu-navy) !important;
+    color: white !important;
+    border-bottom: 4px solid var(--cu-gold);
+    padding: 12px 25px;
+}
+
+#branding h1,
+#branding h1 a {
+    color: white !important;
+    font-family: Georgia, serif;
+}
+
+/* Custom university branding */
+
+.cu-admin-brand {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    color: white !important;
+    text-decoration: none;
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.cu-admin-brand img {
+    max-height: 48px;
+    max-width: 180px;
+    object-fit: contain;
+}
+
+.cu-admin-brand small {
+    display: block;
+    font-family: Arial, sans-serif;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: #D8B84F;
+}
+
+/* User menu */
+
+#user-tools {
+    color: white !important;
+}
+
+#user-tools a {
+    color: #D8B84F !important;
+}
+
+/* Breadcrumbs */
+
+div.breadcrumbs {
+    background: #F5F0DF !important;
+    color: var(--cu-navy) !important;
+    border-bottom: 1px solid var(--cu-gold);
+}
+
+div.breadcrumbs a {
+    color: var(--cu-navy) !important;
+}
+
+/* Main content */
+
+#content {
+    color: var(--cu-text);
+}
+
+#content h1 {
+    color: var(--cu-navy);
+    font-family: Georgia, serif;
+}
+
+/* Model sections */
+
+.module {
+    background: white !important;
+    border: 1px solid var(--cu-border);
+}
+
+.module h2,
+.module caption,
+.inline-group h2 {
+    background: var(--cu-navy) !important;
+    color: white !important;
+}
+
+/* Tables */
+
+#result_list thead th {
+    background: var(--cu-navy) !important;
+    color: white !important;
+}
+
+#result_list tbody tr:nth-child(even) {
+    background: var(--cu-ivory);
+}
+
+#result_list tbody tr:hover {
+    background: #F5F0DF !important;
+}
+
+/* Buttons */
+
+.button,
+input[type="submit"],
+input[type="button"],
+.submit-row input,
+a.button {
+    background: var(--cu-navy) !important;
+    color: white !important;
+    border: 1px solid var(--cu-navy) !important;
+    border-radius: 4px;
+    padding: 8px 15px;
+}
+
+.button.default,
+input[type="submit"].default {
+    background: var(--cu-gold) !important;
+    border-color: var(--cu-gold) !important;
+}
+
+.button:hover,
+input[type="submit"]:hover {
+    background: #001746 !important;
+}
+
+/* Add buttons */
+
+.object-tools a:link,
+.object-tools a:visited {
+    background: var(--cu-gold) !important;
+    color: white !important;
+}
+
+/* Links */
+
+#content a {
+    color: var(--cu-navy);
+}
+
+#content a:hover {
+    color: var(--cu-gold);
+}
+
+/* Form fields */
+
+input,
+select,
+textarea {
+    border-radius: 4px;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: var(--cu-gold) !important;
+    outline-color: var(--cu-gold) !important;
+}
+
+/* Filter panel */
+
+#changelist-filter h2 {
+    background: var(--cu-navy) !important;
+    color: white !important;
+}
+
+/* Footer */
+
+#footer {
+    border-top: 2px solid var(--cu-gold);
+}
+
+
+/* =====================================
+   AUTHENTICATION PAGES
+===================================== */
+
+.auth-section {
+    min-height: 75vh;
+    padding: 65px 15px;
+    background: #FAF8F2;
+}
+
+.auth-card {
+    max-width: 480px;
+    width: 100%;
+    background: #FFFFFF;
+    padding: 38px;
+    border: 1px solid #E4DFD1;
+    border-top: 5px solid #AC8500;
+    border-radius: 5px;
+    box-shadow: 0 8px 28px rgba(0,31,95,0.08);
+}
+
+.register-card {
+    max-width: 760px;
+}
+
+.auth-card h2 {
+    font-family: Georgia, serif;
+    font-size: 31px;
+    font-weight: 700;
+    color: #001F5F;
+}
+
+.auth-card p {
+    color: #687386;
+}
+
+.auth-card label {
+    display: block;
+    color: #001F5F;
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 7px;
+}
+
+.auth-card .form-control,
+.auth-card .form-select {
+    width: 100%;
+    min-height: 44px;
+    border: 1px solid #D8D5CC;
+    border-radius: 4px;
+    padding: 10px 12px;
+    background-color: #FFFFFF;
+}
+
+.auth-card textarea.form-control {
+    min-height: 100px;
+}
+
+.auth-card .form-control:focus,
+.auth-card .form-select:focus {
+    border-color: #AC8500;
+    box-shadow: 0 0 0 3px rgba(172,133,0,0.12);
+}
+
+.auth-card select[multiple] {
+    min-height: 145px;
+}
+
+.auth-card .form-text {
+    font-size: 12px;
+}
+
+.form-section-title {
+    color: #001F5F;
+    font-family: Georgia, serif;
+    font-weight: 700;
+    font-size: 19px;
+    margin-bottom: 20px;
+}
+
+.gold-line {
+    height: 3px;
+    width: 65px;
+    background-color: #AC8500;
+    margin: 15px auto;
+}
+
+.auth-card a {
+    color: #001F5F;
+    font-weight: 600;
+}
+
+.auth-card a:hover {
+    color: #AC8500;
+}
+
+/* =====================================
+   MEMBER DASHBOARD
+===================================== */
+
+.dashboard-section {
+    min-height: 75vh;
+    background-color: #FAF8F2;
+}
+
+.dashboard-heading h2 {
+    font-family: Georgia, serif;
+    color: #001F5F;
+    font-weight: 700;
+}
+
+.dashboard-card {
+    background-color: #FFFFFF;
+    border: 1px solid #E4DFD1;
+    border-top: 3px solid #AC8500;
+    border-radius: 5px;
+    padding: 30px;
+    height: 100%;
+    box-shadow: 0 5px 20px rgba(0,31,95,0.05);
+}
+
+.dashboard-card h4,
+.dashboard-card h5 {
+    color: #001F5F;
+    font-family: Georgia, serif;
+    font-weight: 700;
+}
+
+.dashboard-avatar {
+    width: 75px;
+    height: 75px;
+    background-color: #001F5F;
+    color: #FFFFFF;
+    border: 3px solid #AC8500;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.dashboard-card p {
+    color: #687386;
+    overflow-wrap: anywhere;
+}
+
+.topic-badge {
+    display: inline-block;
+    background-color: #F5F0DF;
+    color: #001F5F;
+    padding: 7px 13px;
+    border-radius: 3px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+@media (max-width: 768px) {
+
+    .auth-card {
+        padding: 25px 18px;
+    }
+
+    .auth-section {
+        padding: 35px 12px;
+    }
+
+    .register-card {
+        max-width: 100%;
+    }
+
+    .dashboard-card {
+        padding: 22px;
+    }
+}

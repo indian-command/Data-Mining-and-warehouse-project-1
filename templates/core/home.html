@@ -1,0 +1,146 @@
+
+{% extends "base.html" %}
+
+{% block title %}Home | Research Commons{% endblock %}
+
+{% block content %}
+
+<!-- Hero section -->
+<section class="hero-section">
+    <div class="container text-center">
+
+        <span class="hero-label">
+            CHANAKYA UNIVERSITY RESEARCH NETWORK
+        </span>
+
+        <h1 class="hero-title mt-4">
+            Discover Research.<br>
+            Connect Ideas.
+        </h1>
+
+        <p class="hero-description mt-3">
+            A collaborative platform where students, faculty
+            and researchers discover papers, share knowledge
+            and connect with fellow researchers.
+        </p>
+
+        <form class="search-box mx-auto mt-5"
+              method="get"
+              action="{% url 'home' %}">
+
+            <input type="text"
+                   name="q"
+                   class="form-control"
+                   placeholder="Search research topics, papers or people..."
+                   aria-label="Search research">
+
+            <button type="submit" class="btn search-btn">
+                Search
+            </button>
+
+        </form>
+
+        <p class="search-hint mt-3">
+            Explore research across different departments
+        </p>
+
+    </div>
+</section>
+
+
+<!-- Four main features -->
+<section id="explore" class="container py-5">
+
+    <div class="text-center mb-5">
+        <h2 class="section-title">Explore Research Commons</h2>
+
+        <p class="text-secondary">
+            Everything you need to discover and collaborate
+            on academic research.
+        </p>
+    </div>
+
+    <div class="row g-4">
+
+        <div class="col-md-6 col-lg-3">
+            <div class="feature-card h-100">
+                <div class="feature-icon">📚</div>
+                <h5>Research Library</h5>
+                <p>
+                    Save, organize and explore research papers
+                    and academic articles.
+                </p>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="feature-card h-100">
+                <div class="feature-icon">👥</div>
+                <h5>Find Researchers</h5>
+                <p>
+                    Discover students, faculty and researchers
+                    with similar interests.
+                </p>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="feature-card h-100">
+                <div class="feature-icon">💬</div>
+                <h5>Discussions</h5>
+                <p>
+                    Share research ideas, discuss problems
+                    and collaborate with others.
+                </p>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="feature-card h-100">
+                <div class="feature-icon">🧠</div>
+                <h5>Smart Discovery</h5>
+                <p>
+                    Discover related research through
+                    intelligent search and recommendations.
+                </p>
+            </div>
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- About section -->
+<section id="about" class="about-section py-5">
+
+    <div class="container text-center">
+
+        <h2>One University. Shared Knowledge.</h2>
+
+        <p class="mt-3">
+            Research Commons brings university research,
+            people and discussions together in one place.
+        </p>
+
+    </div>
+
+</section>
+
+
+<!-- Join section -->
+<section id="join" class="container py-5 text-center">
+
+    <h2>Be Part of the Research Community</h2>
+
+    <p class="text-secondary mt-3">
+        Connect with researchers and explore new ideas.
+    </p>
+
+    <p class="small text-secondary">
+        Member registration will be available in the next development stage.
+    </p>
+
+</section>
+
+{% endblock %}

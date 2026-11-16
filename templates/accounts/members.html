@@ -1,0 +1,117 @@
+
+{% extends "base.html" %}
+
+{% block title %}Find Researchers | Research Commons{% endblock %}
+
+{% block content %}
+
+<section class="dashboard-section py-5">
+
+    <div class="container">
+
+        <div class="text-center mb-5">
+
+            <span class="section-eyebrow">
+                CHANAKYA UNIVERSITY
+            </span>
+
+            <h2 class="section-title">
+                Discover Researchers
+            </h2>
+
+            <p class="section-subtitle">
+                Connect with students, faculty and researchers
+                across our university.
+            </p>
+
+        </div>
+
+        <div class="row g-4">
+
+            {% for profile in profiles %}
+
+            <div class="col-md-6 col-lg-4">
+
+                <div class="feature-card">
+
+                    <div class="dashboard-avatar">
+                        {{ profile.user.first_name|first|default:profile.user.username|first|upper }}
+                    </div>
+
+                    <h5>
+                        {{ profile.user.get_full_name|default:profile.user.username }}
+                    </h5>
+
+                    <p class="text-muted">
+                        {{ profile.user.email }}
+                    </p>
+
+                    <p>
+                        <strong>Role:</strong>
+                        {{ profile.get_role_display }}
+                    </p>
+
+                    <p>
+                        <strong>Department:</strong>
+
+                        {% if profile.department %}
+                            {{ profile.department.name }}
+                        {% else %}
+                            Not assigned
+                        {% endif %}
+                    </p>
+
+                    <div class="mb-3">
+
+                        {% for topic in profile.topics.all %}
+
+                            <span class="topic-badge me-1 mb-1">
+                                {{ topic.name }}
+                            </span>
+
+                        {% endfor %}
+
+                    </div>
+
+                    <form method="POST"
+                          action="{% url 'accounts:toggle_follow' profile.user.id %}">
+
+                        {% csrf_token %}
+
+                        {% if profile.user.id in followed_ids %}
+
+                            <button type="submit"
+                                    class="btn btn-outline-primary w-100">
+                                Unfollow
+                            </button>
+
+                        {% else %}
+
+                            <button type="submit"
+                                    class="btn btn-gold w-100">
+                                Follow Member
+                            </button>
+
+                        {% endif %}
+
+                    </form>
+
+                </div>
+
+            </div>
+
+            {% empty %}
+
+                <div class="col-12 text-center">
+                    <p>No other researchers have registered yet.</p>
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

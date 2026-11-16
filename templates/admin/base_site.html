@@ -1,0 +1,198 @@
+
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}
+Research Commons Administration
+{% endblock %}
+
+{% block branding %}
+<div id="site-name">
+    <a href="{% url 'admin:index' %}" class="cu-admin-brand">
+
+        <img src="{% static 'images/chanakya-university.svg' %}"
+             alt="Chanakya University Logo">
+
+        <span>
+            Research Commons
+            <small>Administration Portal</small>
+        </span>
+
+    </a>
+</div>
+{% endblock %}
+
+
+{% block extrastyle %}
+    {{ block.super }}
+
+    <style>
+        :root,
+        html[data-theme="light"],
+        html[data-theme="dark"] {
+            color-scheme: light;
+
+            --primary: #001F5F;
+            --secondary: #AC8500;
+            --accent: #AC8500;
+            --primary-fg: #FFFFFF;
+
+            --body-fg: #202B40;
+            --body-bg: #FAF8F2;
+
+            --header-color: #001F5F;
+            --header-bg: #FFFFFF;
+            --header-link-color: #001F5F;
+
+            --breadcrumbs-fg: #001F5F;
+            --breadcrumbs-bg: #F5F0DF;
+
+            --link-fg: #001F5F;
+            --link-hover-color: #AC8500;
+            --link-selected-fg: #AC8500;
+
+            --hairline-color: #E4DFD1;
+            --border-color: #E4DFD1;
+
+            --darkened-bg: #F4F2EB;
+            --selected-bg: #F5F0DF;
+
+            --button-fg: #FFFFFF;
+            --button-bg: #001F5F;
+            --button-hover-bg: #001746;
+
+            --default-button-bg: #AC8500;
+            --default-button-hover-bg: #896900;
+        }
+
+        html,
+        body,
+        #container,
+        .main,
+        #content {
+            background: #FAF8F2 !important;
+            color: #202B40 !important;
+        }
+
+        #header {
+            background: #FFFFFF !important;
+            color: #001F5F !important;
+            border-bottom: 4px solid #AC8500 !important;
+            box-shadow: 0 3px 12px rgba(0,31,95,0.06);
+        }
+
+        #branding h1,
+        #branding h1 a,
+        #user-tools,
+        #user-tools a {
+            color: #eae1e3 !important;
+        }
+
+        div.breadcrumbs {
+            background: #F5F0DF !important;
+            color: #001F5F !important;
+        }
+
+        div.breadcrumbs a {
+            color: #001F5F !important;
+        }
+
+        #content h1 {
+            color: #001F5F !important;
+            font-family: Georgia, serif;
+        }
+
+        .module,
+        #content-related,
+        #recent-actions-module {
+            background: #FFFFFF !important;
+            color: #202B40 !important;
+            border: 1px solid #E4DFD1 !important;
+        }
+
+        .module h2,
+        .module caption,
+        #recent-actions-module h2 {
+            background: #001F5F !important;
+            color: #FFFFFF !important;
+        }
+
+        #content a {
+            color: #001F5F;
+        }
+
+        #content a:hover {
+            color: #AC8500 !important;
+        }
+
+        .button,
+        input[type="submit"],
+        input[type="button"],
+        .submit-row input {
+            background: #001F5F !important;
+            color: #FFFFFF !important;
+            border-color: #001F5F !important;
+        }
+
+        .button.default,
+        input[type="submit"].default {
+            background: #AC8500 !important;
+            border-color: #AC8500 !important;
+        }
+
+        .object-tools a {
+            background: #AC8500 !important;
+            color: #FFFFFF !important;
+        }
+
+
+/* Fix text inside navy section headings */
+
+.module caption,
+.module caption a,
+.module h2,
+.module h2 a {
+    color: #AC8500!important;
+    background-color: #001F5F !important;
+    text-align: left;
+    padding: 10px 12px;
+    font-weight: 700;
+    display: block;
+    visibility: visible;
+    opacity: 1;
+}
+/* Make Admin header text clearly visible */
+
+#header #user-tools {
+    color: #001F5F !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+#header #user-tools a,
+#header #user-tools a:link,
+#header #user-tools a:visited {
+    color: #001F5F !important;
+    opacity: 1 !important;
+    font-weight: 600 !important;
+    text-decoration: none;
+}
+
+#header #user-tools a:hover {
+    color: #AC8500 !important;
+    text-decoration: underline;
+}
+
+/* Theme toggle icon */
+
+#header button,
+#header button svg {
+    color: #eff0f3 !important;
+    fill: #001F5F;
+}
+        #result_list thead th {
+            background: #08089d !important;
+            color: #FFFFFF !important;
+        }
+    </style>
+{% endblock %}

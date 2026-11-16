@@ -1,0 +1,228 @@
+
+{% extends "base.html" %}
+
+{% block title %}Register | Research Commons{% endblock %}
+
+{% block content %}
+
+<section class="auth-section">
+    <div class="container">
+
+        <div class="auth-card register-card mx-auto">
+
+            <div class="text-center mb-4">
+                <h2>Create Your Account</h2>
+                <p class="text-muted">
+                    Join the Chanakya University research community
+                </p>
+                <div class="gold-line"></div>
+            </div>
+
+            <form method="POST" novalidate>
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+
+                <h5 class="form-section-title">Personal Information</h5>
+
+                <div class="row g-3">
+
+                    <div class="col-md-6">
+                        {{ form.first_name.label_tag }}
+                        {{ form.first_name }}
+                        {% for error in form.first_name.errors %}
+                            <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="col-md-6">
+                        {{ form.last_name.label_tag }}
+                        {{ form.last_name }}
+                        {% for error in form.last_name.errors %}
+                            <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="col-12">
+                        {{ form.username.label_tag }}
+                        {{ form.username }}
+                        {% for error in form.username.errors %}
+                            <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="col-12">
+                        {{ form.email.label_tag }}
+                        {{ form.email }}
+                        {% for error in form.email.errors %}
+                            <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="id_password1" class="form-label">
+                            Password
+                        </label>
+                        {{ form.password1 }}
+                        {% for error in form.password1.errors %}
+                            <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="id_password2" class="form-label">
+                            Confirm Password
+                        </label>
+                        {{ form.password2 }}
+                        {% for error in form.password2.errors %}
+                            <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                </div>
+
+                <hr class="my-4">
+
+                <h5 class="form-section-title">Academic Information</h5>
+
+                <div class="row g-3">
+
+                    <div class="col-12">
+                        {{ form.role.label_tag }}
+                        {{ form.role }}
+                        {% for error in form.role.errors %}
+                            <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="col-12">
+                        {{ form.school.label_tag }}
+                        {{ form.school }}
+                        {% for error in form.school.errors %}
+                            <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="col-12">
+                        {{ form.department.label_tag }}
+                        {{ form.department }}
+                        {% for error in form.department.errors %}
+                            <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                </div>
+
+                <hr class="my-4">
+
+                <h5 class="form-section-title">Research Information</h5>
+
+                <div class="mb-3">
+                    {{ form.topics.label_tag }}
+                    {{ form.topics }}
+                    <small class="form-text text-muted">
+                        Hold Ctrl on Windows to select multiple topics.
+                    </small>
+                    {% for error in form.topics.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="mb-4">
+                    {{ form.bio.label_tag }}
+                    {{ form.bio }}
+                    {% for error in form.bio.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <button type="submit" class="btn btn-gold w-100">
+                    Create Account
+                </button>
+
+                <p class="text-center mt-4 mb-0">
+                    Already have an account?
+                    <a href="{% url 'accounts:login' %}">
+                        Sign in
+                    </a>
+                </p>
+
+            </form>
+
+        </div>
+
+    </div>
+</section>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const schoolSelect = document.getElementById("id_school");
+    const departmentSelect = document.getElementById("id_department");
+
+    schoolSelect.addEventListener("change", async function () {
+
+        const schoolId = this.value;
+
+        departmentSelect.innerHTML =
+            '<option value="">Loading departments...</option>';
+
+        departmentSelect.disabled = true;
+
+        if (!schoolId) {
+            departmentSelect.innerHTML =
+                '<option value="">Select Department</option>';
+            return;
+        }
+
+        try {
+
+            const url =
+                "{% url 'accounts:departments_json' %}?school_id="
+                + encodeURIComponent(schoolId);
+
+            const response = await fetch(url);
+
+            if (!response.ok) {
+                throw new Error("Unable to load departments.");
+            }
+
+            const departments = await response.json();
+
+            departmentSelect.innerHTML =
+                '<option value="">Select Department</option>';
+
+            departments.forEach(function (department) {
+
+                const option = document.createElement("option");
+
+                option.value = department.id;
+                option.textContent = department.name;
+
+                departmentSelect.appendChild(option);
+            });
+
+            if (departments.length === 0) {
+                departmentSelect.innerHTML =
+                    '<option value="">No departments available</option>';
+            }
+
+            departmentSelect.disabled = false;
+
+        } catch (error) {
+
+            departmentSelect.innerHTML =
+                '<option value="">Error loading departments</option>';
+
+            console.error(error);
+        }
+    });
+
+});
+</script>
+
+{% endblock %}

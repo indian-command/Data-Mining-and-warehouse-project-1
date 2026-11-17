@@ -1,0 +1,90 @@
+
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }} | Research Commons{% endblock %}
+
+{% block content %}
+
+<section class="auth-section">
+
+    <div class="container">
+
+        <div class="auth-card register-card mx-auto">
+
+            <div class="text-center mb-4">
+
+                <span class="section-eyebrow">
+                    CHANAKYA UNIVERSITY
+                </span>
+
+                <h2 class="mt-2">{{ page_title }}</h2>
+
+                <p>
+                    Share your knowledge with the university
+                    research community.
+                </p>
+
+                <div class="gold-line"></div>
+
+            </div>
+
+            <form method="POST">
+
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+
+                <div class="mb-4">
+
+                    {{ form.title.label_tag }}
+                    {{ form.title }}
+
+                    {% for error in form.title.errors %}
+                        <div class="text-danger small">
+                            {{ error }}
+                        </div>
+                    {% endfor %}
+
+                </div>
+
+                <div class="mb-4">
+
+                    {{ form.content.label_tag }}
+                    {{ form.content }}
+
+                    {% for error in form.content.errors %}
+                        <div class="text-danger small">
+                            {{ error }}
+                        </div>
+                    {% endfor %}
+
+                </div>
+
+                <button type="submit" class="btn btn-gold w-100">
+
+                    {% if post %}
+                        Save Changes
+                    {% else %}
+                        Publish Research Post
+                    {% endif %}
+
+                </button>
+
+                <a href="{% url 'discussions:post_list' %}"
+                   class="btn btn-outline-primary w-100 mt-2">
+                    Cancel
+                </a>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

@@ -93,22 +93,22 @@
                     <!-- Logged-in Members -->
                     {% if user.is_authenticated %}
 
-                        <li class="nav-item">
-                            <a class="nav-link"
-                               href="{% url 'accounts:dashboard' %}">
-                                My Dashboard
-                            </a>
-                        </li>
+                     <li class="nav-item">
+                        <a class="nav-link"
+                            href="{% url 'accounts:dashboard' %}">
+                            My Dashboard
+                        </a>
+                    </li>
 
                         <!-- Admin Only -->
-                        {% if user.is_staff %}
-                            <li class="nav-item">
-                                <a class="nav-link"
-                                   href="{% url 'admin:index' %}">
-                                    Admin Dashboard
-                                </a>
-                            </li>
-                        {% endif %}
+                    {% if user.is_staff %}
+                         <li class="nav-item">
+                            <a class="nav-link"
+                                href="{% url 'admin:index' %}">
+                                Admin Dashboard
+                            </a>
+                        </li>
+                    {% endif %}
 
                     {% else %}
 
@@ -119,6 +119,7 @@
                                 Login
                             </a>
                         </li>
+                        
 
                     {% endif %}
 
@@ -126,6 +127,12 @@
 
                 <!-- Authentication Button -->
                 {% if user.is_authenticated %}
+                <li class="nav-item">
+                     <a class="nav-link"
+                            href="{% url 'discussions:post_list' %}">
+                            Discussions
+                     </a>
+                 </li>
 
                     <form method="POST"
                           action="{% url 'accounts:logout' %}"

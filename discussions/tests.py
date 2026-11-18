@@ -2,9 +2,15 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.urls import reverse
+from research_library.models import ResearchResource
 
 from .models import DiscussionPost, Comment, PostVote
-
+from accounts.models import (
+    MemberFollow,
+    Profile,
+    Topic,
+    TopicFollow,
+)
 
 User = get_user_model()
 
@@ -394,4 +400,445 @@ class DiscussionViewsTests(TestCase):
         self.assertEqual(
             self.post.title,
             "Moderated Research Post"
+        )
+
+
+    # =====================================
+    # TEST 13: FOLLOWING FEED
+    # =====================================
+
+    def test_following_feed_shows_followed_members_posts(self):
+
+        MemberFollow.objects.create(
+            follower=self.student_b,
+            followed=self.student_a
+        )
+
+        self.client.force_login(self.student_b)
+
+        response = self.client.get(
+            reverse("discussions:post_list"),
+            {"feed": "following"}
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.post.title)
+        self.assertEqual(response.context["feed_type"], "following")
+
+    # =====================================
+    # TEST 14: FOLLOWED TOPICS FEED
+    # =====================================
+
+    def test_topics_feed_shows_posts_with_followed_topics(self):
+
+        topic_one = Topic.objects.create(
+            name="Robotics"
+        )
+
+        topic_two = Topic.objects.create(
+            name="Energy Systems"
+        )
+
+        self.post.tags.add(topic_one, topic_two)
+
+        TopicFollow.objects.create(
+            user=self.student_b,
+            topic=topic_one
+        )
+
+        TopicFollow.objects.create(
+            user=self.student_b,
+            topic=topic_two
+        )
+
+        self.client.force_login(self.student_b)
+
+        response = self.client.get(
+            reverse("discussions:post_list"),
+            {"feed": "topics"}
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.post.title)
+        self.assertEqual(response.context["feed_type"], "topics")
+
+        # A post matching two followed topics should appear only once
+        self.assertEqual(
+            response.context["posts"].filter(
+                id=self.post.id
+            ).count(),
+            1
+        )
+
+    # =====================================
+    # TEST 15: RECOMMENDATIONS BASED ON INTERESTS
+    # =====================================
+
+    def test_recommended_feed_uses_profile_topics(self):
+
+        topic = Topic.objects.create(
+            name="Machine Learning"
+        )
+
+        profile, created = Profile.objects.get_or_create(
+            user=self.student_b
+        )
+
+        profile.topics.add(topic)
+
+        recommended_post = DiscussionPost.objects.create(
+            author=self.student_a,
+            title="Machine Learning Applications",
+            content="Research about machine learning."
+        )
+
+        recommended_post.tags.add(topic)
+
+        unrelated_post = DiscussionPost.objects.create(
+            author=self.staff,
+            title="Unrelated Research",
+            content="A different research subject."
+        )
+
+        self.client.force_login(self.student_b)
+
+        response = self.client.get(
+            reverse("discussions:post_list"),
+            {"feed": "recommended"}
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        self.assertContains(
+            response,
+            "Machine Learning Applications"
+        )
+
+        self.assertNotContains(
+            response,
+            "Unrelated Research"
+        )
+
+    # =====================================
+    # TEST 16: RECOMMENDATION RANKING
+    # =====================================
+
+    def test_recommended_feed_ranks_active_posts_higher(self):
+
+        topic = Topic.objects.create(
+            name="Data Science"
+        )
+
+        profile, created = Profile.objects.get_or_create(
+            user=self.student_b
+        )
+
+        profile.topics.add(topic)
+
+        popular_post = DiscussionPost.objects.create(
+            author=self.staff,
+            title="Popular Data Science Research",
+            content="Research with community engagement."
+        )
+
+        popular_post.tags.add(topic)
+
+        less_popular_post = DiscussionPost.objects.create(
+            author=self.student_a,
+            title="New Data Science Research",
+            content="Another research post."
+        )
+
+        less_popular_post.tags.add(topic)
+
+        # Add community activity to the popular post
+        PostVote.objects.create(
+            post=popular_post,
+            user=self.student_a
+        )
+
+        self.client.force_login(self.student_b)
+
+        response = self.client.get(
+            reverse("discussions:post_list"),
+            {"feed": "recommended"}
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        recommended_ids = list(
+            response.context["posts"].values_list(
+                "id",
+                flat=True
+            )
+        )
+
+        self.assertLess(
+            recommended_ids.index(popular_post.id),
+            recommended_ids.index(less_popular_post.id)
+        )
+
+    # =====================================
+    # TEST 17: EXCLUDE FOLLOWED POSTS FROM RECOMMENDATIONS
+    # =====================================
+
+    def test_recommended_feed_excludes_followed_sources(self):
+
+        topic = Topic.objects.create(
+            name="Cybersecurity"
+        )
+
+        followed_topic_post = DiscussionPost.objects.create(
+            author=self.staff,
+            title="Followed Cybersecurity Research",
+            content="Cybersecurity research discussion."
+        )
+
+        followed_topic_post.tags.add(topic)
+
+        MemberFollow.objects.create(
+            follower=self.student_b,
+            followed=self.student_a
+        )
+
+        TopicFollow.objects.create(
+            user=self.student_b,
+            topic=topic
+        )
+
+        self.client.force_login(self.student_b)
+
+        response = self.client.get(
+            reverse("discussions:post_list"),
+            {"feed": "recommended"}
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        self.assertNotContains(
+            response,
+            self.post.title
+        )
+
+        self.assertNotContains(
+            response,
+            "Followed Cybersecurity Research"
+        )
+
+    # =====================================
+    # TEST 18: FOLLOW / UNFOLLOW TOPIC
+    # =====================================
+
+    def test_member_can_follow_and_unfollow_topic(self):
+
+        topic = Topic.objects.create(
+            name="Signal Processing"
+        )
+
+        topic_url = reverse(
+            "accounts:toggle_topic_follow",
+            args=[topic.id]
+        )
+
+        self.client.force_login(self.student_b)
+
+        # First request: follow topic
+        response = self.client.post(topic_url)
+
+        self.assertEqual(response.status_code, 302)
+
+        self.assertTrue(
+            TopicFollow.objects.filter(
+                user=self.student_b,
+                topic=topic
+            ).exists()
+        )
+
+        # Second request: unfollow topic
+        response = self.client.post(topic_url)
+
+        self.assertEqual(response.status_code, 302)
+
+        self.assertFalse(
+            TopicFollow.objects.filter(
+                user=self.student_b,
+                topic=topic
+            ).exists()
+        )
+
+    # =====================================
+    # TEST 19: CREATE POST WITH TAGS
+    # =====================================
+
+    def test_member_can_create_post_with_tags(self):
+
+        topic = Topic.objects.create(
+            name="Internet of Things"
+        )
+
+        self.client.force_login(self.student_a)
+
+        response = self.client.post(
+            reverse("discussions:post_create"),
+            {
+                "title": "IoT Research Project",
+                "content": "Research about connected devices.",
+                "tags": [str(topic.id)]
+            }
+        )
+
+        self.assertEqual(response.status_code, 302)
+
+        post = DiscussionPost.objects.get(
+            title="IoT Research Project"
+        )
+
+        self.assertTrue(
+            post.tags.filter(id=topic.id).exists()
+        )
+
+    # =====================================
+    # TEST 20: EDIT POST TAGS
+    # =====================================
+
+    def test_member_can_update_post_tags(self):
+
+        old_topic = Topic.objects.create(
+            name="Artificial Intelligence"
+        )
+
+        new_topic = Topic.objects.create(
+            name="Renewable Energy"
+        )
+
+        self.post.tags.add(old_topic)
+
+        self.client.force_login(self.student_a)
+
+        response = self.client.post(
+            reverse(
+                "discussions:post_edit",
+                args=[self.post.id]
+            ),
+            {
+                "title": self.post.title,
+                "content": self.post.content,
+                "tags": [str(new_topic.id)]
+            }
+        )
+
+        self.assertEqual(response.status_code, 302)
+
+        self.post.refresh_from_db()
+
+        self.assertTrue(
+            self.post.tags.filter(id=new_topic.id).exists()
+        )
+
+        self.assertFalse(
+            self.post.tags.filter(id=old_topic.id).exists()
+        )
+
+
+    # =====================================
+    # TEST 21: CREATE POST WITH PDF AND LINK
+    # =====================================
+
+    def test_member_can_create_post_with_pdf_and_link_resources(self):
+
+        pdf_resource = ResearchResource.objects.create(
+            title="Machine Learning Research PDF",
+            description="Sample research paper",
+            resource_type="paper",
+            file="research_library/papers/sample.pdf",
+            uploaded_by=self.student_a
+        )
+
+        link_resource = ResearchResource.objects.create(
+            title="Machine Learning Research Link",
+            description="External research resource",
+            resource_type="link",
+            url="https://example.com/research/ml",
+            uploaded_by=self.student_a
+        )
+
+        self.client.force_login(self.student_a)
+
+        response = self.client.post(
+            reverse("discussions:post_create"),
+            {
+                "title": "Research Post With Attachments",
+                "content": "Research discussion with library resources.",
+                "resources": [
+                    str(pdf_resource.id),
+                    str(link_resource.id),
+                ]
+            }
+        )
+
+        self.assertEqual(response.status_code, 302)
+
+        post = DiscussionPost.objects.get(
+            title="Research Post With Attachments"
+        )
+
+        attached_ids = set(
+            post.resources.values_list("id", flat=True)
+        )
+
+        self.assertEqual(
+            attached_ids,
+            {pdf_resource.id, link_resource.id}
+        )
+
+    # =====================================
+    # TEST 22: EDIT POST ATTACHMENTS
+    # =====================================
+
+    def test_member_can_update_post_attachments(self):
+
+        old_resource = ResearchResource.objects.create(
+            title="Old Research Link",
+            resource_type="link",
+            url="https://example.com/old",
+            uploaded_by=self.student_a
+        )
+
+        new_resource = ResearchResource.objects.create(
+            title="New Research Link",
+            resource_type="link",
+            url="https://example.com/new",
+            uploaded_by=self.student_a
+        )
+
+        self.post.resources.add(old_resource)
+
+        self.client.force_login(self.student_a)
+
+        response = self.client.post(
+            reverse(
+                "discussions:post_edit",
+                args=[self.post.id]
+            ),
+            {
+                "title": self.post.title,
+                "content": self.post.content,
+                "resources": [str(new_resource.id)]
+            }
+        )
+
+        self.assertEqual(response.status_code, 302)
+
+        self.post.refresh_from_db()
+
+        self.assertTrue(
+            self.post.resources.filter(
+                id=new_resource.id
+            ).exists()
+        )
+
+        self.assertFalse(
+            self.post.resources.filter(
+                id=old_resource.id
+            ).exists()
         )

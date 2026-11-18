@@ -54,6 +54,11 @@ path(
     views.toggle_follow_view,
     name="toggle_follow"
 ),
+path(
+    "topics/<int:topic_id>/follow/",
+    views.toggle_topic_follow_view,
+    name="toggle_topic_follow"
+),
 
     path(
     "profile/edit/",

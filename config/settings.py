@@ -44,7 +44,7 @@ INSTALLED_APPS = [
     'core',
     'accounts',
     'discussions',
-    'research_library',
+    'research_library.apps.ResearchLibraryConfig',
     'papers',
     'unified_search',
     'recommendations',
@@ -154,3 +154,6 @@ LOGIN_URL = "/accounts/login/"
 LOGIN_REDIRECT_URL = "/accounts/dashboard/"
 
 LOGOUT_REDIRECT_URL = "/"
+# Research paper and library resource uploads
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"

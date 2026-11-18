@@ -1,12 +1,22 @@
-
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST
 from django.core.exceptions import ValidationError
+from django.db.models import Count
+
+from accounts.models import (
+    MemberFollow,
+    TopicFollow,
+    Topic,
+    Profile,
+)
+
 
 from .models import DiscussionPost, Comment, PostVote
 from .forms import DiscussionPostForm, CommentForm
+
+
 
 
 # =====================================
@@ -14,35 +24,156 @@ from .forms import DiscussionPostForm, CommentForm
 # =====================================
 
 
+
 @login_required
 def post_list_view(request):
 
-    # Fetch discussion posts with their related data
-    posts = (
+    # Base discussion posts with related data loaded efficiently
+    base_posts = (
         DiscussionPost.objects
         .select_related("author")
         .prefetch_related(
             "votes",
+            "tags",
+            "resources",
             "comments__author",
             "comments__replies__author"
         )
         .order_by("-created_at")
     )
 
-    # Find posts already upvoted by the logged-in user
+    # Members followed by the current user
+    followed_member_ids = list(
+        MemberFollow.objects.filter(
+            follower=request.user
+        ).values_list("followed_id", flat=True)
+    )
+
+    # Topics followed by the current user
+    followed_topic_ids = list(
+        TopicFollow.objects.filter(
+            user=request.user
+        ).values_list("topic_id", flat=True)
+    )
+
+    # 1. POSTS FROM FOLLOWED MEMBERS
+    following_posts = base_posts.filter(
+        author_id__in=followed_member_ids
+    ).order_by("-created_at")
+
+    # 2. POSTS MATCHING FOLLOWED TOPICS
+    topic_posts = (
+        base_posts
+        .filter(tags__id__in=followed_topic_ids)
+        .distinct()
+        .order_by("-created_at")
+    )
+
+    # 3. RECOMMENDED POSTS
+    # Start with posts not already covered by the other two feeds
+    recommended_base = base_posts.exclude(
+        author=request.user
+    )
+
+    if followed_member_ids:
+        recommended_base = recommended_base.exclude(
+            author_id__in=followed_member_ids
+        )
+
+    if followed_topic_ids:
+        recommended_base = recommended_base.exclude(
+            tags__id__in=followed_topic_ids
+        )
+
+    # Get the research interests selected in the user's profile
+    profile_topic_ids = list(
+        Profile.objects.filter(
+            user=request.user
+        ).values_list("topics__id", flat=True)
+    )
+
+    # Prefer posts matching the user's research interests
+    if profile_topic_ids:
+
+        relevant_posts = (
+            recommended_base
+            .filter(tags__id__in=profile_topic_ids)
+            .distinct()
+        )
+
+        # If there are no matching posts, use community activity
+        if relevant_posts.exists():
+            recommended_candidates = relevant_posts
+        else:
+            recommended_candidates = recommended_base
+
+    else:
+        recommended_candidates = recommended_base
+
+    # Rank recommendations by upvotes, comments and recency
+    recommended_posts = (
+        recommended_candidates
+        .annotate(
+            feed_upvotes=Count("votes", distinct=True),
+            feed_comments=Count("comments", distinct=True)
+        )
+        .order_by(
+            "-feed_upvotes",
+            "-feed_comments",
+            "-created_at"
+        )
+    )
+
+
+    # Choose which personalized feed to display
+    feed_type = request.GET.get("feed", "recommended")
+
+    # My own research posts
+    my_posts = base_posts.filter(
+        author=request.user
+    )
+
+    if feed_type == "my_posts":
+
+        posts = my_posts
+        feed_title = "My Research Posts"
+
+    elif feed_type == "following":
+
+        posts = following_posts
+        feed_title = "Posts from Members You Follow"
+
+    elif feed_type == "topics":
+
+        posts = topic_posts
+        feed_title = "Posts from Your Followed Topics"
+
+    else:
+
+        feed_type = "recommended"
+        posts = recommended_posts
+        feed_title = "Recommended Research Posts"
+
+    # Posts already upvoted by the current user
     voted_post_ids = set(
         PostVote.objects.filter(
             user=request.user
         ).values_list("post_id", flat=True)
     )
 
-    # Display the discussion feed
+    # Topics available for following
+    all_topics = Topic.objects.all()
+
     return render(
         request,
         "discussions/post_list.html",
         {
             "posts": posts,
             "voted_post_ids": voted_post_ids,
+            "feed_type": feed_type,
+            "feed_title": feed_title,
+            "all_topics": all_topics,
+            "followed_topic_ids": set(followed_topic_ids),
         }
     )
 
@@ -51,6 +182,7 @@ def post_list_view(request):
 # =====================================
 # 2. CREATE RESEARCH POST
 # =====================================
+
 
 @login_required
 def post_create_view(request):
@@ -67,6 +199,9 @@ def post_create_view(request):
             post.author = request.user
 
             post.save()
+
+            # Save selected research topics
+            form.save_m2m()
 
             messages.success(
                 request,
@@ -87,6 +222,8 @@ def post_create_view(request):
             "page_title": "Create Research Post",
         }
     )
+
+
 
 
 # =====================================

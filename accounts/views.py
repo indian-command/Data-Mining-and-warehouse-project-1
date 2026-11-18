@@ -1,17 +1,21 @@
 from django.contrib import messages
-from django.contrib.auth import login
+from django.contrib.auth import login, get_user_model
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_GET, require_POST
-from django.contrib.auth import get_user_model
 from django.db import transaction
-from django.shortcuts import get_object_or_404
-from .forms import RegisterForm
-from .models import Department, Profile
 
 from .forms import RegisterForm, UserUpdateForm, ProfileUpdateForm
-from .models import Department, Profile, MemberFollow
+from .models import (
+    Department,
+    Profile,
+    MemberFollow,
+    Topic,
+    TopicFollow,
+)
+
+User = get_user_model()
 
 User = get_user_model()
 def register_view(request):
@@ -212,3 +216,42 @@ def toggle_follow_view(request, user_id):
         )
 
     return redirect("accounts:members")
+
+# =====================================
+# FOLLOW / UNFOLLOW RESEARCH TOPICS
+# =====================================
+
+@login_required
+@require_POST
+def toggle_topic_follow_view(request, topic_id):
+
+    topic = get_object_or_404(
+        Topic,
+        pk=topic_id
+    )
+
+    follow = TopicFollow.objects.filter(
+        user=request.user,
+        topic=topic
+    ).first()
+
+    if follow:
+        follow.delete()
+
+        messages.info(
+            request,
+            f"You unfollowed {topic.name}."
+        )
+
+    else:
+        TopicFollow.objects.get_or_create(
+            user=request.user,
+            topic=topic
+        )
+
+        messages.success(
+            request,
+            f"You are now following {topic.name}!"
+        )
+
+    return redirect("discussions:post_list")

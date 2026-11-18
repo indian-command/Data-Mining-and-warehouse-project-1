@@ -5,7 +5,7 @@
 
 {% block content %}
 
-<section class="auth-section">
+<section class="auth-section py-5">
 
     <div class="container">
 
@@ -38,8 +38,8 @@
                     </div>
                 {% endif %}
 
+                <!-- Post title -->
                 <div class="mb-4">
-
                     {{ form.title.label_tag }}
                     {{ form.title }}
 
@@ -48,11 +48,10 @@
                             {{ error }}
                         </div>
                     {% endfor %}
-
                 </div>
 
+                <!-- Post content -->
                 <div class="mb-4">
-
                     {{ form.content.label_tag }}
                     {{ form.content }}
 
@@ -61,9 +60,51 @@
                             {{ error }}
                         </div>
                     {% endfor %}
-
                 </div>
 
+                <!-- Research topic tags: INSIDE THE FORM -->
+                <div class="mb-4">
+
+                    {{ form.tags.label_tag }}
+
+                    <p class="text-muted small">
+                        Select one or more research topics related to your post.
+                    </p>
+
+                    <div class="border rounded p-3">
+                        {{ form.tags }}
+                    </div>
+
+                    {% for error in form.tags.errors %}
+                        <div class="text-danger small mt-2">
+                            {{ error }}
+                        </div>
+                    {% endfor %}
+
+                </div>
+                <!-- Attach research resources -->
+<div class="mb-4">
+
+    {{ form.resources.label_tag }}
+
+    <p class="text-muted small">
+        Attach research papers or links from the library.
+        You can select multiple resources.
+    </p>
+
+    <div class="border rounded p-3">
+        {{ form.resources }}
+    </div>
+
+    {% for error in form.resources.errors %}
+        <div class="text-danger small mt-2">
+            {{ error }}
+        </div>
+    {% endfor %}
+
+</div>
+
+                <!-- Submit -->
                 <button type="submit" class="btn btn-gold w-100">
 
                     {% if post %}

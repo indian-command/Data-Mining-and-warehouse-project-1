@@ -1,7 +1,6 @@
 
 from django import forms
 from .models import DiscussionPost, Comment
-from .models import DiscussionPost
 
 
 class DiscussionPostForm(forms.ModelForm):
@@ -12,14 +11,16 @@ class DiscussionPostForm(forms.ModelForm):
         fields = [
             "title",
             "content",
+            "tags",
+            "resources",
         ]
 
         widgets = {
-
             "title": forms.TextInput(
                 attrs={
                     "class": "form-control",
                     "placeholder": "Enter your research post title",
+                    "resources": forms.CheckboxSelectMultiple(),
                     "maxlength": 200,
                 }
             ),
@@ -31,11 +32,20 @@ class DiscussionPostForm(forms.ModelForm):
                     "rows": 6,
                 }
             ),
+
+            "tags": forms.CheckboxSelectMultiple(),
         }
 
         labels = {
             "title": "Post Title",
             "content": "Your Research Content",
+            "tags": "Select Research Topics",
+            "resources": "Attach Research Papers or Library Links",
+        }
+
+        help_texts = {
+            "tags": "Select one or more topics related to your post.",
+            "resources": "Select one or more resources from the Research Library.",
         }
 
     def clean_title(self):
@@ -57,8 +67,6 @@ class DiscussionPostForm(forms.ModelForm):
             )
 
         return content
-
-from .models import Comment
 
 
 class CommentForm(forms.ModelForm):
@@ -83,7 +91,6 @@ class CommentForm(forms.ModelForm):
         }
 
     def clean_content(self):
-
         content = self.cleaned_data["content"].strip()
 
         if not content:

@@ -16,11 +16,23 @@ class DiscussionPost(models.Model):
         related_name="discussion_posts"
     )
 
-    title = models.CharField(
-        max_length=200
-    )
+    title = models.CharField(max_length=200)
 
     content = models.TextField()
+
+    # Research topic tags
+    tags = models.ManyToManyField(
+        "accounts.Topic",
+        blank=True,
+        related_name="discussion_posts"
+    )
+
+    # Research papers and library links
+    resources = models.ManyToManyField(
+        "research_library.ResearchResource",
+        blank=True,
+        related_name="discussion_posts"
+    )
 
     created_at = models.DateTimeField(
         auto_now_add=True
@@ -74,7 +86,6 @@ class Comment(models.Model):
         related_name="discussion_comments"
     )
 
-    # A parent comment makes this record a reply
     parent = models.ForeignKey(
         "self",
         on_delete=models.CASCADE,

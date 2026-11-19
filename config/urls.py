@@ -13,6 +13,7 @@ urlpatterns = [
     path("discussions/", include("discussions.urls")),
 
     path("", include("core.urls")),
+    path("library/", include("research_library.urls")),
 ]
 
 

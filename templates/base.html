@@ -205,8 +205,7 @@
 
             <!-- Group 1: Subsystem Feature Guide (Filtered by Role) -->
             <span class="sidebar-section-title flex items-center justify-between">
-                <span>Subsystems ({% if user.profile.role == 'student' %}Student View{% else %}F1 – F9{% endif
-                    %})</span>
+                <span>Subsystems ({% if user.profile.role == 'student' %}Student View{% else %}F1 – F9{% endif %})</span>
                 <span class="text-[9px] font-bold text-accent-gold-dark uppercase tracking-wider">Active</span>
             </span>
 
@@ -217,8 +216,7 @@
                     class="w-6 h-6 rounded-md bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white flex items-center justify-center font-mono font-bold text-[11px] transition-colors shrink-0">F1</span>
                 <div class="flex flex-col min-w-0">
                     <span class="font-semibold text-xs text-primary leading-tight">
-                        {% if user.profile.role == 'student' %}Find Faculty & Mentors{% else %}Accounts & Roles{% endif
-                        %}
+                        {% if user.profile.role == 'student' %}Find Faculty & Mentors{% else %}Accounts & Roles{% endif %}
                     </span>
                     <span class="text-[10px] text-text-muted truncate">164+ University Faculty & Profiles</span>
                 </div>
@@ -245,8 +243,7 @@
                     class="w-6 h-6 rounded-md bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white flex items-center justify-center font-mono font-bold text-[11px] transition-colors shrink-0">F3</span>
                 <div class="flex flex-col min-w-0">
                     <span class="font-semibold text-xs text-primary leading-tight">
-                        {% if user.profile.role == 'student' %}Discussions & Q&A{% else %}Discussions & Peer Review{%
-                        endif %}
+                        {% if user.profile.role == 'student' %}Discussions & Q&A{% else %}Discussions & Peer Review{% endif %}
                     </span>
                     <span class="text-[10px] text-text-muted truncate">Scholarly Threads, Paper Links & Votes</span>
                 </div>
@@ -458,8 +455,7 @@
                                 class="badge bg-primary text-white font-mono text-[10px] px-1.5 py-0.5 rounded shadow-xs">
                                 {% if user.profile.role == 'student' %}Modules{% else %}F1–F9{% endif %}
                             </span>
-                            <span>{% if user.profile.role == 'student' %}Student Tools{% else %}Modules{% endif
-                                %}</span>
+                            <span>{% if user.profile.role == 'student' %}Student Tools{% else %}Modules{% endif %}</span>
                             <span class="material-symbols-outlined text-[14px]">expand_more</span>
                         </button>
                         <ul class="dropdown-menu shadow-2xl border border-border-subtle rounded-2xl p-2 min-w-[340px]">
@@ -475,8 +471,7 @@
                             <li><a class="dropdown-item rounded-xl py-2 text-xs d-flex align-items-center gap-2.5"
                                     href="{% url 'accounts:members' %}"><span
                                         class="w-6 h-6 rounded bg-primary/10 text-primary font-mono font-bold flex items-center justify-center text-[10px] shrink-0">F1</span>
-                                    <div><strong class="d-block text-primary">{% if user.profile.role == 'student'
-                                            %}Find Faculty & Mentors{% else %}Accounts & Roles{% endif %}</strong><small
+                                    <div><strong class="d-block text-primary">{% if user.profile.role == 'student' %}Find Faculty & Mentors{% else %}Accounts & Roles{% endif %}</strong><small
                                             class="text-muted text-[10.5px]">164+ Faculty, Profiles & Follows</small>
                                     </div>
                                 </a></li>
@@ -495,9 +490,7 @@
                             <li><a class="dropdown-item rounded-xl py-2 text-xs d-flex align-items-center gap-2.5"
                                     href="{% url 'discussions:post_list' %}"><span
                                         class="w-6 h-6 rounded bg-primary/10 text-primary font-mono font-bold flex items-center justify-center text-[10px] shrink-0">F3</span>
-                                    <div><strong class="d-block text-primary">{% if user.profile.role == 'student'
-                                            %}Discussions & Q&A{% else %}Discussions & Peer Review{% endif
-                                            %}</strong><small class="text-muted text-[10.5px]">Peer Review, Threads &
+                                    <div><strong class="d-block text-primary">{% if user.profile.role == 'student' %}Discussions & Q&A{% else %}Discussions & Peer Review{% endif %}</strong><small class="text-muted text-[10.5px]">Peer Review, Threads &
                                             Upvotes</small></div>
                                 </a></li>
                             {% endif %}
@@ -505,9 +498,7 @@
                             <li><a class="dropdown-item rounded-xl py-2 text-xs d-flex align-items-center gap-2.5"
                                     href="{% url 'papers:paper_list' %}"><span
                                         class="w-6 h-6 rounded bg-primary/10 text-primary font-mono font-bold flex items-center justify-center text-[10px] shrink-0">F4</span>
-                                    <div><strong class="d-block text-primary">{% if user.profile.role == 'student'
-                                            %}Scholarly Publications{% else %}Scholarly Publications (F4){% endif
-                                            %}</strong><small class="text-muted text-[10.5px]">OpenAlex, arXiv & Google
+                                    <div><strong class="d-block text-primary">{% if user.profile.role == 'student' %}Scholarly Publications{% else %}Scholarly Publications (F4){% endif %}</strong><small class="text-muted text-[10.5px]">OpenAlex, arXiv & Google
                                             Links</small></div>
                                 </a></li>
                             {# F5 #}

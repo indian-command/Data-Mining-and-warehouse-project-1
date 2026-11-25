@@ -1,645 +1,247 @@
-
 {% extends "base.html" %}
 
-{% block title %}Research Library | Research Commons{% endblock %}
+{% block title %}Research Library | Chanakya University{% endblock %}
 
 {% block content %}
+<div class="container-fluid px-lg-5 py-4">
 
-<section class="py-5">
-
-    <div class="container">
-
-        <!-- Page Heading -->
-        <div class="mb-5">
-
-            <span class="section-eyebrow">
-                CHANAKYA UNIVERSITY
-            </span>
-
-            <h2 class="section-title mt-2">
-                Research Library
-            </h2>
-
-            <p class="text-muted">
-                Save, organize and explore research papers,
-                articles and academic resources.
-            </p>
-
+    <!-- Header Section -->
+    <div class="flex flex-wrap justify-between items-center gap-3 pb-3 mb-4 border-b border-border-subtle">
+        <div>
+            <span class="section-eyebrow">PERSONAL SCHOLARLY ARCHIVE</span>
+            <h1 class="section-title mb-0">Research Library</h1>
+            <p class="text-xs text-text-secondary mt-1">Save, organize, and annotate research papers, articles, and collections.</p>
         </div>
+        <div class="flex items-center gap-2">
+            <a href="{% url 'discussions:post_list' %}?feed=saved" class="btn btn-outline-primary text-xs py-2 px-3 font-semibold inline-flex items-center gap-1.5 shadow-xs">
+                <span class="material-symbols-outlined text-[16px]">bookmark</span>
+                <span>Saved Community Posts</span>
+            </a>
+            <a href="{% url 'discussions:post_create' %}" class="btn btn-gold text-xs py-2 px-3 font-bold inline-flex items-center gap-1.5 shadow-xs">
+                <span class="material-symbols-outlined text-[16px]">add_circle</span>
+                <span>Post Research Paper</span>
+            </a>
+        </div>
+    </div>
 
-
-        <!-- Django Messages -->
-        {% if messages %}
-            {% for message in messages %}
-
-                <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show">
-
-                    {{ message }}
-
-                    <button type="button"
-                            class="btn-close"
-                            data-bs-dismiss="alert">
-                    </button>
-
-                </div>
-
-            {% endfor %}
-        {% endif %}
-
-<!-- ================================= -->
-<!-- RESEARCH DISCOVERY SEARCH -->
-<!-- ================================= -->
-
-<div class="card shadow-sm mb-5">
-
-    <div class="card-body p-4">
-
-        <h4>Discover Research Papers</h4>
-
-        <p class="text-muted">
-            Search academic publications from Crossref and arXiv.
-            Save interesting results to your personal library.
+    <!-- 1. Discovery Search Card -->
+    <div class="card p-4 sm:p-5 border-0 bg-white shadow-sm mb-4">
+        <div class="flex items-center gap-2 mb-2">
+            <span class="material-symbols-outlined text-primary text-[22px]">search</span>
+            <h3 class="font-display text-base font-bold text-primary mb-0">Discover & Save Publications</h3>
+        </div>
+        <p class="text-xs text-text-secondary mb-3">
+            Search academic publications directly from Crossref and arXiv to save them into your library.
         </p>
 
-        <form method="GET"
-              action="{% url 'research_library:library_home' %}">
-
-            <div class="input-group">
-
+        <form method="GET" action="{% url 'research_library:library_home' %}" class="flex gap-2">
+            <div class="flex-grow">
                 {{ search_form.query }}
-
-                <button type="submit" class="btn btn-gold">
-                    Search
-                </button>
-
             </div>
-
+            <button type="submit" class="btn btn-navy text-xs py-2 px-4 font-bold shrink-0">
+                Search Providers
+            </button>
         </form>
 
         {% if search_performed %}
+            <div class="pt-3 mt-3 border-t border-border-subtle">
+                <h4 class="text-xs font-bold uppercase tracking-wider text-primary mb-3">External Search Results</h4>
 
-            <hr>
-
-            <h5 class="mb-3">Search Results</h5>
-
-            {% for error in search_errors %}
-                <div class="alert alert-warning">
-                    {{ error }}
-                </div>
-            {% endfor %}
-
-            {% for result in search_results %}
-
-                <div class="border rounded p-3 mb-3">
-
-                    <h6>{{ result.title }}</h6>
-
-                    <small class="text-muted">
-                        Source: {{ result.provider }}
-                    </small>
-
-                    <p class="mt-2">
-                        {{ result.description|truncatewords:35 }}
-                    </p>
-
-                    <a href="{{ result.url }}"
-                       target="_blank"
-                       rel="noopener noreferrer"
-                       class="btn btn-outline-primary btn-sm">
-                        View Publication ↗
-                    </a>
-
-                    <form method="POST"
-                          action="{% url 'research_library:save' %}"
-                          class="mt-2">
-
-                        {% csrf_token %}
-
-                        <input type="hidden"
-                               name="source_type"
-                               value="{{ result.source_type }}">
-
-                        <input type="hidden"
-                               name="identifier"
-                               value="{{ result.identifier }}">
-
-                        <input type="hidden"
-                               name="title"
-                               value="">
-
-                        <button type="submit"
-                                class="btn btn-gold btn-sm">
-                            + Save to My Library
-                        </button>
-
-                    </form>
-
-                </div>
-
-            {% empty %}
-
-                {% if not search_errors %}
-                    <p class="text-muted">
-                        No research publications were found.
-                        Try another keyword.
-                    </p>
-                {% endif %}
-
-            {% endfor %}
-
-        {% endif %}
-
-    </div>
-
-</div>
-
-
-
-        <!-- ================================= -->
-        <!-- 1. SAVE RESEARCH ITEM -->
-        <!-- ================================= -->
-
-        <div class="card shadow-sm mb-5">
-
-            <div class="card-body p-4">
-
-                <h4 class="mb-2">
-                    Save a Research Item
-                </h4>
-
-                <p class="text-muted">
-                    Add a research resource using its URL, DOI
-                    or arXiv identifier.
-                </p>
-
-                <form method="POST"
-                      action="{% url 'research_library:save' %}">
-
-                    {% csrf_token %}
-
-                    {% if form.non_field_errors %}
-                        <div class="alert alert-danger">
-                            {{ form.non_field_errors }}
-                        </div>
-                    {% endif %}
-
-                    <div class="mb-3">
-
-                        {{ form.source_type.label_tag }}
-                        {{ form.source_type }}
-
-                        {% for error in form.source_type.errors %}
-                            <div class="text-danger small">
-                                {{ error }}
-                            </div>
-                        {% endfor %}
-
+                {% for error in search_errors %}
+                    <div class="alert bg-status-warning-surface text-status-warning text-xs p-2 rounded-lg mb-2">
+                        {{ error }}
                     </div>
-
-
-                    <div class="mb-3">
-
-                        {{ form.identifier.label_tag }}
-                        {{ form.identifier }}
-
-                        {% for error in form.identifier.errors %}
-                            <div class="text-danger small">
-                                {{ error }}
-                            </div>
-                        {% endfor %}
-
-                    </div>
-
-
-                    <div class="mb-3">
-
-                        {{ form.title.label_tag }}
-                        {{ form.title }}
-
-                        {% for error in form.title.errors %}
-                            <div class="text-danger small">
-                                {{ error }}
-                            </div>
-                        {% endfor %}
-
-                    </div>
-
-
-                    <div class="mb-3">
-
-                        {{ form.private_notes.label_tag }}
-                        {{ form.private_notes }}
-
-                        <small class="text-muted">
-                            These notes are private to your account.
-                        </small>
-
-                        {% for error in form.private_notes.errors %}
-                            <div class="text-danger small">
-                                {{ error }}
-                            </div>
-                        {% endfor %}
-
-                    </div>
-
-
-                    <button type="submit" class="btn btn-gold">
-                        + Save Research Item
-                    </button>
-
-                </form>
-
-            </div>
-
-        </div>
-
-
-        <!-- ================================= -->
-        <!-- 2. MY SAVED RESEARCH -->
-        <!-- ================================= -->
-
-        <div class="mb-5">
-
-            <h4 class="mb-3">
-                My Saved Research
-            </h4>
-
-            <p class="text-muted">
-                Research items saved to your personal library.
-            </p>
-
-            {% for item in saved_items %}
-
-                <article class="card shadow-sm mb-3">
-
-                    <div class="card-body p-4">
-
-                        <h5 class="mb-2">
-                            {{ item.resource.title }}
-                        </h5>
-
-                        <p class="text-muted small">
-                            Saved on {{ item.saved_at|date:"d M Y, h:i A" }}
-                        </p>
-
-                        <p>
-                            {{ item.resource.description|default:"No description available." }}
-                        </p>
-
-                        {% if item.resource.doi %}
-                            <p class="small mb-2">
-                                **DOI:** {{ item.resource.doi }}
-                            </p>
-                        {% endif %}
-
-                        {% if item.resource.arxiv_id %}
-                            <p class="small mb-2">
-                                **arXiv ID:** {{ item.resource.arxiv_id }}
-                            </p>
-                        {% endif %}
-
-
-                        {% if item.resource.file %}
-
-                            <a href="{{ item.resource.file.url }}"
-                               target="_blank"
-                               rel="noopener noreferrer"
-                               class="btn btn-outline-primary btn-sm mb-3">
-
-                                <i class="bi bi-file-pdf"></i>
-                                Open Research PDF
-
-                            </a>
-
-                        {% elif item.resource.url %}
-
-                            <a href="{{ item.resource.url }}"
-                               target="_blank"
-                               rel="noopener noreferrer"
-                               class="btn btn-outline-primary btn-sm mb-3">
-
-                                Open Research Resource ↗
-
-                            </a>
-
-                        {% endif %}
-
-
-                        <!-- Private notes -->
-                        <div class="border-top pt-3">
-
-                            <h6>Your Private Notes</h6>
-
-                            <form method="POST"
-                                  action="{% url 'research_library:update_note' item.id %}">
-
-                                {% csrf_token %}
-
-                                <textarea
-                                    name="private_notes"
-                                    class="form-control mb-2"
-                                    rows="3"
-                                    placeholder="Write your private research notes...">{{ item.private_notes }}</textarea>
-
-                                <button type="submit"
-                                        class="btn btn-outline-secondary btn-sm">
-
-                                    Save Private Notes
-
-                                </button>
-
-                            </form>
-
-                        </div>
-
-                    </div>
-
-                </article>
-
-            {% empty %}
-
-                <div class="alert alert-light border">
-
-                    You have not saved any research items yet.
-                    Use the form above to add your first item.
-
-                </div>
-
-            {% endfor %}
-
-        </div>
-
-
-<!-- ================================= -->
-<!-- PERSONAL RESEARCH COLLECTIONS -->
-<!-- ================================= -->
-
-<div class="mb-5">
-
-    <h4 class="mb-2">My Research Collections</h4>
-
-    <p class="text-muted">
-        Organize your saved research into personal collections.
-    </p>
-
-    <!-- Create Collection -->
-    <div class="card shadow-sm mb-4">
-
-        <div class="card-body p-4">
-
-            <h5>Create a New Collection</h5>
-
-            <form method="POST"
-                  action="{% url 'research_library:create_collection' %}">
-
-                {% csrf_token %}
-
-                <div class="mb-3">
-                    {{ collection_form.name.label_tag }}
-                    {{ collection_form.name }}
-                    {% for error in collection_form.name.errors %}
-                        <div class="text-danger small">{{ error }}</div>
-                    {% endfor %}
-                </div>
-
-                <div class="mb-3">
-                    {{ collection_form.description.label_tag }}
-                    {{ collection_form.description }}
-                    {% for error in collection_form.description.errors %}
-                        <div class="text-danger small">{{ error }}</div>
-                    {% endfor %}
-                </div>
-
-                <button type="submit" class="btn btn-gold">
-                    + Create Collection
-                </button>
-
-            </form>
-
-        </div>
-
-    </div>
-
-
-    <!-- Add Saved Research to Collection -->
-    <div class="card shadow-sm mb-4">
-
-        <div class="card-body p-4">
-
-            <h5>Add Research to a Collection</h5>
-
-            <form method="POST"
-                  action="{% url 'research_library:add_to_collection' %}">
-
-                {% csrf_token %}
-
-                <div class="mb-3">
-                    {{ add_to_collection_form.collection.label_tag }}
-                    {{ add_to_collection_form.collection }}
-                </div>
-
-                <div class="mb-3">
-                    {{ add_to_collection_form.saved_item.label_tag }}
-                    {{ add_to_collection_form.saved_item }}
-                </div>
-
-                <button type="submit" class="btn btn-outline-primary">
-                    Add to Collection
-                </button>
-
-            </form>
-
-        </div>
-
-    </div>
-
-
-    <!-- Existing Collections -->
-    <h5 class="mb-3">Your Collections</h5>
-
-    {% for collection in collections %}
-
-        <div class="card shadow-sm mb-3">
-
-            <div class="card-body p-4">
-
-                <h5>{{ collection.name }}</h5>
-
-                <p class="text-muted">
-                    {{ collection.description|default:"No description provided." }}
-                </p>
-
-                <span class="badge bg-light text-dark border">
-                    {{ collection.items.count }} Research Items
-                </span>
-
-                <hr>
-
-                {% for collection_item in collection.items.all %}
-
-                    <div class="d-flex justify-content-between
-                                align-items-center flex-wrap gap-2 mb-3">
-
-                        <div>
-
-                            <strong>
-                                {{ collection_item.saved_item.resource.title }}
-                            </strong>
-
-                            <div class="small text-muted">
-                                {{ collection_item.saved_item.resource.get_resource_type_display }}
-                            </div>
-
-                        </div>
-
-                        <form method="POST"
-                              action="{% url 'research_library:remove_from_collection' collection_item.id %}">
-
-                            {% csrf_token %}
-
-                            <button type="submit"
-                                    class="btn btn-outline-danger btn-sm"
-                                    onclick="return confirm('Remove this item from the collection?');">
-
-                                Remove
-
-                            </button>
-
-                        </form>
-
-                    </div>
-
-                {% empty %}
-
-                    <p class="text-muted">
-                        This collection does not contain any research items yet.
-                    </p>
-
                 {% endfor %}
 
-            </div>
-
-        </div>
-
-    {% empty %}
-
-        <div class="alert alert-light border">
-            You haven't created any collections yet.
-            Create your first collection above.
-        </div>
-
-    {% endfor %}
-
-</div>
-
-
-
-        <!-- ================================= -->
-        <!-- 3. UNIVERSITY-WIDE LIBRARY -->
-        <!-- ================================= -->
-
-        <div class="mb-5">
-
-            <h4 class="mb-2">
-                Chanakya University Library
-            </h4>
-
-            <p class="text-muted mb-4">
-                Explore research resources shared across
-                the university community.
-            </p>
-
-
-            {% for resource in library_resources %}
-
-                <article class="card shadow-sm mb-3">
-
-                    <div class="card-body p-4">
-
-                        <div class="d-flex justify-content-between
-                                    align-items-start flex-wrap gap-2">
-
-                            <div>
-
-                                <h5>
-                                    {{ resource.title }}
-                                </h5>
-
-                                <p class="text-muted small mb-2">
-                                    {{ resource.get_resource_type_display }}
-                                </p>
-
+                <div class="space-y-3">
+                    {% for result in search_results %}
+                        <div class="p-3 rounded-xl bg-surface-subtle border border-border-subtle">
+                            <h5 class="text-sm font-bold text-primary mb-1">{{ result.title }}</h5>
+                            <span class="text-[11px] text-text-muted block mb-1.5">Source Provider: {{ result.provider }}</span>
+                            <p class="text-xs text-text-secondary leading-relaxed mb-2">
+                                {{ result.description|truncatewords:35 }}
+                            </p>
+                            <div class="flex items-center gap-2">
+                                <a href="{{ result.url }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary text-xs py-1 px-2.5">
+                                    View Publication ↗
+                                </a>
+                                <form method="POST" action="{% url 'research_library:save' %}" class="m-0">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="source_type" value="{{ result.source_type }}">
+                                    <input type="hidden" name="identifier" value="{{ result.identifier }}">
+                                    <input type="hidden" name="title" value="">
+                                    <button type="submit" class="btn btn-sm btn-gold text-xs py-1 px-2.5">
+                                        + Save to My Library
+                                    </button>
+                                </form>
                             </div>
-
-                            <span class="badge bg-light text-dark border">
-
-                                {{ resource.member_save_count }}
-                                Member{{ resource.member_save_count|pluralize }}
-                                Saved
-
-                            </span>
-
                         </div>
-
-
-                        <p>
-                            {{ resource.description|default:"No description available." }}
-                        </p>
-
-
-                        {% if resource.doi %}
-                            <p class="small">
-                                DOI: {{ resource.doi }}
-                            </p>
+                    {% empty %}
+                        {% if not search_errors %}
+                            <p class="text-xs text-text-muted py-2 mb-0">No external publications found matching this query.</p>
                         {% endif %}
-
-                        {% if resource.arxiv_id %}
-                            <p class="small">
-                                arXiv ID: {{ resource.arxiv_id }}
-                            </p>
-                        {% endif %}
-
-
-                        {% if resource.file %}
-
-                            <a href="{{ resource.file.url }}"
-                               target="_blank"
-                               rel="noopener noreferrer"
-                               class="btn btn-outline-primary btn-sm">
-
-                                Open PDF
-
-                            </a>
-
-                        {% elif resource.url %}
-
-                            <a href="{{ resource.url }}"
-                               target="_blank"
-                               rel="noopener noreferrer"
-                               class="btn btn-outline-primary btn-sm">
-
-                                Open Resource ↗
-
-                            </a>
-
-                        {% endif %}
-
-                    </div>
-
-                </article>
-
-            {% empty %}
-
-                <div class="alert alert-light border">
-                    No research resources are available yet.
+                    {% endfor %}
                 </div>
-
-            {% endfor %}
-
-        </div>
-
+            </div>
+        {% endif %}
     </div>
 
-</section>
+    <!-- 2. Direct Add by Identifier Card -->
+    <div class="card p-4 border-0 bg-white shadow-sm mb-4">
+        <div class="flex items-center gap-2 mb-2">
+            <span class="material-symbols-outlined text-primary text-[20px]">add_link</span>
+            <h3 class="font-display text-sm font-bold text-primary mb-0">Add Item by DOI or arXiv Identifier</h3>
+        </div>
+        <form method="POST" action="{% url 'research_library:save' %}">
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+                <div class="alert bg-status-error-surface text-status-error text-xs p-2 rounded-lg mb-2">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
 
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">{{ form.source_type.label }}</label>
+                    {{ form.source_type }}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">{{ form.identifier.label }}</label>
+                    {{ form.identifier }}
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label">{{ form.title.label }}</label>
+                    {{ form.title }}
+                </div>
+                <div class="col-12">
+                    <label class="form-label">{{ form.private_notes.label }}</label>
+                    {{ form.private_notes }}
+                </div>
+            </div>
+            <button type="submit" class="btn btn-navy text-xs py-2 px-4 font-bold mt-3">
+                Save Research Item
+            </button>
+        </form>
+    </div>
+
+    <!-- 3. Saved Items & Collections Two-Column Layout -->
+    <div class="row g-4">
+        <!-- Left: My Saved Research List -->
+        <div class="col-lg-8">
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary text-[22px]">bookmarks</span>
+                    <h3 class="font-display text-base font-bold text-primary mb-0">My Saved Research ({{ saved_items|length }})</h3>
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                {% for item in saved_items %}
+                    <article class="card p-4 border-0 bg-white shadow-sm">
+                        <div class="flex justify-between items-start gap-2 mb-1.5">
+                            <h4 class="font-display text-base font-bold text-primary mb-0">
+                                {{ item.resource.title }}
+                            </h4>
+                            <span class="text-[11px] text-text-muted shrink-0">{{ item.saved_at|date:"d M Y" }}</span>
+                        </div>
+
+                        <p class="text-xs text-text-secondary leading-relaxed mb-2">
+                            {{ item.resource.description|default:"No description recorded." }}
+                        </p>
+
+                        <div class="flex flex-wrap gap-2 text-xs mb-3">
+                            {% if item.resource.doi %}
+                                <span class="badge bg-surface-subtle text-text-secondary border border-border-subtle">DOI: {{ item.resource.doi }}</span>
+                            {% endif %}
+                            {% if item.resource.arxiv_id %}
+                                <span class="badge bg-status-error-surface text-status-error">arXiv: {{ item.resource.arxiv_id }}</span>
+                            {% endif %}
+                            {% if item.resource.file %}
+                                <a href="{{ item.resource.file.url }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary text-xs py-0.5 px-2">
+                                    Open PDF
+                                </a>
+                            {% elif item.resource.url %}
+                                <a href="{{ item.resource.url }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary text-xs py-0.5 px-2">
+                                    Open Resource ↗
+                                </a>
+                            {% endif %}
+                            <a href="{{ item.resource.google_scholar_url }}"
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               class="btn btn-sm btn-outline-secondary text-xs py-0.5 px-2 inline-flex items-center gap-1 hover:border-primary hover:text-primary transition-all bg-white"
+                               title="Open through Google">
+                                <svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+                                <span>View on Google</span>
+                                <span class="material-symbols-outlined text-[12px]">open_in_new</span>
+                            </a>
+                        </div>
+
+                        <!-- Private Notes Sub-card -->
+                        <div class="p-3 bg-surface-subtle rounded-xl border border-border-subtle">
+                            <span class="text-[11px] font-bold uppercase tracking-wider text-text-muted block mb-1">Your Private Notes</span>
+                            <form method="POST" action="{% url 'research_library:update_note' item.id %}" class="m-0">
+                                {% csrf_token %}
+                                <textarea name="private_notes" class="form-control text-xs mb-2" rows="2" placeholder="Write private research annotations...">{{ item.private_notes }}</textarea>
+                                <button type="submit" class="btn btn-sm btn-outline-primary text-xs py-1 px-3">
+                                    Save Note
+                                </button>
+                            </form>
+                        </div>
+                    </article>
+                {% empty %}
+                    <div class="card p-5 border-0 bg-white text-center shadow-sm">
+                        <p class="text-xs text-text-muted mb-0">You have not saved any research items yet.</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Right: Research Collections -->
+        <div class="col-lg-4">
+            <div class="flex items-center gap-2 mb-3">
+                <span class="material-symbols-outlined text-primary text-[22px]">folder_special</span>
+                <h3 class="font-display text-base font-bold text-primary mb-0">My Collections</h3>
+            </div>
+
+            <!-- Create Collection Card -->
+            <div class="card p-4 border-0 bg-white shadow-sm mb-4">
+                <h4 class="text-xs font-bold uppercase tracking-wider text-primary mb-2">Create New Collection</h4>
+                <form method="POST" action="{% url 'research_library:create_collection' %}">
+                    {% csrf_token %}
+                    <div class="mb-2">
+                        <label class="form-label">{{ collection_form.name.label }}</label>
+                        {{ collection_form.name }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">{{ collection_form.description.label }}</label>
+                        {{ collection_form.description }}
+                    </div>
+                    <button type="submit" class="btn btn-gold text-xs py-1.5 px-3 font-bold w-full">
+                        + Create Collection
+                    </button>
+                </form>
+            </div>
+
+            <!-- Add to Collection Card -->
+            <div class="card p-4 border-0 bg-white shadow-sm mb-4">
+                <h4 class="text-xs font-bold uppercase tracking-wider text-primary mb-2">Add Item to Collection</h4>
+                <form method="POST" action="{% url 'research_library:add_to_collection' %}">
+                    {% csrf_token %}
+                    <div class="mb-2">
+                        <label class="form-label">{{ add_to_collection_form.collection.label }}</label>
+                        {{ add_to_collection_form.collection }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">{{ add_to_collection_form.saved_item.label }}</label>
+                        {{ add_to_collection_form.saved_item }}
+                    </div>
+                    <button type="submit" class="btn btn-outline-primary text-xs py-1.5 px-3 font-bold w-full">
+                        Add to Collection
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>
 {% endblock %}

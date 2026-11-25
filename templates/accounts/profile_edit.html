@@ -1,189 +1,170 @@
-
 {% extends "base.html" %}
 
-{% block title %}Edit Profile | Research Commons{% endblock %}
+{% block title %}Edit Academic Profile | Chanakya University{% endblock %}
 
 {% block content %}
-
-<section class="auth-section">
-
+<section class="auth-section py-5">
     <div class="container">
+        <div class="w-full max-w-[680px] mx-auto flex flex-col items-center">
 
-        <div class="auth-card register-card mx-auto">
-
-            <div class="text-center mb-4">
-                <h2>Edit Your Profile</h2>
-                <p>Update your academic and research information</p>
-                <div class="gold-line"></div>
+            <!-- Emblem Header -->
+            <div class="flex flex-col items-center text-center mb-4">
+                <div class="w-14 h-14 rounded-2xl bg-primary flex items-center justify-center text-white shadow-md mb-2">
+                    <span class="material-symbols-outlined text-[28px]">manage_accounts</span>
+                </div>
+                <span class="font-semibold text-xs text-accent-gold uppercase tracking-wider">Chanakya University</span>
+                <h1 class="font-display text-2xl font-extrabold text-primary tracking-tight">Edit Academic Profile</h1>
+                <p class="text-sm text-text-secondary mt-0.5">Update your research interests, department, and bio</p>
             </div>
 
-            <form method="POST">
-                {% csrf_token %}
+            <!-- Profile Edit Card -->
+            <div class="w-full bg-white rounded-2xl p-6 sm:p-8 shadow-md border border-border-subtle">
+                <form method="POST">
+                    {% csrf_token %}
 
-                {% if user_form.non_field_errors %}
-                    <div class="alert alert-danger">
-                        {{ user_form.non_field_errors }}
-                    </div>
-                {% endif %}
+                    {% if user_form.non_field_errors %}
+                        <div class="alert bg-status-error-surface border border-status-error text-status-error text-sm rounded-xl p-3 mb-4">
+                            {{ user_form.non_field_errors }}
+                        </div>
+                    {% endif %}
 
-                {% if profile_form.non_field_errors %}
-                    <div class="alert alert-danger">
-                        {{ profile_form.non_field_errors }}
-                    </div>
-                {% endif %}
+                    {% if profile_form.non_field_errors %}
+                        <div class="alert bg-status-error-surface border border-status-error text-status-error text-sm rounded-xl p-3 mb-4">
+                            {{ profile_form.non_field_errors }}
+                        </div>
+                    {% endif %}
 
-                <h5 class="form-section-title">
-                    Personal Information
-                </h5>
-
-                <div class="row g-3">
-
-                    <div class="col-md-6">
-                        {{ user_form.first_name.label_tag }}
-                        {{ user_form.first_name }}
-                        {{ user_form.first_name.errors }}
+                    <!-- Personal Information -->
+                    <div class="flex items-center gap-2 mb-3 pb-2 border-b border-border-subtle">
+                        <span class="material-symbols-outlined text-primary text-[20px]">person</span>
+                        <h5 class="text-sm font-bold text-primary uppercase tracking-wider mb-0">Personal Information</h5>
                     </div>
 
-                    <div class="col-md-6">
-                        {{ user_form.last_name.label_tag }}
-                        {{ user_form.last_name }}
-                        {{ user_form.last_name.errors }}
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">{{ user_form.first_name.label }}</label>
+                            {{ user_form.first_name }}
+                            {{ user_form.first_name.errors }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">{{ user_form.last_name.label }}</label>
+                            {{ user_form.last_name }}
+                            {{ user_form.last_name.errors }}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">{{ user_form.email.label }}</label>
+                            {{ user_form.email }}
+                            {{ user_form.email.errors }}
+                        </div>
                     </div>
 
-                    <div class="col-12">
-                        {{ user_form.email.label_tag }}
-                        {{ user_form.email }}
-                        {{ user_form.email.errors }}
+                    <!-- Academic Affiliation -->
+                    <div class="flex items-center gap-2 mb-3 pb-2 border-b border-border-subtle">
+                        <span class="material-symbols-outlined text-primary text-[20px]">school</span>
+                        <h5 class="text-sm font-bold text-primary uppercase tracking-wider mb-0">Academic Information</h5>
                     </div>
 
-                </div>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">School</label>
+                            {{ profile_form.school }}
+                            {{ profile_form.school.errors }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Department</label>
+                            {{ profile_form.department }}
+                            {{ profile_form.department.errors }}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">{{ profile_form.bio.label }}</label>
+                            {{ profile_form.bio }}
+                            {{ profile_form.bio.errors }}
+                        </div>
+                    </div>
 
-                <hr class="my-4">
+                    <!-- Research Information & Topics -->
+                    <div class="flex items-center gap-2 mb-3 pb-2 border-b border-border-subtle">
+                        <span class="material-symbols-outlined text-primary text-[20px]">science</span>
+                        <h5 class="text-sm font-bold text-primary uppercase tracking-wider mb-0">Research Topics & Web</h5>
+                    </div>
 
-                <h5 class="form-section-title">
-                    Academic Information
-                </h5>
+                    <div class="mb-4">
+                        <label class="form-label">{{ profile_form.topics.label }}</label>
+                        {{ profile_form.topics }}
+                        <small class="text-text-muted text-xs block mt-1">
+                            Hold Ctrl (or Cmd on Mac) to select multiple research topics.
+                        </small>
+                    </div>
 
-                <div class="mb-3">
-                    <label class="form-label">School</label>
-                    {{ profile_form.school }}
-                    {{ profile_form.school.errors }}
-                </div>
+                    {% if profile_form.research_interests %}
+                        <div class="mb-3">
+                            <label class="form-label">{{ profile_form.research_interests.label }}</label>
+                            {{ profile_form.research_interests }}
+                        </div>
+                    {% endif %}
 
-                <div class="mb-3">
-                    <label class="form-label">Department</label>
-                    {{ profile_form.department }}
-                    {{ profile_form.department.errors }}
-                </div>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">{{ profile_form.personal_website.label }}</label>
+                            {{ profile_form.personal_website }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">{{ profile_form.publication_url.label }}</label>
+                            {{ profile_form.publication_url }}
+                        </div>
+                    </div>
 
-                <div class="mb-3">
-                    {{ profile_form.bio.label_tag }}
-                    {{ profile_form.bio }}
-                    {{ profile_form.bio.errors }}
-                </div>
-
-                <hr class="my-4">
-
-                <h5 class="form-section-title">
-                    Research Information
-                </h5>
-
-                <div class="mb-3">
-                    {{ profile_form.research_interests.label_tag }}
-                    {{ profile_form.research_interests }}
-                </div>
-
-                <div class="mb-3">
-                    {{ profile_form.topics.label_tag }}
-                    {{ profile_form.topics }}
-
-                    <small class="text-muted">
-                        Hold Ctrl to select multiple topics.
-                    </small>
-                </div>
-
-                <div class="mb-3">
-                    {{ profile_form.personal_website.label_tag }}
-                    {{ profile_form.personal_website }}
-                </div>
-
-                <div class="mb-4">
-                    {{ profile_form.publication_url.label_tag }}
-                    {{ profile_form.publication_url }}
-                </div>
-
-                <button type="submit"
-                        class="btn btn-gold w-100">
-                    Save Changes
-                </button>
-
-                <a href="{% url 'accounts:dashboard' %}"
-                   class="btn btn-outline-primary w-100 mt-2">
-                    Cancel
-                </a>
-
-            </form>
+                    <div class="flex items-center gap-3">
+                        <button type="submit" class="btn btn-navy flex-1 py-2.5 font-bold shadow-sm">
+                            Save Profile Changes
+                        </button>
+                        <a href="{% url 'accounts:dashboard' %}" class="btn btn-outline-primary py-2.5 px-4 font-semibold text-decoration-none">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
 
         </div>
-
     </div>
-
 </section>
 
+<!-- Dynamic Department Dropdown JavaScript -->
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-
     const school = document.getElementById("id_school");
     const department = document.getElementById("id_department");
 
-    school.addEventListener("change", async function () {
+    if (school && department) {
+        school.addEventListener("change", async function () {
+            department.innerHTML = '<option value="">Select Department</option>';
+            department.disabled = true;
 
-        department.innerHTML =
-            '<option value="">Select Department</option>';
-
-        department.disabled = true;
-
-        if (!this.value) {
-            return;
-        }
-
-        try {
-
-            const response = await fetch(
-                "{% url 'accounts:departments_json' %}?school_id="
-                + encodeURIComponent(this.value)
-            );
-
-            if (!response.ok) {
-                throw new Error("Department request failed");
+            if (!this.value) {
+                return;
             }
 
-            const data = await response.json();
-
-            data.forEach(function (item) {
-
-                const option = document.createElement("option");
-
-                option.value = item.id;
-                option.textContent = item.name;
-
-                department.appendChild(option);
-
-            });
-
-        } catch (error) {
-
-            console.error(error);
-
-        } finally {
-
-            department.disabled = false;
-
-        }
-
-    });
-
+            try {
+                const response = await fetch(
+                    "{% url 'accounts:departments_json' %}?school_id=" + encodeURIComponent(this.value)
+                );
+                if (!response.ok) {
+                    throw new Error("Department request failed");
+                }
+                const data = await response.json();
+                data.forEach(function (item) {
+                    const option = document.createElement("option");
+                    option.value = item.id;
+                    option.textContent = item.name;
+                    department.appendChild(option);
+                });
+            } catch (error) {
+                console.error(error);
+            } finally {
+                department.disabled = false;
+            }
+        });
+    }
 });
 </script>
-
 {% endblock %}

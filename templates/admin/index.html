@@ -1,0 +1,393 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static log %}
+
+{% block extrastyle %}
+    {{ block.super }}
+{% endblock %}
+
+{% block coltype %}colM{% endblock %}
+{% block bodyclass %}{{ block.super }} dashboard cu-dashboard-page{% endblock %}
+{% block content_title %}{% endblock %}
+{% block nav-breadcrumbs %}{% endblock %}
+{% block nav-sidebar %}{% endblock %}
+{% block sidebar %}{% endblock %}
+
+{% block content %}
+<div class="cu-dashboard-wrap">
+
+    <!-- ====================================================================
+         HERO GOVERNANCE BANNER WITH DIRECT SHORTCUTS
+    ==================================================================== -->
+    <div class="cu-hero-banner">
+        <div>
+            <span class="cu-stat-label">Chanakya University Research Commons</span>
+            <h1 class="cu-hero-title">Site Administration & Governance</h1>
+            <p class="cu-hero-subtitle">
+                Centralized academic console for managing researchers, scholarly papers, citations, trending velocity models, and DuckDB star-schema telemetry.
+            </p>
+        </div>
+
+        <div class="cu-hero-stats">
+            <a href="{% url 'institutional_analytics:dashboard' %}" class="cu-hero-stat-card">
+                <span class="material-symbols-outlined cu-stat-icon">query_stats</span>
+                <div>
+                    <div class="cu-stat-label">Institutional</div>
+                    <div class="cu-stat-val">Analytics ↗</div>
+                </div>
+            </a>
+            <a href="{% url 'trends:moderation_queue' %}" class="cu-hero-stat-card">
+                <span class="material-symbols-outlined cu-stat-icon">gavel</span>
+                <div>
+                    <div class="cu-stat-label">Velocity Spikes</div>
+                    <div class="cu-stat-val">Moderation ↗</div>
+                </div>
+            </a>
+            <a href="{% url 'unified_search:search' %}" class="cu-hero-stat-card" target="_blank" rel="noopener">
+                <span class="material-symbols-outlined cu-stat-icon">search_insights</span>
+                <div>
+                    <div class="cu-stat-label">Unified Search</div>
+                    <div class="cu-stat-val">Live Index ↗</div>
+                </div>
+            </a>
+            <a href="{% url 'research_assistant:assistant' %}" class="cu-hero-stat-card" target="_blank" rel="noopener">
+                <span class="material-symbols-outlined cu-stat-icon">psychology</span>
+                <div>
+                    <div class="cu-stat-label">RAG Engine</div>
+                    <div class="cu-stat-val">Assistant ↗</div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- ====================================================================
+         2-COLUMN BENTO GRID: CATEGORIZED APP CARDS + RECENT ACTIONS
+    ==================================================================== -->
+    <div class="cu-bento-layout">
+
+        <!-- LEFT COLUMN: CATEGORIZED APP CARDS -->
+        <div class="cu-bento-cards-grid">
+
+            <!-- 1. ACCOUNTS & GOVERNANCE -->
+            <div class="cu-bento-card">
+                <div class="cu-card-header">
+                    <div class="cu-card-header-left">
+                        <div class="cu-category-icon-box cu-icon-indigo">
+                            <span class="material-symbols-outlined cu-icon">school</span>
+                        </div>
+                        <div>
+                            <h2 class="cu-category-name">Accounts & Governance</h2>
+                            <p class="cu-category-subtitle">Affiliations, schools, departments & scholars</p>
+                        </div>
+                    </div>
+                    <span class="cu-model-count-pill">accounts</span>
+                </div>
+
+                <div class="cu-model-list">
+                    {% for app in app_list %}
+                        {% if app.app_label == 'accounts' %}
+                            {% for model in app.models %}
+                                <div class="cu-model-row">
+                                    <div class="cu-model-info">
+                                        <span class="cu-model-dot"></span>
+                                        <a href="{{ model.admin_url }}" class="cu-model-name">{{ model.name }}</a>
+                                    </div>
+                                    <div class="cu-model-actions">
+                                        {% if model.add_url %}
+                                            <a href="{{ model.add_url }}" class="cu-btn-add">+ Add</a>
+                                        {% endif %}
+                                        {% if model.admin_url %}
+                                            <a href="{{ model.admin_url }}" class="cu-btn-manage">Manage →</a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- 2. AUTHENTICATION & ROLES -->
+            <div class="cu-bento-card">
+                <div class="cu-card-header">
+                    <div class="cu-card-header-left">
+                        <div class="cu-category-icon-box cu-icon-purple">
+                            <span class="material-symbols-outlined cu-icon">verified_user</span>
+                        </div>
+                        <div>
+                            <h2 class="cu-category-name">Authentication & Roles</h2>
+                            <p class="cu-category-subtitle">Security users, privilege groups & access keys</p>
+                        </div>
+                    </div>
+                    <span class="cu-model-count-pill">auth</span>
+                </div>
+
+                <div class="cu-model-list">
+                    {% for app in app_list %}
+                        {% if app.app_label == 'auth' %}
+                            {% for model in app.models %}
+                                <div class="cu-model-row">
+                                    <div class="cu-model-info">
+                                        <span class="cu-model-dot"></span>
+                                        <a href="{{ model.admin_url }}" class="cu-model-name">{{ model.name }}</a>
+                                    </div>
+                                    <div class="cu-model-actions">
+                                        {% if model.add_url %}
+                                            <a href="{{ model.add_url }}" class="cu-btn-add">+ Add</a>
+                                        {% endif %}
+                                        {% if model.admin_url %}
+                                            <a href="{{ model.admin_url }}" class="cu-btn-manage">Manage →</a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- 3. RESEARCH LIBRARY & PAPERS -->
+            <div class="cu-bento-card">
+                <div class="cu-card-header">
+                    <div class="cu-card-header-left">
+                        <div class="cu-category-icon-box cu-icon-blue">
+                            <span class="material-symbols-outlined cu-icon">auto_stories</span>
+                        </div>
+                        <div>
+                            <h2 class="cu-category-name">Research Library & Papers</h2>
+                            <p class="cu-category-subtitle">Repository papers, citations & reading lists</p>
+                        </div>
+                    </div>
+                    <span class="cu-model-count-pill">papers / library</span>
+                </div>
+
+                <div class="cu-model-list">
+                    {% for app in app_list %}
+                        {% if app.app_label == 'papers' or app.app_label == 'research_library' %}
+                            {% for model in app.models %}
+                                <div class="cu-model-row">
+                                    <div class="cu-model-info">
+                                        <span class="cu-model-dot"></span>
+                                        <a href="{{ model.admin_url }}" class="cu-model-name">{{ model.name }}</a>
+                                    </div>
+                                    <div class="cu-model-actions">
+                                        {% if model.add_url %}
+                                            <a href="{{ model.add_url }}" class="cu-btn-add">+ Add</a>
+                                        {% endif %}
+                                        {% if model.admin_url %}
+                                            <a href="{{ model.admin_url }}" class="cu-btn-manage">Manage →</a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- 4. COMMUNITY & DISCUSSIONS -->
+            <div class="cu-bento-card">
+                <div class="cu-card-header">
+                    <div class="cu-card-header-left">
+                        <div class="cu-category-icon-box cu-icon-emerald">
+                            <span class="material-symbols-outlined cu-icon">forum</span>
+                        </div>
+                        <div>
+                            <h2 class="cu-category-name">Community & Discussions</h2>
+                            <p class="cu-category-subtitle">Scholarly discourse, threads, replies & tags</p>
+                        </div>
+                    </div>
+                    <span class="cu-model-count-pill">discussions</span>
+                </div>
+
+                <div class="cu-model-list">
+                    {% for app in app_list %}
+                        {% if app.app_label == 'discussions' %}
+                            {% for model in app.models %}
+                                <div class="cu-model-row">
+                                    <div class="cu-model-info">
+                                        <span class="cu-model-dot"></span>
+                                        <a href="{{ model.admin_url }}" class="cu-model-name">{{ model.name }}</a>
+                                    </div>
+                                    <div class="cu-model-actions">
+                                        {% if model.add_url %}
+                                            <a href="{{ model.add_url }}" class="cu-btn-add">+ Add</a>
+                                        {% endif %}
+                                        {% if model.admin_url %}
+                                            <a href="{{ model.admin_url }}" class="cu-btn-manage">Manage →</a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- 5. INTELLIGENCE & TRENDS -->
+            <div class="cu-bento-card" style="grid-column: span 2;">
+                <div class="cu-card-header">
+                    <div class="cu-card-header-left">
+                        <div class="cu-category-icon-box cu-icon-amber">
+                            <span class="material-symbols-outlined cu-icon">insights</span>
+                        </div>
+                        <div>
+                            <h2 class="cu-category-name">Intelligence & Trends</h2>
+                            <p class="cu-category-subtitle">Trending topics, velocity spike alerts, spam reports & analytics</p>
+                        </div>
+                    </div>
+                    <span class="cu-model-count-pill">trends / analytics</span>
+                </div>
+
+                <div class="cu-model-list" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 8px;">
+                    {% for app in app_list %}
+                        {% if app.app_label == 'trends' or app.app_label == 'research_assistant' or app.app_label == 'institutional_analytics' %}
+                            {% for model in app.models %}
+                                <div class="cu-model-row">
+                                    <div class="cu-model-info">
+                                        <span class="cu-model-dot"></span>
+                                        <a href="{{ model.admin_url }}" class="cu-model-name">{{ model.name }}</a>
+                                    </div>
+                                    <div class="cu-model-actions">
+                                        {% if model.add_url %}
+                                            <a href="{{ model.add_url }}" class="cu-btn-add">+ Add</a>
+                                        {% endif %}
+                                        {% if model.admin_url %}
+                                            <a href="{{ model.admin_url }}" class="cu-btn-manage">Manage →</a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- 6. ANY OTHER SYSTEM APPS (Fallback) -->
+            {% for app in app_list %}
+                {% if app.app_label != 'accounts' and app.app_label != 'auth' and app.app_label != 'discussions' and app.app_label != 'papers' and app.app_label != 'research_library' and app.app_label != 'trends' and app.app_label != 'research_assistant' and app.app_label != 'institutional_analytics' %}
+                    <div class="cu-bento-card">
+                        <div class="cu-card-header">
+                            <div class="cu-card-header-left">
+                                <div class="cu-category-icon-box cu-icon-slate">
+                                    <span class="material-symbols-outlined cu-icon">folder</span>
+                                </div>
+                                <div>
+                                    <h2 class="cu-category-name">{{ app.name }}</h2>
+                                    <p class="cu-category-subtitle">System module configuration</p>
+                                </div>
+                            </div>
+                            <span class="cu-model-count-pill">{{ app.app_label }}</span>
+                        </div>
+
+                        <div class="cu-model-list">
+                            {% for model in app.models %}
+                                <div class="cu-model-row">
+                                    <div class="cu-model-info">
+                                        <span class="cu-model-dot"></span>
+                                        <a href="{{ model.admin_url }}" class="cu-model-name">{{ model.name }}</a>
+                                    </div>
+                                    <div class="cu-model-actions">
+                                        {% if model.add_url %}
+                                            <a href="{{ model.add_url }}" class="cu-btn-add">+ Add</a>
+                                        {% endif %}
+                                        {% if model.admin_url %}
+                                            <a href="{{ model.admin_url }}" class="cu-btn-manage">Manage →</a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+
+        </div>
+
+        <!-- RIGHT COLUMN: RECENT ACTIONS TIMELINE CARD -->
+        <div>
+            <div class="cu-recent-actions-card">
+                <div class="cu-timeline-header">
+                    <h2 class="cu-timeline-title">
+                        <span class="material-symbols-outlined text-[#4F46E5] text-[18px]">history</span>
+                        <span>Audit Timeline</span>
+                    </h2>
+                    <span style="font-family: var(--font-mono); font-size: 11px; color: #94A3B8;">Recent actions</span>
+                </div>
+
+                {% get_admin_log 10 as admin_log for_user user %}
+                {% if not admin_log %}
+                    <div style="padding: 24px 12px; text-align: center; color: #94A3B8; font-size: 12px;">
+                        <span class="material-symbols-outlined text-[28px] text-[#CBD5E1] block mb-1">done_all</span>
+                        No recent administration events recorded.
+                    </div>
+                {% else %}
+                    <ul class="cu-timeline-list">
+                        {% for entry in admin_log %}
+                            <li class="cu-timeline-item">
+                                <div class="cu-action-badge {% if entry.is_addition %}cu-action-add{% elif entry.is_change %}cu-action-change{% else %}cu-action-delete{% endif %}">
+                                    {% if entry.is_addition %}
+                                        <span class="material-symbols-outlined text-[14px]">add</span>
+                                    {% elif entry.is_change %}
+                                        <span class="material-symbols-outlined text-[14px]">edit</span>
+                                    {% else %}
+                                        <span class="material-symbols-outlined text-[14px]">delete</span>
+                                    {% endif %}
+                                </div>
+                                <div class="cu-timeline-content">
+                                    <div class="cu-timeline-meta">
+                                        <span>{{ entry.action_time|date:"M d, H:i" }}</span>
+                                        <span>•</span>
+                                        <span style="font-weight: 700; text-transform: uppercase;">{{ entry.content_type.name|default:"Object" }}</span>
+                                    </div>
+                                    {% if entry.is_deletion or not entry.get_admin_url %}
+                                        <span class="cu-timeline-target">{{ entry.object_repr }}</span>
+                                    {% else %}
+                                        <a href="{{ entry.get_admin_url }}" class="cu-timeline-target">{{ entry.object_repr }}</a>
+                                    {% endif %}
+                                    <span class="cu-timeline-type">
+                                        {% if entry.is_addition %}
+                                            Added new record
+                                        {% elif entry.is_change %}
+                                            Updated properties
+                                        {% else %}
+                                            Deleted from database
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+
+            <!-- Quick Server Telemetry Card -->
+            <div class="cu-recent-actions-card" style="margin-top: 16px;">
+                <div class="cu-timeline-header">
+                    <h2 class="cu-timeline-title">
+                        <span class="material-symbols-outlined text-[#10B981] text-[18px]">dns</span>
+                        <span>Engine Health</span>
+                    </h2>
+                    <span style="font-family: var(--font-mono); font-size: 11px; color: #10B981; font-weight: 700;">ACTIVE</span>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px; color: #475569;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #F1F5F9;">
+                        <span>Vector Embeddings</span>
+                        <span style="font-family: var(--font-mono); font-weight: 600; color: #0F172A;">pgvector (384-dim)</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #F1F5F9;">
+                        <span>Analytical Engine</span>
+                        <span style="font-family: var(--font-mono); font-weight: 600; color: #0F172A;">DuckDB / Parquet</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0;">
+                        <span>Object Storage</span>
+                        <span style="font-family: var(--font-mono); font-weight: 600; color: #0F172A;">MinIO (S3)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}
+

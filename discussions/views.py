@@ -3,7 +3,8 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST
 from django.core.exceptions import ValidationError
-from django.db.models import Count
+from django.db.models import Count, Q
+from django.http import JsonResponse
 
 from accounts.models import (
     MemberFollow,
@@ -11,9 +12,10 @@ from accounts.models import (
     Topic,
     Profile,
 )
+from research_library.models import ResearchResource
 
 
-from .models import DiscussionPost, Comment, PostVote
+from .models import DiscussionPost, Comment, PostVote, SavedPost
 from .forms import DiscussionPostForm, CommentForm
 
 
@@ -133,23 +135,40 @@ def post_list_view(request):
         author=request.user
     )
 
-    if feed_type == "my_posts":
+    # Saved post IDs by current user
+    saved_post_ids = set(
+        SavedPost.objects.filter(
+            user=request.user
+        ).values_list("post_id", flat=True)
+    )
 
+    if feed_type == "my_posts":
         posts = my_posts
-        feed_title = "My Research Posts"
+        feed_title = "My Research Posts & Papers"
 
     elif feed_type == "following":
-
         posts = following_posts
         feed_title = "Posts from Members You Follow"
 
     elif feed_type == "topics":
-
         posts = topic_posts
         feed_title = "Posts from Your Followed Topics"
 
-    else:
+    elif feed_type == "saved":
+        posts = base_posts.filter(id__in=saved_post_ids).order_by("-created_at")
+        feed_title = "My Saved Posts & Bookmarks"
 
+    elif feed_type == "papers":
+        posts = base_posts.filter(
+            Q(post_type="paper") | (Q(paper_file__isnull=False) & ~Q(paper_file="")) | Q(paper_link__gt="") | Q(resources__isnull=False)
+        ).distinct().order_by("-created_at")
+        feed_title = "Scholarly Research Papers & Preprints"
+
+    elif feed_type == "all":
+        posts = base_posts
+        feed_title = "All University Posts & Discussions"
+
+    else:
         feed_type = "recommended"
         posts = recommended_posts
         feed_title = "Recommended Research Posts"
@@ -170,6 +189,7 @@ def post_list_view(request):
         {
             "posts": posts,
             "voted_post_ids": voted_post_ids,
+            "saved_post_ids": saved_post_ids,
             "feed_type": feed_type,
             "feed_title": feed_title,
             "all_topics": all_topics,
@@ -183,25 +203,47 @@ def post_list_view(request):
 # 2. CREATE RESEARCH POST
 # =====================================
 
-
 @login_required
 def post_create_view(request):
 
     if request.method == "POST":
 
-        form = DiscussionPostForm(request.POST)
+        form = DiscussionPostForm(request.POST, request.FILES)
 
         if form.is_valid():
 
             post = form.save(commit=False)
-
-            # Assign the logged-in member as author
             post.author = request.user
-
             post.save()
-
-            # Save selected research topics
             form.save_m2m()
+
+            # Optional automatic sync to research library resource
+            if post.paper_file:
+                try:
+                    resource = ResearchResource.objects.create(
+                        title=f"[Paper] {post.title}",
+                        description=post.content[:400],
+                        resource_type="paper",
+                        file=post.paper_file,
+                        doi=post.paper_doi or None,
+                        uploaded_by=request.user,
+                    )
+                    post.resources.add(resource)
+                except Exception:
+                    pass
+            elif post.paper_link:
+                try:
+                    resource = ResearchResource.objects.create(
+                        title=f"[Publication] {post.title}",
+                        description=post.content[:400],
+                        resource_type="link",
+                        url=post.paper_link,
+                        doi=post.paper_doi or None,
+                        uploaded_by=request.user,
+                    )
+                    post.resources.add(resource)
+                except Exception:
+                    pass
 
             messages.success(
                 request,
@@ -211,7 +253,6 @@ def post_create_view(request):
             return redirect("discussions:post_list")
 
     else:
-
         form = DiscussionPostForm()
 
     return render(
@@ -253,22 +294,21 @@ def post_edit_view(request, post_id):
 
         form = DiscussionPostForm(
             request.POST,
+            request.FILES,
             instance=post
         )
 
         if form.is_valid():
-
             form.save()
 
             messages.success(
                 request,
-                "Your post has been updated."
+                "Your research post has been updated."
             )
 
-            return redirect("discussions:post_list")
+            return redirect("discussions:post_detail", post_id=post.id)
 
     else:
-
         form = DiscussionPostForm(instance=post)
 
     return render(
@@ -282,8 +322,10 @@ def post_edit_view(request, post_id):
     )
 
 
+
+
 # =====================================
-# 4. DELETE POST
+# 4. DELETE OWN POST
 # =====================================
 
 @login_required
@@ -317,7 +359,43 @@ def post_delete_view(request, post_id):
 
 
 # =====================================
-# 5. UPVOTE / REMOVE UPVOTE
+# 5. POST DETAIL VIEW (DIRECT LINK & SHARE TARGET)
+# =====================================
+
+@login_required
+def post_detail_view(request, post_id):
+
+    post = get_object_or_404(
+        DiscussionPost.objects
+        .select_related("author", "author__profile")
+        .prefetch_related(
+            "votes",
+            "tags",
+            "resources",
+            "comments__author",
+            "comments__author__profile",
+            "comments__replies__author",
+            "comments__replies__author__profile"
+        ),
+        pk=post_id
+    )
+
+    is_voted = post.votes.filter(user=request.user).exists()
+    is_saved = post.saved_by_users.filter(user=request.user).exists()
+
+    return render(
+        request,
+        "discussions/post_detail.html",
+        {
+            "post": post,
+            "is_voted": is_voted,
+            "is_saved": is_saved,
+        }
+    )
+
+
+# =====================================
+# 6. UPVOTE / LIKE TOGGLE
 # =====================================
 
 @login_required
@@ -335,31 +413,81 @@ def toggle_upvote_view(request, post_id):
     )
 
     if vote.exists():
-
         vote.delete()
-
-        messages.info(
-            request,
-            "Your upvote has been removed."
-        )
-
+        liked = False
+        msg = "Like removed."
     else:
-
         PostVote.objects.get_or_create(
             post=post,
             user=request.user
         )
+        liked = True
+        msg = "Liked this research post!"
 
-        messages.success(
-            request,
-            "You upvoted this research post!"
-        )
+    if request.headers.get("x-requested-with") == "XMLHttpRequest" or request.GET.get("format") == "json":
+        return JsonResponse({
+            "success": True,
+            "liked": liked,
+            "upvote_count": post.upvote_count,
+            "message": msg,
+        })
 
-    return redirect("discussions:post_list")
+    if liked:
+        messages.success(request, msg)
+    else:
+        messages.info(request, msg)
+
+    return redirect(request.META.get("HTTP_REFERER") or "discussions:post_list")
 
 
 # =====================================
-# 6. CREATE COMMENT OR REPLY
+# 7. SAVE / BOOKMARK TOGGLE
+# =====================================
+
+@login_required
+@require_POST
+def toggle_save_post_view(request, post_id):
+
+    post = get_object_or_404(
+        DiscussionPost,
+        pk=post_id
+    )
+
+    save_item = SavedPost.objects.filter(
+        post=post,
+        user=request.user
+    )
+
+    if save_item.exists():
+        save_item.delete()
+        saved = False
+        msg = "Post removed from your saved items."
+    else:
+        SavedPost.objects.get_or_create(
+            post=post,
+            user=request.user
+        )
+        saved = True
+        msg = "Post saved to your library bookmarks!"
+
+    if request.headers.get("x-requested-with") == "XMLHttpRequest" or request.GET.get("format") == "json":
+        return JsonResponse({
+            "success": True,
+            "saved": saved,
+            "save_count": post.save_count,
+            "message": msg,
+        })
+
+    if saved:
+        messages.success(request, msg)
+    else:
+        messages.info(request, msg)
+
+    return redirect(request.META.get("HTTP_REFERER") or "discussions:post_list")
+
+
+# =====================================
+# 8. CREATE COMMENT OR REPLY
 # =====================================
 
 @login_required
@@ -374,21 +502,17 @@ def comment_create_view(request, post_id):
     form = CommentForm(request.POST)
 
     if not form.is_valid():
-
         messages.error(
             request,
             "Please enter a valid comment."
         )
-
-        return redirect("discussions:post_list")
+        return redirect(request.META.get("HTTP_REFERER") or "discussions:post_list")
 
     # Check whether this is a reply
     parent_id = request.POST.get("parent_id")
-
     parent = None
 
     if parent_id:
-
         parent = get_object_or_404(
             Comment,
             pk=parent_id,
@@ -396,24 +520,19 @@ def comment_create_view(request, post_id):
             parent__isnull=True
         )
 
-    # Prepare comment
     comment = form.save(commit=False)
-
     comment.post = post
     comment.author = request.user
     comment.parent = parent
 
-    # Run model validation before saving
     try:
         comment.full_clean()
     except ValidationError as error:
-
         messages.error(
             request,
             "Unable to add comment: " + "; ".join(error.messages)
         )
-
-        return redirect("discussions:post_list")
+        return redirect(request.META.get("HTTP_REFERER") or "discussions:post_list")
 
     comment.save()
 
@@ -428,4 +547,9 @@ def comment_create_view(request, post_id):
             "Your comment was added successfully!"
         )
 
-    return redirect("discussions:post_list")
+    # Redirect back with anchor to comments section
+    referer = request.META.get("HTTP_REFERER")
+    if referer:
+        base_url = referer.split("#")[0]
+        return redirect(f"{base_url}#comments-{post.id}")
+    return redirect(f"/discussions/{post.id}/#comments-{post.id}")

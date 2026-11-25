@@ -1,0 +1,316 @@
+{
+  "planted_duplicates": [
+    {
+      "cluster_id": 1,
+      "doi_a": "10.1145/planted.dup.a.1",
+      "doi_b": "10.1145/planted.dup.b.1",
+      "primary_id": 525,
+      "duplicate_id": 526,
+      "title": "Highly Accurate Protein Structure Prediction with AlphaFold"
+    },
+    {
+      "cluster_id": 2,
+      "doi_a": "10.1145/planted.dup.a.2",
+      "doi_b": "10.1145/planted.dup.b.2",
+      "primary_id": 527,
+      "duplicate_id": 528,
+      "title": "Algorithmic Advances in Genome-Scale Metabolic Networks"
+    },
+    {
+      "cluster_id": 3,
+      "doi_a": "10.1145/planted.dup.a.3",
+      "doi_b": "10.1145/planted.dup.b.3",
+      "primary_id": 529,
+      "duplicate_id": 530,
+      "title": "Empirical Benchmarking of Deep Reinforcement Learning"
+    },
+    {
+      "cluster_id": 4,
+      "doi_a": "10.1145/planted.dup.a.4",
+      "doi_b": "10.1145/planted.dup.b.4",
+      "primary_id": 531,
+      "duplicate_id": 532,
+      "title": "High-Performance Computing for High-Density Energy Storage"
+    },
+    {
+      "cluster_id": 5,
+      "doi_a": "10.1145/planted.dup.a.5",
+      "doi_b": "10.1145/planted.dup.b.5",
+      "primary_id": 533,
+      "duplicate_id": 534,
+      "title": "Safety and Verification in Carbon Capture Optimization"
+    },
+    {
+      "cluster_id": 6,
+      "doi_a": "10.1145/planted.dup.a.6",
+      "doi_b": "10.1145/planted.dup.b.6",
+      "primary_id": 535,
+      "duplicate_id": 536,
+      "title": "Statistical Inference in Fairness in Algorithmic Decision-Making"
+    },
+    {
+      "cluster_id": 7,
+      "doi_a": "10.1145/planted.dup.a.7",
+      "doi_b": "10.1145/planted.dup.b.7",
+      "primary_id": 537,
+      "duplicate_id": 538,
+      "title": "Scalable Architectures for Vision-Language Grounding"
+    },
+    {
+      "cluster_id": 8,
+      "doi_a": "10.1145/planted.dup.a.8",
+      "doi_b": "10.1145/planted.dup.b.8",
+      "primary_id": 539,
+      "duplicate_id": 540,
+      "title": "Algorithmic Advances in Genome-Scale Metabolic Networks"
+    },
+    {
+      "cluster_id": 9,
+      "doi_a": "10.1145/planted.dup.a.9",
+      "doi_b": "10.1145/planted.dup.b.9",
+      "primary_id": 541,
+      "duplicate_id": 542,
+      "title": "Empirical Benchmarking of Deep Reinforcement Learning"
+    },
+    {
+      "cluster_id": 10,
+      "doi_a": "10.1145/planted.dup.a.10",
+      "doi_b": "10.1145/planted.dup.b.10",
+      "primary_id": 543,
+      "duplicate_id": 544,
+      "title": "High-Performance Computing for High-Density Energy Storage"
+    },
+    {
+      "cluster_id": 11,
+      "doi_a": "10.1145/planted.dup.a.11",
+      "doi_b": "10.1145/planted.dup.b.11",
+      "primary_id": 545,
+      "duplicate_id": 546,
+      "title": "Safety and Verification in Carbon Capture Optimization"
+    },
+    {
+      "cluster_id": 12,
+      "doi_a": "10.1145/planted.dup.a.12",
+      "doi_b": "10.1145/planted.dup.b.12",
+      "primary_id": 547,
+      "duplicate_id": 548,
+      "title": "Statistical Inference in Fairness in Algorithmic Decision-Making"
+    },
+    {
+      "cluster_id": 13,
+      "doi_a": "10.1145/planted.dup.a.13",
+      "doi_b": "10.1145/planted.dup.b.13",
+      "primary_id": 549,
+      "duplicate_id": 550,
+      "title": "Scalable Architectures for Vision-Language Grounding"
+    },
+    {
+      "cluster_id": 14,
+      "doi_a": "10.1145/planted.dup.a.14",
+      "doi_b": "10.1145/planted.dup.b.14",
+      "primary_id": 551,
+      "duplicate_id": 552,
+      "title": "Algorithmic Advances in Genome-Scale Metabolic Networks"
+    },
+    {
+      "cluster_id": 15,
+      "doi_a": "10.1145/planted.dup.a.15",
+      "doi_b": "10.1145/planted.dup.b.15",
+      "primary_id": 553,
+      "duplicate_id": 554,
+      "title": "Empirical Benchmarking of Deep Reinforcement Learning"
+    },
+    {
+      "cluster_id": 16,
+      "doi_a": "10.1145/planted.dup.a.16",
+      "doi_b": "10.1145/planted.dup.b.16",
+      "primary_id": 555,
+      "duplicate_id": 556,
+      "title": "High-Performance Computing for High-Density Energy Storage"
+    },
+    {
+      "cluster_id": 17,
+      "doi_a": "10.1145/planted.dup.a.17",
+      "doi_b": "10.1145/planted.dup.b.17",
+      "primary_id": 557,
+      "duplicate_id": 558,
+      "title": "Safety and Verification in Carbon Capture Optimization"
+    },
+    {
+      "cluster_id": 18,
+      "doi_a": "10.1145/planted.dup.a.18",
+      "doi_b": "10.1145/planted.dup.b.18",
+      "primary_id": 559,
+      "duplicate_id": 560,
+      "title": "Statistical Inference in Fairness in Algorithmic Decision-Making"
+    },
+    {
+      "cluster_id": 19,
+      "doi_a": "10.1145/planted.dup.a.19",
+      "doi_b": "10.1145/planted.dup.b.19",
+      "primary_id": 561,
+      "duplicate_id": 562,
+      "title": "Scalable Architectures for Vision-Language Grounding"
+    },
+    {
+      "cluster_id": 20,
+      "doi_a": "10.1145/planted.dup.a.20",
+      "doi_b": "10.1145/planted.dup.b.20",
+      "primary_id": 563,
+      "duplicate_id": 564,
+      "title": "Algorithmic Advances in Genome-Scale Metabolic Networks"
+    },
+    {
+      "cluster_id": 21,
+      "doi_a": "10.1145/planted.dup.a.21",
+      "doi_b": "10.1145/planted.dup.b.21",
+      "primary_id": 565,
+      "duplicate_id": 566,
+      "title": "Empirical Benchmarking of Deep Reinforcement Learning"
+    },
+    {
+      "cluster_id": 22,
+      "doi_a": "10.1145/planted.dup.a.22",
+      "doi_b": "10.1145/planted.dup.b.22",
+      "primary_id": 567,
+      "duplicate_id": 568,
+      "title": "High-Performance Computing for High-Density Energy Storage"
+    },
+    {
+      "cluster_id": 23,
+      "doi_a": "10.1145/planted.dup.a.23",
+      "doi_b": "10.1145/planted.dup.b.23",
+      "primary_id": 569,
+      "duplicate_id": 570,
+      "title": "Safety and Verification in Carbon Capture Optimization"
+    },
+    {
+      "cluster_id": 24,
+      "doi_a": "10.1145/planted.dup.a.24",
+      "doi_b": "10.1145/planted.dup.b.24",
+      "primary_id": 571,
+      "duplicate_id": 572,
+      "title": "Statistical Inference in Fairness in Algorithmic Decision-Making"
+    },
+    {
+      "cluster_id": 25,
+      "doi_a": "10.1145/planted.dup.a.25",
+      "doi_b": "10.1145/planted.dup.b.25",
+      "primary_id": 573,
+      "duplicate_id": 574,
+      "title": "Scalable Architectures for Vision-Language Grounding"
+    }
+  ],
+  "planted_spam_accounts": [
+    {
+      "user_id": 56,
+      "username": "spambot_promo_1",
+      "anomaly_type": "burst_duplicate_posting"
+    },
+    {
+      "user_id": 57,
+      "username": "spambot_promo_2",
+      "anomaly_type": "burst_duplicate_posting"
+    },
+    {
+      "user_id": 58,
+      "username": "spambot_promo_3",
+      "anomaly_type": "burst_duplicate_posting"
+    },
+    {
+      "user_id": 59,
+      "username": "spambot_promo_4",
+      "anomaly_type": "burst_duplicate_posting"
+    },
+    {
+      "user_id": 60,
+      "username": "spambot_promo_5",
+      "anomaly_type": "burst_duplicate_posting"
+    }
+  ],
+  "planted_topic_spikes": [
+    {
+      "topic_id": 7,
+      "topic_name": "Quantum Computing",
+      "expected_spike": true
+    },
+    {
+      "topic_id": 1,
+      "topic_name": "Deep Learning",
+      "expected_spike": true
+    },
+    {
+      "topic_id": 4,
+      "topic_name": "Genomics & Bioinformatics",
+      "expected_spike": true
+    }
+  ],
+  "search_benchmark_queries": [
+    {
+      "query": "transformer attention neural machine translation",
+      "expected_top_paper_ids": [
+        1
+      ]
+    },
+    {
+      "query": "deep residual learning convolutional image recognition",
+      "expected_top_paper_ids": [
+        2
+      ]
+    },
+    {
+      "query": "protein structure prediction alphafold biological sequences",
+      "expected_top_paper_ids": [
+        11
+      ]
+    },
+    {
+      "query": "quantum supremacy superconducting processor qubits",
+      "expected_top_paper_ids": [
+        16
+      ]
+    },
+    {
+      "query": "solid state electrolytes battery high capacity",
+      "expected_top_paper_ids": [
+        19
+      ]
+    }
+  ],
+  "recommendation_test_users": [],
+  "rag_benchmark_questions": [
+    {
+      "question": "How does AlphaFold predict 3D protein structures?",
+      "expected_keywords": [
+        "protein",
+        "structure",
+        "atomic",
+        "alphafold",
+        "amino acid"
+      ],
+      "expected_paper_id": 11
+    },
+    {
+      "question": "What is the purpose of residual learning in deep networks?",
+      "expected_keywords": [
+        "residual",
+        "layers",
+        "deeper",
+        "gradient",
+        "image"
+      ],
+      "expected_paper_id": 2
+    },
+    {
+      "question": "How do solid-state electrolytes improve battery safety and capacity?",
+      "expected_keywords": [
+        "solid-state",
+        "battery",
+        "electrolytes",
+        "lithium",
+        "capacity"
+      ],
+      "expected_paper_id": 19
+    }
+  ]
+}

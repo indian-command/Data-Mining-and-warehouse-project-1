@@ -1,0 +1,296 @@
+{% extends "base.html" %}
+
+{% block title %}Institutional Research Analytics | Chanakya University{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-lg-5 py-4">
+
+    <!-- Header & ETL Refresh Button -->
+    <div class="flex flex-wrap justify-between items-center gap-3 pb-3 mb-4 border-b border-border-subtle">
+        <div>
+            <span class="section-eyebrow">DUCKDB STAR-SCHEMA ENGINE</span>
+            <h1 class="section-title mb-0">Institutional Research Analytics</h1>
+            <p class="text-xs text-text-secondary mt-1">
+                Embedded DuckDB analytical query engine executing over Star-Schema Parquet tables in MinIO.
+            </p>
+        </div>
+        <div>
+            <form method="post" action="{% url 'institutional_analytics:refresh_etl' %}" class="d-inline m-0">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-navy text-xs py-2 px-3 font-bold flex items-center gap-1.5 shadow-sm">
+                    <span class="material-symbols-outlined text-[16px] text-accent-gold-light">sync</span>
+                    <span>Regenerate Star-Schema Parquet (MinIO)</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- High-level Metric Cards (University Overview) -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-4">
+        <div class="card p-4 border-0 bg-white shadow-sm text-center">
+            <span class="text-xs font-bold text-text-muted uppercase tracking-wider block mb-1">Total Research Events</span>
+            <div class="font-display text-3xl font-extrabold text-primary">
+                {{ drill_down.university.total_events|default:0 }}
+            </div>
+            <span class="text-[11px] text-status-success font-semibold mt-1 block">Recorded in Fact Activity</span>
+        </div>
+
+        <div class="card p-4 border-0 bg-white shadow-sm text-center">
+            <span class="text-xs font-bold text-text-muted uppercase tracking-wider block mb-1">Active Researchers</span>
+            <div class="font-display text-3xl font-extrabold text-primary">
+                {{ drill_down.university.active_members|default:0 }}
+            </div>
+            <span class="text-[11px] text-text-secondary font-semibold mt-1 block">Faculty, Scholars, Fellows</span>
+        </div>
+
+        <div class="card p-4 border-0 bg-white shadow-sm text-center">
+            <span class="text-xs font-bold text-text-muted uppercase tracking-wider block mb-1">Academic Departments</span>
+            <div class="font-display text-3xl font-extrabold text-primary">
+                {{ drill_down.university.active_departments|default:0 }}
+            </div>
+            <span class="text-[11px] text-text-secondary font-semibold mt-1 block">Across University Schools</span>
+        </div>
+
+        <div class="card p-4 border-0 bg-white shadow-sm text-center">
+            <span class="text-xs font-bold text-text-muted uppercase tracking-wider block mb-1">Active Topics Tracked</span>
+            <div class="font-display text-3xl font-extrabold text-primary">
+                {{ drill_down.university.active_topics|default:0 }}
+            </div>
+            <span class="text-[11px] text-accent-gold-dark font-semibold mt-1 block">Research Specializations</span>
+        </div>
+    </div>
+
+    <!-- Section 1 & Section 2 Row -->
+    <div class="row g-4 mb-4">
+        <!-- 1. Research Topics by Department Over Time -->
+        <div class="col-lg-7">
+            <div class="card border-0 bg-white shadow-sm h-100">
+                <div class="p-4 border-b border-border-subtle">
+                    <h3 class="font-display text-base font-bold text-primary mb-0">1. Research Topics by Department Over Time</h3>
+                    <p class="text-xs text-text-muted mb-0">Monthly activity aggregated by DuckDB (fact_activity join dim_time)</p>
+                </div>
+                <div class="p-0">
+                    <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                        <table class="table table-hover align-middle mb-0 text-xs">
+                            <thead class="table-light sticky-top">
+                                <tr>
+                                    <th class="ps-4">Department</th>
+                                    <th>Topic</th>
+                                    <th>Period</th>
+                                    <th class="text-end pe-4">Activity Volume</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for r in dept_topics_over_time %}
+                                    <tr>
+                                        <td class="ps-4 font-semibold text-primary">{{ r.department }}</td>
+                                        <td><span class="badge topic-badge text-[11px]">#{{ r.topic }}</span></td>
+                                        <td>{{ r.month_name }} {{ r.year }}</td>
+                                        <td class="text-end pe-4 font-bold text-primary">{{ r.activity_count }}</td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="4" class="text-center py-4 text-text-muted">No topic history found.</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Cross-Department Collaboration Matrix -->
+        <div class="col-lg-5">
+            <div class="card border-0 bg-white shadow-sm h-100">
+                <div class="p-4 border-b border-border-subtle">
+                    <h3 class="font-display text-base font-bold text-primary mb-0">2. Cross-Department Collaboration Matrix</h3>
+                    <p class="text-xs text-text-muted mb-0">Inter-departmental replies, co-authorship & co-saves</p>
+                </div>
+                <div class="p-0">
+                    <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                        <table class="table table-hover align-middle mb-0 text-xs">
+                            <thead class="table-light sticky-top">
+                                <tr>
+                                    <th class="ps-4">Origin Dept</th>
+                                    <th>Collaborating Dept</th>
+                                    <th class="text-end pe-4">Interactions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in collaboration_matrix %}
+                                    <tr>
+                                        <td class="ps-4 font-semibold text-primary">{{ row.dept_from|truncatechars:22 }}</td>
+                                        <td class="font-semibold text-text-secondary">{{ row.dept_to|truncatechars:22 }}</td>
+                                        <td class="text-end pe-4">
+                                            <span class="badge badge-success text-[11px]">
+                                                {{ row.interactions }} connection{{ row.interactions|pluralize }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="3" class="text-center py-4 text-text-muted">No cross-department links yet.</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 3: High-Impact Publications & Engagement Trends -->
+    <div class="card border-0 bg-white shadow-sm mb-4">
+        <div class="p-4 border-b border-border-subtle">
+            <h3 class="font-display text-base font-bold text-primary mb-0">3. High-Impact Publications & Engagement Trends</h3>
+            <p class="text-xs text-text-muted mb-0">Top papers ranked by university save count, citation graph PageRank, and community engagement.</p>
+        </div>
+        <div class="p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 text-xs">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">Publication Title</th>
+                            <th>Year</th>
+                            <th>Venue</th>
+                            <th>Saves</th>
+                            <th>Citation PageRank</th>
+                            <th class="text-end pe-4">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in most_engaged_papers %}
+                            <tr>
+                                <td class="ps-4 font-bold">
+                                    <a href="{% url 'papers:paper_detail' p.id %}" class="text-primary hover:underline">
+                                        {{ p.title|truncatechars:70 }}
+                                    </a>
+                                </td>
+                                <td>{{ p.published_year|default:"-" }}</td>
+                                <td class="text-text-muted">{{ p.venue|default:"Academic Archive"|truncatechars:30 }}</td>
+                                <td><span class="badge badge-gold">⭐ {{ p.save_count }}</span></td>
+                                <td><span class="badge bg-surface-subtle text-text-secondary border border-border-subtle">{{ p.pagerank_score|floatformat:4 }}</span></td>
+                                <td class="text-end pe-4">
+                                    <a href="{% url 'papers:paper_detail' p.id %}" class="btn btn-sm btn-outline-primary text-xs py-1 px-2.5">
+                                        View Details →
+                                    </a>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center py-4 text-text-muted">No publication records yet.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 4: Interactive Hierarchical Drill-Down -->
+    <div class="card border-0 bg-white shadow-sm mb-4">
+        <div class="p-4 border-b border-border-subtle flex flex-wrap justify-between items-center gap-2">
+            <div>
+                <h3 class="font-display text-base font-bold text-primary mb-0">4. Interactive Hierarchical Drill-Down</h3>
+                <p class="text-xs text-text-muted mb-0">University &rarr; Department &rarr; Topic &rarr; Member</p>
+            </div>
+            {% if selected_dept_id %}
+                <a href="{% url 'institutional_analytics:dashboard' %}" class="btn btn-sm btn-outline-primary text-xs py-1 px-3">
+                    Reset Hierarchy
+                </a>
+            {% endif %}
+        </div>
+        <div class="p-4">
+            <!-- Breadcrumb Navigation -->
+            <nav aria-label="drill-breadcrumb" class="mb-4">
+                <ol class="flex items-center gap-2 text-xs text-text-muted p-0 m-0 list-unstyled">
+                    <li><a href="{% url 'institutional_analytics:dashboard' %}" class="text-primary font-bold hover:underline">Chanakya University</a></li>
+                    {% if selected_dept_id %}
+                        <li>/</li>
+                        <li class="font-semibold text-primary">Department #{{ selected_dept_id }}</li>
+                    {% endif %}
+                    {% if selected_topic_id %}
+                        <li>/</li>
+                        <li class="font-semibold text-accent-gold-dark">Topic #{{ selected_topic_id }}</li>
+                    {% endif %}
+                </ol>
+            </nav>
+
+            <div class="row g-4">
+                <!-- Level 1: Departments -->
+                <div class="col-md-4">
+                    <h6 class="text-xs font-bold uppercase tracking-wider text-primary border-b border-border-subtle pb-2 mb-2">
+                        Departments (Click to Filter)
+                    </h6>
+                    <div class="space-y-1.5">
+                        {% for dept in drill_down.departments %}
+                            <a href="?dept={{ dept.department_id }}" class="flex items-center justify-between p-2.5 rounded-xl border text-decoration-none transition-all {% if selected_dept_id == dept.department_id %}bg-primary text-white border-primary shadow-sm{% else %}bg-surface-subtle text-text-primary border-border-subtle hover:border-primary{% endif %}">
+                                <div>
+                                    <strong class="text-xs block">{{ dept.department_name }}</strong>
+                                    <small class="text-[11px] {% if selected_dept_id == dept.department_id %}text-white/80{% else %}text-text-muted{% endif %}">
+                                        {{ dept.member_count }} members
+                                    </small>
+                                </div>
+                                <span class="badge {% if selected_dept_id == dept.department_id %}badge-gold{% else %}bg-white text-text-secondary border border-border-subtle{% endif %} text-[11px]">
+                                    {{ dept.total_activity }} events
+                                </span>
+                            </a>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Level 2: Topics in Department -->
+                <div class="col-md-4">
+                    <h6 class="text-xs font-bold uppercase tracking-wider text-primary border-b border-border-subtle pb-2 mb-2">
+                        Active Topics in Department
+                    </h6>
+                    {% if drill_down.topics %}
+                        <div class="space-y-1.5">
+                            {% for topic in drill_down.topics %}
+                                <a href="?dept={{ selected_dept_id }}&topic={{ topic.topic_id }}" class="flex items-center justify-between p-2.5 rounded-xl border text-decoration-none transition-all {% if selected_topic_id == topic.topic_id %}bg-accent-gold-light border-accent-gold text-accent-gold-dark font-bold{% else %}bg-surface-subtle text-text-primary border-border-subtle hover:border-accent-gold{% endif %}">
+                                    <div>
+                                        <strong class="text-xs block">#{{ topic.topic_name }}</strong>
+                                        <small class="text-[11px] text-text-muted">{{ topic.researchers_count }} researchers</small>
+                                    </div>
+                                    <span class="badge topic-badge text-[11px]">
+                                        {{ topic.topic_activity }}
+                                    </span>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-xs text-text-muted py-3">Select a department on the left to inspect topic breakdown.</p>
+                    {% endif %}
+                </div>
+
+                <!-- Level 3: Members in Topic -->
+                <div class="col-md-4">
+                    <h6 class="text-xs font-bold uppercase tracking-wider text-primary border-b border-border-subtle pb-2 mb-2">
+                        Active Researchers & Activity
+                    </h6>
+                    {% if drill_down.members %}
+                        <div class="space-y-1.5">
+                            {% for mem in drill_down.members %}
+                                <div class="p-2.5 rounded-xl bg-surface-subtle border border-border-subtle flex items-center justify-between">
+                                    <div>
+                                        <strong class="text-xs block text-primary">{{ mem.full_name|default:mem.username }}</strong>
+                                        <span class="badge topic-badge text-[10px]">{{ mem.role|capfirst }}</span>
+                                    </div>
+                                    <span class="badge badge-success text-[11px]">
+                                        {{ mem.member_events }} events
+                                    </span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-xs text-text-muted py-3">Select a topic to drill down to individual member engagements.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

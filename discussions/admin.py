@@ -1,7 +1,7 @@
 
 from django.contrib import admin
 
-from .models import DiscussionPost, Comment, PostVote
+from .models import DiscussionPost, Comment, PostVote, SavedPost
 
 
 @admin.register(DiscussionPost)
@@ -10,6 +10,7 @@ class DiscussionPostAdmin(admin.ModelAdmin):
     list_display = (
         "title",
         "author",
+        "post_type",
         "created_at",
         "updated_at",
     )
@@ -20,7 +21,7 @@ class DiscussionPostAdmin(admin.ModelAdmin):
         "author__username",
     )
 
-    list_filter = ("created_at",)
+    list_filter = ("post_type", "created_at",)
 
     readonly_fields = (
         "created_at",
@@ -64,3 +65,21 @@ class PostVoteAdmin(admin.ModelAdmin):
     )
 
     list_filter = ("created_at",)
+
+
+@admin.register(SavedPost)
+class SavedPostAdmin(admin.ModelAdmin):
+
+    list_display = (
+        "post",
+        "user",
+        "saved_at",
+    )
+
+    search_fields = (
+        "post__title",
+        "user__username",
+    )
+
+    list_filter = ("saved_at",)
+

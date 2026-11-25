@@ -9,11 +9,15 @@ urlpatterns = [
     path("admin/", admin.site.urls),
 
     path("accounts/", include("accounts.urls")),
-
     path("discussions/", include("discussions.urls")),
-
-    path("", include("core.urls")),
     path("library/", include("research_library.urls")),
+    path("papers/", include("papers.urls")),
+    path("search/", include("unified_search.urls")),
+    path("recommendations/", include("recommendations.urls")),
+    path("trends/", include("trends.urls")),
+    path("assistant/", include("research_assistant.urls")),
+    path("analytics/", include("institutional_analytics.urls")),
+    path("", include("core.urls")),
 ]
 
 

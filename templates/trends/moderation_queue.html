@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}Automated Moderation Queue | Chanakya University{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-lg-5 py-4">
+
+    <!-- Header Section -->
+    <div class="flex flex-wrap justify-between items-center gap-3 pb-3 mb-4 border-b border-border-subtle">
+        <div>
+            <span class="section-eyebrow">ADMIN COMPLIANCE MONITOR</span>
+            <h1 class="section-title mb-0">Automated Moderation Queue</h1>
+            <p class="text-xs text-text-secondary mt-1">Review automated anomaly alerts, suspicious burst posting, and duplicate floods.</p>
+        </div>
+        <div>
+            <a href="{% url 'trends:trends_home' %}" class="btn btn-outline-primary text-xs py-2 px-3">
+                ← Back to Trends
+            </a>
+        </div>
+    </div>
+
+    <!-- Pending Flags Card -->
+    <div class="card border-0 bg-white shadow-sm mb-5">
+        <div class="p-4 border-b border-border-subtle flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-status-error text-[22px]">gavel</span>
+                <h3 class="font-display text-base font-bold text-status-error mb-0">
+                    Pending Flags Awaiting Review ({{ pending_flags.count }})
+                </h3>
+            </div>
+            <span class="badge bg-status-error text-white text-xs font-bold">{{ pending_flags.count }}</span>
+        </div>
+
+        <div class="p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 text-xs">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">User</th>
+                            <th>Severity</th>
+                            <th>Flag Reason</th>
+                            <th>Details</th>
+                            <th>Flagged At</th>
+                            <th class="text-end pe-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for flag in pending_flags %}
+                            <tr>
+                                <td class="ps-4">
+                                    <strong class="text-primary">{{ flag.user.username }}</strong>
+                                    <div class="text-[11px] text-text-muted">{{ flag.user.email }}</div>
+                                </td>
+                                <td>
+                                    {% if flag.severity == "high" %}
+                                        <span class="badge bg-status-error text-white">HIGH</span>
+                                    {% elif flag.severity == "medium" %}
+                                        <span class="badge badge-gold">MEDIUM</span>
+                                    {% else %}
+                                        <span class="badge bg-surface-subtle text-text-secondary border border-border-subtle">LOW</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="font-semibold text-primary">{{ flag.flag_reason }}</span>
+                                </td>
+                                <td>
+                                    <small class="font-mono text-text-muted">{{ flag.details }}</small>
+                                </td>
+                                <td>
+                                    <span class="text-text-muted">{{ flag.created_at|date:"M d, Y H:i" }}</span>
+                                </td>
+                                <td class="text-end pe-4">
+                                    <form method="post" action="{% url 'trends:moderation_action' flag.id %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" name="action" value="dismiss" class="btn btn-sm btn-outline-primary text-xs py-1 px-2.5 me-1">
+                                            Dismiss
+                                        </button>
+                                        <button type="submit" name="action" value="ban" class="btn btn-sm btn-navy text-xs py-1 px-2.5" onclick="return confirm('Ban this user account?');">
+                                            Ban User
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center py-5 text-text-muted">
+                                    ✓ No pending moderation alerts. The system is operating normally.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resolved Flags History -->
+    {% if resolved_flags %}
+        <div class="card border-0 bg-white shadow-sm">
+            <div class="p-4 border-b border-border-subtle">
+                <h3 class="font-display text-base font-bold text-primary mb-0">Resolved History</h3>
+            </div>
+            <div class="p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0 text-xs">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-4">User</th>
+                                <th>Reason</th>
+                                <th>Status</th>
+                                <th>Resolved At</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for flag in resolved_flags %}
+                                <tr>
+                                    <td class="ps-4 font-semibold text-primary">{{ flag.user.username }}</td>
+                                    <td>{{ flag.flag_reason }}</td>
+                                    <td>
+                                        <span class="badge badge-success">{{ flag.status|upper }}</span>
+                                    </td>
+                                    <td class="text-text-muted">{{ flag.resolved_at|date:"M d, Y H:i" }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}

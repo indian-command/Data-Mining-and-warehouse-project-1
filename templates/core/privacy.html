@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}Privacy Policy & Data Protection Charter | Chanakya University{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-lg-5 py-4">
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="flex items-center gap-2 text-xs text-text-muted p-0 m-0 list-unstyled">
+            <li><a href="{% url 'home' %}" class="hover:text-primary">Home</a></li>
+            <li>/</li>
+            <li class="font-bold text-primary">Privacy Policy</li>
+        </ol>
+    </nav>
+
+    <div class="max-w-4xl mx-auto">
+        <!-- Header Card -->
+        <div class="card p-5 sm:p-6 border-0 bg-white shadow-sm rounded-2xl mb-4">
+            <div class="flex items-center gap-2.5 mb-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-status-success"></span>
+                <span class="text-xs font-bold uppercase tracking-wider text-accent-gold-dark">Digital Personal Data Protection (DPDP) Act, 2023 Compliance</span>
+            </div>
+            <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-primary mb-2">
+                Institutional Data Privacy Charter
+            </h1>
+            <p class="text-xs text-text-muted mb-0">
+                Effective Date: November 2026 &bull; Chanakya University Research Commons &bull; Bengaluru, Karnataka, India
+            </p>
+        </div>
+
+        <!-- Privacy Content Sections -->
+        <div class="card p-5 sm:p-6 border-0 bg-white shadow-sm rounded-2xl space-y-6 text-xs sm:text-sm text-text-secondary leading-relaxed">
+            
+            <section>
+                <h3 class="font-display text-base font-bold text-primary mb-2 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary text-[20px]">shield</span>
+                    <span>1. Institutional Commitment & Statutory Governance</span>
+                </h3>
+                <p>
+                    Chanakya University ("University", established under Karnataka Act No. 37 of 2021) is dedicated to protecting the privacy, academic freedom, and digital integrity of our faculty, researchers, student fellows, and scholarly partners. This Privacy Charter governs how data is ingested, processed, indexed, and retained within the <strong>Chanakya University Research Commons</strong> platform.
+                </p>
+            </section>
+
+            <section>
+                <h3 class="font-display text-base font-bold text-primary mb-2 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary text-[20px]">dataset</span>
+                    <span>2. Categories of Information Processed</span>
+                </h3>
+                <div class="space-y-2">
+                    <div class="p-3 rounded-xl bg-surface-subtle">
+                        <strong class="text-primary text-xs block mb-1">A. Academic Profile Credentials (F1)</strong>
+                        <p class="text-xs mb-0">Name, institutional email, academic rank, school and department affiliation, degrees, research interests, and profile bios.</p>
+                    </div>
+                    <div class="p-3 rounded-xl bg-surface-subtle">
+                        <strong class="text-primary text-xs block mb-1">B. Scholarly Works & Open Access Metadata (F2, F4)</strong>
+                        <p class="text-xs mb-0">Titles, abstracts, canonical DOIs, arXiv identifiers, publication dates, and author attribution ingested from open scholarly catalogs (Crossref, OpenAlex, arXiv).</p>
+                    </div>
+                    <div class="p-3 rounded-xl bg-surface-subtle">
+                        <strong class="text-primary text-xs block mb-1">C. Vector Embeddings & AI Context (F4, F8)</strong>
+                        <p class="text-xs mb-0">High-dimensional mathematical vector embeddings (384-dimensional dense vectors) derived from public paper abstracts to facilitate semantic retrieval and RAG question answering.</p>
+                    </div>
+                    <div class="p-3 rounded-xl bg-surface-subtle">
+                        <strong class="text-primary text-xs block mb-1">D. Research Activity Telemetry (F7, F9)</strong>
+                        <p class="text-xs mb-0">Aggregated search counts, paper bookmarks, and anonymized interaction timestamps used strictly for DuckDB star-schema institutional research analytics.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <h3 class="font-display text-base font-bold text-primary mb-2 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary text-[20px]">lock</span>
+                    <span>3. Storage, Encryption & Security Standards</span>
+                </h3>
+                <p>
+                    All raw manuscripts and ingestion dumps are stored in secure S3-compliant object stores (MinIO) isolated within university network boundaries. Structured relational data and vector indices are managed inside a dedicated PostgreSQL + pgvector engine enforcing role-based permissions (RBAC). No biometric or personal non-academic information is ever collected or harvested.
+                </p>
+            </section>
+
+            <section>
+                <h3 class="font-display text-base font-bold text-primary mb-2 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary text-[20px]">verified_user</span>
+                    <span>4. Rights of University Members</span>
+                </h3>
+                <p>
+                    Under the DPDP Act 2023, every verified member holds the right to inspect their stored profile, update affiliations, export their curated personal library collections in open formats (JSON/BibTeX), and request profile de-identification upon institutional transition.
+                </p>
+            </section>
+
+            <section class="p-4 rounded-xl bg-surface-container border border-border-strong">
+                <h4 class="font-bold text-xs text-primary mb-1">Data Protection Officer & Governance Contact</h4>
+                <p class="text-xs text-text-secondary mb-1">
+                    Office of Academic IT & Governance &bull; Chanakya University Global Campus, Bengaluru 562110
+                </p>
+                <p class="text-xs mb-0">
+                    Direct Email: <a href="mailto:privacy@chanakyauniversity.edu.in" class="text-primary font-bold hover:underline">privacy@chanakyauniversity.edu.in</a>
+                </p>
+            </section>
+
+        </div>
+    </div>
+
+</div>
+{% endblock %}

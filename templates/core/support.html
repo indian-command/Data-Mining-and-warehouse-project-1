@@ -1,0 +1,287 @@
+{% extends "base.html" %}
+
+{% block title %}Support & Academic Help Center | Chanakya University{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-lg-5 py-4">
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="flex items-center gap-2 text-xs text-text-muted p-0 m-0 list-unstyled">
+            <li><a href="{% url 'home' %}" class="hover:text-primary">Home</a></li>
+            <li>/</li>
+            <li class="font-bold text-primary">Support & Help Center</li>
+        </ol>
+    </nav>
+
+    <!-- Header Banner -->
+    <section class="card border-0 bg-gradient-to-r from-primary via-primary-container to-primary text-white p-6 sm:p-8 rounded-2xl shadow-lg mb-5 relative overflow-hidden">
+        <div class="relative z-10 max-w-2xl">
+            <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur-md text-xs font-semibold uppercase tracking-wider text-accent-gold-light mb-3 border border-white/20">
+                <span class="w-2 h-2 rounded-full bg-status-success animate-pulse"></span>
+                Academic IT & Research Helpdesk
+            </span>
+            <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-white leading-tight mb-2">
+                Support & Subsystem Guide
+            </h1>
+            <p class="text-xs sm:text-sm text-white/90 leading-relaxed mb-0">
+                Documentation, technical specifications, and direct assistance for the 9 integrated research subsystems of Chanakya University Research Commons.
+            </p>
+        </div>
+    </section>
+
+    <!-- System Status Snapshot -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+        <div class="card p-3 text-center border-0 bg-white shadow-sm rounded-xl">
+            <div class="flex items-center justify-center gap-1.5 text-status-success text-xs font-bold mb-1">
+                <span class="w-2 h-2 rounded-full bg-status-success"></span>
+                <span>OPERATIONAL</span>
+            </div>
+            <strong class="font-display text-xs text-primary block">Vector Database</strong>
+            <span class="text-[11px] text-text-muted">pgvector (384-dim)</span>
+        </div>
+        <div class="card p-3 text-center border-0 bg-white shadow-sm rounded-xl">
+            <div class="flex items-center justify-center gap-1.5 text-status-success text-xs font-bold mb-1">
+                <span class="w-2 h-2 rounded-full bg-status-success"></span>
+                <span>OPERATIONAL</span>
+            </div>
+            <strong class="font-display text-xs text-primary block">Analytics Engine</strong>
+            <span class="text-[11px] text-text-muted">DuckDB &bull; Star-Schema</span>
+        </div>
+        <div class="card p-3 text-center border-0 bg-white shadow-sm rounded-xl">
+            <div class="flex items-center justify-center gap-1.5 text-status-success text-xs font-bold mb-1">
+                <span class="w-2 h-2 rounded-full bg-status-success"></span>
+                <span>OPERATIONAL</span>
+            </div>
+            <strong class="font-display text-xs text-primary block">Object Archive</strong>
+            <span class="text-[11px] text-text-muted">MinIO S3 Buckets</span>
+        </div>
+        <div class="card p-3 text-center border-0 bg-white shadow-sm rounded-xl">
+            <div class="flex items-center justify-center gap-1.5 text-status-success text-xs font-bold mb-1">
+                <span class="w-2 h-2 rounded-full bg-status-success"></span>
+                <span>OPERATIONAL</span>
+            </div>
+            <strong class="font-display text-xs text-primary block">RAG Engine</strong>
+            <span class="text-[11px] text-text-muted">Ollama / Deterministic</span>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-5">
+        <!-- Interactive Subsystem FAQ (F1 to F9) -->
+        <div class="col-lg-7">
+            <div class="card p-4 sm:p-5 border-0 bg-white shadow-sm rounded-2xl h-100">
+                <div class="flex items-center justify-between pb-3 mb-3 border-b border-border-subtle">
+                    <div>
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-accent-gold-dark block">KNOWLEDGE BASE</span>
+                        <h2 class="font-display text-lg font-bold text-primary mb-0">Subsystem Frequently Asked Questions</h2>
+                    </div>
+                    <span class="badge bg-surface-subtle text-primary border border-border-subtle text-[11px] font-mono">F1 – F9</span>
+                </div>
+
+                <div class="accordion accordion-flush" id="faqAccordion">
+                    
+                    <!-- F1 -->
+                    <div class="accordion-item border-0 mb-2 rounded-xl bg-surface-subtle/70 overflow-hidden">
+                        <h2 class="accordion-header" id="headingF1">
+                            <button class="accordion-button collapsed bg-transparent text-xs font-bold text-primary shadow-none py-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseF1" aria-expanded="false" aria-controls="collapseF1">
+                                <span class="badge bg-primary text-white font-mono text-[10px] me-2">F1</span>
+                                How do I manage my academic credentials, school, and followed topics?
+                            </button>
+                        </h2>
+                        <div id="collapseF1" class="accordion-collapse collapse" aria-labelledby="headingF1" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body text-xs text-text-secondary pt-0 leading-relaxed">
+                                Navigate to your <strong>Workspace Dashboard</strong> or click <strong>Edit Profile</strong>. You can configure your academic rank (Faculty, Research Scholar, Student Fellow), choose your official Chanakya University School and Department, update your research bio, and subscribe to university topics (e.g., #Indian Knowledge Systems, #Artificial Intelligence).
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- F2 -->
+                    <div class="accordion-item border-0 mb-2 rounded-xl bg-surface-subtle/70 overflow-hidden">
+                        <h2 class="accordion-header" id="headingF2">
+                            <button class="accordion-button collapsed bg-transparent text-xs font-bold text-primary shadow-none py-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseF2" aria-expanded="false" aria-controls="collapseF2">
+                                <span class="badge bg-primary text-white font-mono text-[10px] me-2">F2</span>
+                                How does the Personal Library collection hierarchy work?
+                            </button>
+                        </h2>
+                        <div id="collapseF2" class="accordion-collapse collapse" aria-labelledby="headingF2" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body text-xs text-text-secondary pt-0 leading-relaxed">
+                                The Research Library lets you create custom research folders (e.g. <em>"Genomics Lab Review 2026"</em>) and bookmark papers. You can add private analytical notes, assign priority stars, and link external publications directly to university discussion threads.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- F3 -->
+                    <div class="accordion-item border-0 mb-2 rounded-xl bg-surface-subtle/70 overflow-hidden">
+                        <h2 class="accordion-header" id="headingF3">
+                            <button class="accordion-button collapsed bg-transparent text-xs font-bold text-primary shadow-none py-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseF3" aria-expanded="false" aria-controls="collapseF3">
+                                <span class="badge bg-primary text-white font-mono text-[10px] me-2">F3</span>
+                                How does peer review discourse and voting work in Discussions?
+                            </button>
+                        </h2>
+                        <div id="collapseF3" class="accordion-collapse collapse" aria-labelledby="headingF3" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body text-xs text-text-secondary pt-0 leading-relaxed">
+                                Every discussion post allows attaching a specific paper from the catalog. Scholars can post threaded replies, upvote high-quality analyses, and filter posts by school or topic tags.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- F4 -->
+                    <div class="accordion-item border-0 mb-2 rounded-xl bg-surface-subtle/70 overflow-hidden">
+                        <h2 class="accordion-header" id="headingF4">
+                            <button class="accordion-button collapsed bg-transparent text-xs font-bold text-primary shadow-none py-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseF4" aria-expanded="false" aria-controls="collapseF4">
+                                <span class="badge bg-primary text-white font-mono text-[10px] me-2">F4</span>
+                                What sources are ingested, and how is deduplication handled?
+                            </button>
+                        </h2>
+                        <div id="collapseF4" class="accordion-collapse collapse" aria-labelledby="headingF4" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body text-xs text-text-secondary pt-0 leading-relaxed">
+                                Subsystem F4 ingests records across OpenAlex, arXiv, and curated RSS feeds. Raw JSON payloads are archived in MinIO, while MinHash LSH (Locality Sensitive Hashing) identifies near-duplicate preprints with 92%+ precision to maintain a clean index.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- F5 -->
+                    <div class="accordion-item border-0 mb-2 rounded-xl bg-surface-subtle/70 overflow-hidden">
+                        <h2 class="accordion-header" id="headingF5">
+                            <button class="accordion-button collapsed bg-transparent text-xs font-bold text-primary shadow-none py-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseF5" aria-expanded="false" aria-controls="collapseF5">
+                                <span class="badge bg-primary text-white font-mono text-[10px] me-2">F5</span>
+                                How does the 4-Panel Unified Hybrid Search score results?
+                            </button>
+                        </h2>
+                        <div id="collapseF5" class="accordion-collapse collapse" aria-labelledby="headingF5" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body text-xs text-text-secondary pt-0 leading-relaxed">
+                                The search bar simultaneously queries 4 domains: (1) Scholarly Sources, (2) Shared Library, (3) University Members, and (4) Discussions. It computes a hybrid score combining PostgreSQL full-text tsvector rank, cosine similarity over 384-dimensional pgvector embeddings, and citation PageRank.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- F6 -->
+                    <div class="accordion-item border-0 mb-2 rounded-xl bg-surface-subtle/70 overflow-hidden">
+                        <h2 class="accordion-header" id="headingF6">
+                            <button class="accordion-button collapsed bg-transparent text-xs font-bold text-primary shadow-none py-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseF6" aria-expanded="false" aria-controls="collapseF6">
+                                <span class="badge bg-primary text-white font-mono text-[10px] me-2">F6</span>
+                                How are personalized recommendations computed?
+                            </button>
+                        </h2>
+                        <div id="collapseF6" class="accordion-collapse collapse" aria-labelledby="headingF6" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body text-xs text-text-secondary pt-0 leading-relaxed">
+                                Recommendations blend content-based centroid vectors (calculated from your saved papers and followed topics) with item-to-item co-occurrence and collaborative filtering. Cold-start fallbacks recommend top PageRank papers in your designated department.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- F7 -->
+                    <div class="accordion-item border-0 mb-2 rounded-xl bg-surface-subtle/70 overflow-hidden">
+                        <h2 class="accordion-header" id="headingF7">
+                            <button class="accordion-button collapsed bg-transparent text-xs font-bold text-primary shadow-none py-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseF7" aria-expanded="false" aria-controls="collapseF7">
+                                <span class="badge bg-primary text-white font-mono text-[10px] me-2">F7</span>
+                                What triggers topic velocity spikes and moderation flags?
+                            </button>
+                        </h2>
+                        <div id="collapseF7" class="accordion-collapse collapse" aria-labelledby="headingF7" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body text-xs text-text-secondary pt-0 leading-relaxed">
+                                Subsystem F7 executes sliding-window statistical tests (7-day vs 30-day baseline). When activity surge reaches Z-score &ge; 2.0, a topic velocity spike is flagged. Automated burst detectors flag accounts exceeding 5 posts per minute for administrator moderation.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- F8 -->
+                    <div class="accordion-item border-0 mb-2 rounded-xl bg-surface-subtle/70 overflow-hidden">
+                        <h2 class="accordion-header" id="headingF8">
+                            <button class="accordion-button collapsed bg-transparent text-xs font-bold text-primary shadow-none py-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseF8" aria-expanded="false" aria-controls="collapseF8">
+                                <span class="badge bg-primary text-white font-mono text-[10px] me-2">F8</span>
+                                How does the AI Assistant generate inline citations?
+                            </button>
+                        </h2>
+                        <div id="collapseF8" class="accordion-collapse collapse" aria-labelledby="headingF8" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body text-xs text-text-secondary pt-0 leading-relaxed">
+                                The RAG pipeline retrieves the top-k most relevant text chunks via cosine similarity in pgvector. The context is passed to the LLM with strict citation prompting, rendering numbered citations ([1], [2]) directly mapped to clickable source passage cards.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- F9 -->
+                    <div class="accordion-item border-0 mb-2 rounded-xl bg-surface-subtle/70 overflow-hidden">
+                        <h2 class="accordion-header" id="headingF9">
+                            <button class="accordion-button collapsed bg-transparent text-xs font-bold text-primary shadow-none py-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseF9" aria-expanded="false" aria-controls="collapseF9">
+                                <span class="badge bg-primary text-white font-mono text-[10px] me-2">F9</span>
+                                How do DuckDB and Parquet power Institutional Analytics?
+                            </button>
+                        </h2>
+                        <div id="collapseF9" class="accordion-collapse collapse" aria-labelledby="headingF9" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body text-xs text-text-secondary pt-0 leading-relaxed">
+                                An automated ETL exports activity facts into columnar Apache Parquet files arranged in a star-schema (fact_activity joined with dim_department, dim_user, dim_topic, dim_time). DuckDB executes zero-overhead OLAP aggregations for sub-millisecond drill-down dashboards.
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Help Request Submission Form -->
+        <div class="col-lg-5">
+            <div class="card p-4 sm:p-5 border-0 bg-white shadow-sm rounded-2xl h-100 flex flex-col justify-between">
+                <div>
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-accent-gold-dark block mb-1">DIRECT ASSISTANCE</span>
+                    <h3 class="font-display text-lg font-bold text-primary mb-2">Submit a Support Inquiry</h3>
+                    <p class="text-xs text-text-secondary mb-3">
+                        Encountering an issue or have a query regarding repository access or subsystem evaluation? Our academic computing team responds within 24 hours.
+                    </p>
+
+                    <form method="POST" action="{% url 'support' %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label text-xs font-semibold text-text-secondary">Subsystem Category</label>
+                            <select name="category" class="form-select text-xs py-2 rounded-xl">
+                                <option value="General Support">General Platform Inquiry</option>
+                                <option value="F1: Accounts & Roles">F1: Accounts & Profile Credentials</option>
+                                <option value="F2: Research Library">F2: Personal Library & Collections</option>
+                                <option value="F3: Discussions">F3: Discussions & Peer Review</option>
+                                <option value="F4: Ingestion">F4: Content Ingestion & Metadata</option>
+                                <option value="F5: Unified Search">F5: 4-Panel Search Query</option>
+                                <option value="F6: Recommendations">F6: Personalized Recommendations</option>
+                                <option value="F7: Velocity Trends">F7: Velocity Trends & Moderation</option>
+                                <option value="F8: AI Assistant">F8: AI Research Assistant (RAG)</option>
+                                <option value="F9: Institutional Analytics">F9: DuckDB Institutional Analytics</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label text-xs font-semibold text-text-secondary">Subject / Feature Question</label>
+                            <input type="text" name="subject" class="form-control text-xs py-2 rounded-xl" placeholder="e.g. How to evaluate PageRank weights in F5?" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label text-xs font-semibold text-text-secondary">Your Contact Email</label>
+                            <input type="email" name="email" class="form-control text-xs py-2 rounded-xl" value="{{ request.user.email|default:'' }}" placeholder="name@chanakyauniversity.edu.in" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label text-xs font-semibold text-text-secondary">Inquiry Details</label>
+                            <textarea name="message" rows="3" class="form-control text-xs py-2 rounded-xl" placeholder="Describe the scenario or presentation requirement..." required></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-navy text-xs py-2 w-full font-bold rounded-xl shadow-xs">
+                            Send Inquiry to Academic IT Desk
+                        </button>
+                    </form>
+                </div>
+
+                <div class="mt-4 pt-3 border-t border-border-subtle text-xs text-text-muted">
+                    <p class="mb-1"><strong>Direct Support Desk:</strong></p>
+                    <p class="mb-1 flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[15px] text-accent-gold-dark">mail</span>
+                        <span>support@chanakyauniversity.edu.in</span>
+                    </p>
+                    <p class="mb-0 flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[15px] text-accent-gold-dark">call</span>
+                        <span>+91 80 6987 6543 (Ext. 204)</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}Recommendations For You | Chanakya University{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-lg-5 py-4">
+
+    <!-- Header Section -->
+    <div class="flex flex-wrap justify-between items-center gap-3 pb-3 mb-4 border-b border-border-subtle">
+        <div>
+            <span class="section-eyebrow">AI COLLABORATIVE FILTERING</span>
+            <h1 class="section-title mb-0">Recommended For You</h1>
+            <p class="text-xs text-text-secondary mt-1">Personalized research discovery powered by pgvector embedding similarity and collaborative filtering.</p>
+        </div>
+        <div>
+            <span class="badge badge-gold text-xs py-1.5 px-3">
+                Strategy: {{ strategy_label }}
+            </span>
+        </div>
+    </div>
+
+    <!-- Recommendations Grid -->
+    <div class="row g-4 mb-5">
+        <!-- Left: Recommended Papers -->
+        <div class="col-lg-8">
+            <div class="flex items-center gap-2 mb-3">
+                <span class="material-symbols-outlined text-primary text-[22px]">auto_stories</span>
+                <h3 class="font-display text-base font-bold text-primary mb-0">Recommended Papers & Articles</h3>
+            </div>
+
+            <div class="row g-3">
+                {% for paper in paper_recs %}
+                    <div class="col-12">
+                        <div class="card p-4 border-0 bg-white shadow-sm hover:shadow-md transition-shadow">
+                            <div class="flex flex-wrap justify-between items-start gap-2 mb-2">
+                                <h4 class="font-display text-base font-bold text-primary mb-0">
+                                    <a href="{% url 'papers:paper_detail' paper.id %}" class="hover:underline text-primary">
+                                        {{ paper.title }}
+                                    </a>
+                                </h4>
+                                <span class="badge bg-surface-subtle text-text-secondary text-xs border border-border-subtle shrink-0">
+                                    PageRank: {{ paper.pagerank_score|floatformat:4 }}
+                                </span>
+                            </div>
+
+                            <p class="text-xs text-text-muted mb-2">
+                                <strong>{{ paper.authors_display }}</strong> • 
+                                {% if paper.published_year %}{{ paper.published_year }} • {% endif %}
+                                <span class="text-text-secondary">{{ paper.venue|default:"Academic Archive" }}</span>
+                            </p>
+
+                            <p class="text-xs text-text-secondary leading-relaxed mb-3">
+                                {{ paper.abstract|truncatewords:32 }}
+                            </p>
+
+                            <div class="flex flex-wrap justify-between items-center gap-2 pt-2 border-t border-border-subtle">
+                                <div class="flex items-center gap-1.5 text-xs">
+                                    {% for s in paper.sources %}
+                                        <span class="badge topic-badge text-[10px]">{{ s|upper }}</span>
+                                    {% endfor %}
+                                    <span class="badge badge-gold text-[10px]">⭐ {{ paper.save_count }} saves</span>
+                                </div>
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <a href="{{ paper.google_scholar_url }}"
+                                       target="_blank"
+                                       rel="noopener noreferrer"
+                                       class="btn btn-sm btn-outline-secondary text-xs py-1 px-2.5 inline-flex items-center gap-1 hover:border-primary hover:text-primary transition-all bg-white"
+                                       title="Open and view research paper through Google">
+                                        <svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+                                        <span>View on Google</span>
+                                    </a>
+                                    <a href="{% url 'papers:paper_detail' paper.id %}" class="btn btn-sm btn-outline-primary text-xs py-1 px-3">
+                                        Details
+                                    </a>
+                                    <form method="post" action="{% url 'papers:save_paper' paper.id %}" class="m-0">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-gold text-xs py-1 px-3">
+                                            + Save
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="col-12 text-center py-5">
+                        <p class="text-sm text-text-muted">No recommended papers available at the moment.</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Right: Recommended Researchers -->
+        <div class="col-lg-4">
+            <div class="flex items-center gap-2 mb-3">
+                <span class="material-symbols-outlined text-primary text-[22px]">group</span>
+                <h3 class="font-display text-base font-bold text-primary mb-0">Researchers You May Know</h3>
+            </div>
+
+            <div class="card p-4 border-0 bg-white shadow-sm mb-4">
+                <div class="space-y-3">
+                    {% for m in member_recs %}
+                        <div class="p-3 rounded-xl bg-surface-subtle border border-border-subtle">
+                            <div class="flex items-start gap-2.5">
+                                <div class="dashboard-avatar mb-0 shrink-0" style="width: 36px; height: 36px; font-size: 14px;">
+                                    {{ m.user.username|slice:":1"|upper }}
+                                </div>
+                                <div class="flex-grow min-w-0">
+                                    <h4 class="font-display text-xs font-bold text-primary truncate mb-0.5">
+                                        {{ m.user.get_full_name|default:m.user.username }}
+                                    </h4>
+                                    <span class="text-[11px] text-text-muted truncate block">
+                                        {{ m.user.profile.department.name|default:"Chanakya University" }}
+                                    </span>
+                                    <div class="flex flex-wrap gap-1 mt-1.5">
+                                        {% for reason in m.reasons %}
+                                            <span class="badge bg-white text-text-secondary border border-border-subtle text-[10px]">{{ reason }}</span>
+                                        {% endfor %}
+                                    </div>
+                                    <div class="mt-2 text-end">
+                                        <form method="POST" action="{% url 'accounts:toggle_follow' m.user.id %}" class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-outline-primary text-[11px] py-0.5 px-2">
+                                                Follow
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <p class="text-xs text-text-muted text-center py-3 mb-0">No new researcher recommendations at this time.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

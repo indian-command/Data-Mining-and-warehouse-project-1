@@ -1,253 +1,1033 @@
-
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="description"
-          content="Chanakya University Research Commons - Discover research, connect ideas and collaborate.">
-
+        content="Chanakya University Research Commons - Discover research, connect ideas, and collaborate across faculty, students, and research scholars.">
     <title>{% block title %}Research Commons | Chanakya University{% endblock %}</title>
 
-    <!-- Bootstrap 5 -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-          rel="stylesheet">
+    <!-- Google Fonts & Material Symbols (Official Chanakya Typography) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,400&family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap"
+        rel="stylesheet">
 
-    <!-- Chanakya University Theme -->
-    <link rel="stylesheet"
-          href="{% static 'css/style.css' %}?v=4">
+    <!-- Tailwind CSS with Official Chanakya University Config -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#042863",
+                        "primary-dark": "#021b44",
+                        "primary-container": "#191970",
+                        "on-primary": "#ffffff",
+                        "on-primary-container": "#90a8ff",
+                        "primary-fixed": "#dce1ff",
+                        "primary-fixed-dim": "#b6c4ff",
+                        "secondary": "#74462f",
+                        "secondary-container": "#fbb03b",
+                        "secondary-fixed": "#ffdcc3",
+                        "secondary-fixed-dim": "#ffb77d",
+                        "accent-gold": "#c18e0e",
+                        "accent-gold-light": "#fff9eb",
+                        "accent-gold-dark": "#a17d03",
+                        "surface": "#f8f6f1",
+                        "surface-card": "#FFFFFF",
+                        "surface-subtle": "#f4efe6",
+                        "surface-container": "#eaf0fa",
+                        "surface-container-low": "#f2f6fc",
+                        "surface-container-high": "#dfe8f7",
+                        "surface-container-highest": "#d3e4fe",
+                        "background-canvas": "#f8f6f1",
+                        "text-primary": "#1a202c",
+                        "text-secondary": "#4a5568",
+                        "text-muted": "#718096",
+                        "border-subtle": "#e8e2d5",
+                        "border-strong": "#d2c9b8",
+                        "status-success": "#15803d",
+                        "status-success-surface": "#edfae2",
+                        "status-warning": "#c18e0e",
+                        "status-warning-surface": "#fff9eb",
+                        "status-error": "#b91c1c",
+                        "status-error-surface": "#fef2f2"
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.25rem",
+                        lg: "0.5rem",
+                        xl: "0.75rem",
+                        "2xl": "1rem",
+                        full: "9999px"
+                    },
+                    spacing: {
+                        "space-xxs": "0.125rem",
+                        "space-xs": "0.25rem",
+                        "space-sm": "0.5rem",
+                        "space-md": "0.75rem",
+                        "space-lg": "1rem",
+                        "space-xl": "1.5rem",
+                        "space-2xl": "2rem",
+                        "space-3xl": "3rem",
+                        "gutter-mobile": "1rem",
+                        "gutter-desktop": "1.5rem",
+                        "max-content-width": "80rem"
+                    },
+                    fontFamily: {
+                        sans: ["Inter", "sans-serif"],
+                        display: ["Merriweather", "serif"],
+                        serif: ["Merriweather", "serif"]
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Chanakya Theme & Overhaul CSS -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=7">
+
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+            line-height: 1;
+        }
+
+        .material-symbols-outlined.fill {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
 
     {% block extra_css %}{% endblock %}
 </head>
 
-<body>
+<body class="bg-background-canvas text-text-primary font-sans antialiased flex flex-col min-h-screen">
 
-    <!-- =================================
-         SINGLE NAVIGATION BAR
-    ================================== -->
+    <!-- ====================================================================
+         LEFT EDGE HOVER TRIGGER & AFFORDANCE PILL (Cursor move left -> slide open)
+    ==================================================================== -->
+    <div id="leftEdgeTrigger" title="Move cursor here to reveal menu"></div>
+    <div id="leftEdgePill" onclick="toggleSidebarMenu()" title="Click or move cursor to left edge to slide out menu">
+        <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+    </div>
 
-    <nav class="navbar navbar-expand-lg main-navbar">
+    <!-- ====================================================================
+         SLIDING SIDEBAR BACKDROP OVERLAY
+    ==================================================================== -->
+    <div id="sidebarBackdrop" onclick="closeSidebarMenu(true)"></div>
 
-        <div class="container">
-
-            <!-- University Branding -->
-            <a class="navbar-brand d-flex align-items-center"
-               href="{% url 'home' %}">
-
-                <img src="{% static 'images/chanakya-university.svg' %}"
-                     alt="Chanakya University Logo"
-                     class="university-logo">
-
-                <span class="brand-divider"></span>
-
-                <span class="brand-product">
-                    <strong>Research Commons</strong>
-                    <small>Research & Collaboration Portal</small>
-                </span>
-
+    <!-- ====================================================================
+         SLIDING SIDEBAR DRAWER (Slides from Left to Right)
+    ==================================================================== -->
+    <aside id="slidingSidebarMenu" aria-label="Main Navigation Menu">
+        <!-- Sidebar Header -->
+        <div class="sidebar-header">
+            <a class="flex items-center gap-2 text-decoration-none" href="{% url 'home' %}">
+                <img src="{% static 'images/chanakya_university_official_logo.jpg' %}" alt="Chanakya University"
+                    class="h-9 w-auto object-contain rounded">
+                <div class="flex flex-col border-s border-border-subtle ps-2 ms-1">
+                    <strong class="font-display font-extrabold text-xs text-primary leading-tight">Research
+                        Commons</strong>
+                    <span class="text-[9px] text-accent-gold-dark font-bold uppercase tracking-wider">Official Academic
+                        Portal</span>
+                </div>
             </a>
-
-            <!-- Mobile Menu Button -->
-            <button class="navbar-toggler"
-                    type="button"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#mainNav"
-                    aria-controls="mainNav"
-                    aria-expanded="false"
-                    aria-label="Toggle navigation">
-
-                <span class="navbar-toggler-icon"></span>
-
+            <button
+                class="w-8 h-8 rounded-full flex items-center justify-center text-text-muted hover:text-primary hover:bg-surface-subtle transition-colors"
+                onclick="closeSidebarMenu(true)" title="Close menu">
+                <span class="material-symbols-outlined text-[20px]">close</span>
             </button>
+        </div>
 
-            <!-- Navigation Links -->
-            <div class="collapse navbar-collapse" id="mainNav">
+        <!-- Sidebar User Badge -->
+        {% if user.is_authenticated %}
+        <div class="p-3 mx-3 my-2 rounded-xl bg-surface-subtle border border-border-subtle flex items-center gap-2.5">
+            <div class="dashboard-avatar mb-0 shrink-0" style="width: 38px; height: 38px; font-size: 15px;">
+                {{ request.user.first_name|first|default:request.user.username|first|upper }}
+            </div>
+            <div class="min-w-0 flex-grow">
+                <span class="font-bold text-xs text-primary truncate block">{{
+                    request.user.get_full_name|default:request.user.username }}</span>
+                <span class="text-[10px] text-text-muted uppercase tracking-wider block font-semibold">
+                    {{ request.user.profile.get_role_display|default:"Researcher" }}
+                </span>
+            </div>
+        </div>
+        {% else %}
+        <div class="p-3 mx-3 my-2 rounded-xl bg-surface-container border border-border-strong text-center">
+            <p class="text-xs text-primary font-semibold mb-2">Chanakya Academic Gateway</p>
+            <div class="flex gap-2">
+                <a href="{% url 'accounts:login' %}" class="btn btn-sm btn-navy flex-1 text-xs py-1">Sign In</a>
+                <a href="{% url 'accounts:register' %}" class="btn btn-sm btn-gold flex-1 text-xs py-1">Join</a>
+            </div>
+        </div>
+        {% endif %}
 
-                <ul class="navbar-nav ms-auto gap-lg-3">
-
-                    <!-- Common Links -->
-                    <li class="nav-item">
-                        <a class="nav-link"
-                           href="{% url 'home' %}">
-                            Home
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link"
-                           href="{% url 'home' %}#explore">
-                            Explore
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link"
-                           href="{% url 'home' %}#about">
-                            About
-                        </a>
-                    </li>
-
-                    <!-- Logged-in Members -->
-                    {% if user.is_authenticated %}
-
-                     <li class="nav-item">
-                        <a class="nav-link"
-                            href="{% url 'accounts:dashboard' %}">
-                            My Dashboard
-                        </a>
-                    </li>
-                    
-                    <li class="nav-item">
-    <a class="nav-link"
-       href="{% url 'research_library:library_home' %}">
-        My Research Library
-    </a>
-</li>
-                        <!-- Admin Only -->
-                    {% if user.is_staff %}
-                         <li class="nav-item">
-                            <a class="nav-link"
-                                href="{% url 'admin:index' %}">
-                                Admin Dashboard
-                            </a>
-                        </li>
-                    {% endif %}
-
-                    {% else %}
-
-                        <!-- Visitors -->
-                        <li class="nav-item">
-                            <a class="nav-link"
-                               href="{% url 'accounts:login' %}">
-                                Login
-                            </a>
-                        </li>
-                        
-
-                    {% endif %}
-
-                </ul>
-
-                <!-- Authentication Button -->
-                {% if user.is_authenticated %}
-                <li class="nav-item">
-                     <a class="nav-link"
-                            href="{% url 'discussions:post_list' %}">
-                            Discussions
-                     </a>
-                 </li>
-
-                    <form method="POST"
-                          action="{% url 'accounts:logout' %}"
-                          class="ms-lg-3">
-
-                        {% csrf_token %}
-
-                        <button type="submit"
-                                class="btn btn-gold">
-                            Logout
-                        </button>
-
-                    </form>
-
-                {% else %}
-
-                    <a href="{% url 'accounts:register' %}"
-                       class="btn btn-gold ms-lg-3">
-                        Join Community
-                    </a>
-
-                {% endif %}
-
+        <!-- Scrollable Navigation Links -->
+        <div class="sidebar-body">
+            <!-- Presentation Subsystems Header Callout -->
+            <div class="px-2 pt-1 pb-2">
+                <div
+                    class="p-2.5 rounded-xl bg-gradient-to-r from-primary to-primary-container text-white shadow-xs border border-white/10">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-accent-gold-light">
+                            {% if user.profile.role == 'student' %}
+                            Student Learning Suite
+                            {% elif user.profile.role in 'faculty,researcher' %}
+                            Faculty Research Suite
+                            {% else %}
+                            Academic Subsystems
+                            {% endif %}
+                        </span>
+                        <span
+                            class="badge bg-accent-gold text-primary font-extrabold text-[9px] px-1.5 py-0.5 rounded shadow-xs">
+                            {% if user.profile.role == 'student' %}F1–F6, F8{% else %}F1 – F9{% endif %}
+                        </span>
+                    </div>
+                    <p class="text-[10.5px] text-white/90 leading-tight mb-0">
+                        {% if user.profile.role == 'student' %}
+                        Student tools for literature discovery, personal library, Q&A, and AI research.
+                        {% else %}
+                        Unified research modules for faculty, peer review, and discovery.
+                        {% endif %}
+                    </p>
+                </div>
             </div>
 
+            <!-- Group 1: Subsystem Feature Guide (Filtered by Role) -->
+            <span class="sidebar-section-title flex items-center justify-between">
+                <span>Subsystems ({% if user.profile.role == 'student' %}Student View{% else %}F1 – F9{% endif
+                    %})</span>
+                <span class="text-[9px] font-bold text-accent-gold-dark uppercase tracking-wider">Active</span>
+            </span>
+
+            {# F1: Accounts & Profiles #}
+            <a href="{% url 'accounts:members' %}" class="sidebar-nav-link group"
+                title="F1: Accounts, Roles & Faculty Directory">
+                <span
+                    class="w-6 h-6 rounded-md bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white flex items-center justify-center font-mono font-bold text-[11px] transition-colors shrink-0">F1</span>
+                <div class="flex flex-col min-w-0">
+                    <span class="font-semibold text-xs text-primary leading-tight">
+                        {% if user.profile.role == 'student' %}Find Faculty & Mentors{% else %}Accounts & Roles{% endif
+                        %}
+                    </span>
+                    <span class="text-[10px] text-text-muted truncate">164+ University Faculty & Profiles</span>
+                </div>
+            </a>
+
+            {# F2: Research Library #}
+            {% if user.is_authenticated %}
+            <a href="{% url 'research_library:library_home' %}" class="sidebar-nav-link group"
+                title="F2: Research Library & Personal Collections">
+                <span
+                    class="w-6 h-6 rounded-md bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white flex items-center justify-center font-mono font-bold text-[11px] transition-colors shrink-0">F2</span>
+                <div class="flex flex-col min-w-0">
+                    <span class="font-semibold text-xs text-primary leading-tight">My Research Library</span>
+                    <span class="text-[10px] text-text-muted truncate">Curated Folders, Notes & Saves</span>
+                </div>
+            </a>
+            {% endif %}
+
+            {# F3: Discussions & Peer Review #}
+            {% if user.is_authenticated %}
+            <a href="{% url 'discussions:post_list' %}" class="sidebar-nav-link group"
+                title="F3: Discussions, Student Questions & Peer Review">
+                <span
+                    class="w-6 h-6 rounded-md bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white flex items-center justify-center font-mono font-bold text-[11px] transition-colors shrink-0">F3</span>
+                <div class="flex flex-col min-w-0">
+                    <span class="font-semibold text-xs text-primary leading-tight">
+                        {% if user.profile.role == 'student' %}Discussions & Q&A{% else %}Discussions & Peer Review{%
+                        endif %}
+                    </span>
+                    <span class="text-[10px] text-text-muted truncate">Scholarly Threads, Paper Links & Votes</span>
+                </div>
+            </a>
+            {% endif %}
+
+            {# F4: Content Ingestion / Papers #}
+            <a href="{% url 'papers:paper_list' %}" class="sidebar-nav-link group"
+                title="F4: Multi-Source Content Ingestion & Embeddings">
+                <span
+                    class="w-6 h-6 rounded-md bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white flex items-center justify-center font-mono font-bold text-[11px] transition-colors shrink-0">F4</span>
+                <div class="flex flex-col min-w-0">
+                    <span class="font-semibold text-xs text-primary leading-tight">Scholarly Publications</span>
+                    <span class="text-[10px] text-text-muted truncate">OpenAlex, arXiv & Google Links</span>
+                </div>
+            </a>
+
+            {# F5: Unified Search #}
+            <a href="{% url 'unified_search:search' %}" class="sidebar-nav-link group"
+                title="F5: 4-Panel Hybrid Unified Search">
+                <span
+                    class="w-6 h-6 rounded-md bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white flex items-center justify-center font-mono font-bold text-[11px] transition-colors shrink-0">F5</span>
+                <div class="flex flex-col min-w-0">
+                    <span class="font-semibold text-xs text-primary leading-tight">Unified 4-Panel Search</span>
+                    <span class="text-[10px] text-text-muted truncate">Hybrid tsvector + pgvector + PageRank</span>
+                </div>
+            </a>
+
+            {# F6: Recommendations #}
+            {% if user.is_authenticated %}
+            <a href="{% url 'recommendations:recommendations_home' %}" class="sidebar-nav-link group"
+                title="F6: Personalized Paper & Scholar Recommendations">
+                <span
+                    class="w-6 h-6 rounded-md bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white flex items-center justify-center font-mono font-bold text-[11px] transition-colors shrink-0">F6</span>
+                <div class="flex flex-col min-w-0">
+                    <span class="font-semibold text-xs text-primary leading-tight">Recommended For You</span>
+                    <span class="text-[10px] text-text-muted truncate">Personalized Literature Matches</span>
+                </div>
+            </a>
+            {% endif %}
+
+            {# F7: Velocity Trends & Spikes - HIDDEN FOR STUDENTS #}
+            {% if user.profile.role != 'student' and user.is_authenticated %}
+            <a href="{% url 'trends:trends_home' %}" class="sidebar-nav-link group"
+                title="F7: Velocity Trends, Spikes & Anomaly Moderation">
+                <span
+                    class="w-6 h-6 rounded-md bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white flex items-center justify-center font-mono font-bold text-[11px] transition-colors shrink-0">F7</span>
+                <div class="flex flex-col min-w-0">
+                    <span class="font-semibold text-xs text-primary leading-tight">Velocity Trends & Spikes</span>
+                    <span class="text-[10px] text-text-muted truncate">Z &ge; 2.0 Surge & Moderation</span>
+                </div>
+            </a>
+            {% endif %}
+
+            {# F8: AI Research Assistant #}
+            <a href="{% url 'research_assistant:assistant' %}" class="sidebar-nav-link group"
+                title="F8: AI Research Assistant (RAG with Citations)">
+                <span
+                    class="w-6 h-6 rounded-md bg-accent-gold/20 text-accent-gold-dark group-hover:bg-accent-gold group-hover:text-white flex items-center justify-center font-mono font-bold text-[11px] transition-colors shrink-0">F8</span>
+                <div class="flex flex-col min-w-0">
+                    <span class="font-semibold text-xs text-primary leading-tight flex items-center gap-1">
+                        <span>AI Research Assistant</span>
+                        <span class="material-symbols-outlined text-[13px] text-accent-gold-dark">auto_awesome</span>
+                    </span>
+                    <span class="text-[10px] text-text-muted truncate">pgvector RAG & Inline Citations</span>
+                </div>
+            </a>
+
+            {# F9: Institutional Analytics - HIDDEN FOR STUDENTS #}
+            {% if user.is_staff or user.profile.role == 'faculty' or user.profile.role == 'admin' %}
+            <a href="{% url 'institutional_analytics:dashboard' %}" class="sidebar-nav-link group"
+                title="F9: Institutional Analytics (DuckDB Star-Schema)">
+                <span
+                    class="w-6 h-6 rounded-md bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white flex items-center justify-center font-mono font-bold text-[11px] transition-colors shrink-0">F9</span>
+                <div class="flex flex-col min-w-0">
+                    <span class="font-semibold text-xs text-primary leading-tight">Institutional Analytics</span>
+                    <span class="text-[10px] text-text-muted truncate">DuckDB OLAP & Parquet Lakehouse</span>
+                </div>
+            </a>
+            {% endif %}
+
+            <!-- Group 2: Institutional & Help Center -->
+            <span class="sidebar-section-title">Support & Guidelines</span>
+            <a href="{% url 'support' %}" class="sidebar-nav-link">
+                <span class="material-symbols-outlined link-icon text-accent-gold-dark">support_agent</span>
+                <span class="font-semibold text-primary">Support & Help Center</span>
+            </a>
+            <a href="{% url 'privacy' %}" class="sidebar-nav-link">
+                <span class="material-symbols-outlined link-icon">lock</span>
+                <span>Privacy Policy (DPDP Act)</span>
+            </a>
+            <a href="{% url 'terms' %}" class="sidebar-nav-link">
+                <span class="material-symbols-outlined link-icon">gavel</span>
+                <span>Terms of Service</span>
+            </a>
+
+            <!-- Group 3: Institutional Governance (Staff / Admin only) -->
+            {% if user.is_staff or user.profile.role == 'admin' %}
+            <span class="sidebar-section-title">Governance & Administration</span>
+            <a href="{% url 'trends:moderation_queue' %}" class="sidebar-nav-link">
+                <span class="material-symbols-outlined link-icon text-status-error">shield</span>
+                <span>Moderation Queue</span>
+            </a>
+            <a href="{% url 'admin:index' %}" class="sidebar-nav-link">
+                <span class="material-symbols-outlined link-icon text-text-muted">settings</span>
+                <span>Django Administration</span>
+            </a>
+            {% endif %}
         </div>
 
-    </nav>
+        <!-- Sidebar Footer -->
+        <div class="sidebar-footer">
+            <div class="flex items-center gap-2 text-[11px] text-status-success font-semibold">
+                <span class="w-2 h-2 rounded-full bg-status-success animate-pulse"></span>
+                <span>Campus Gateway Systems Operational</span>
+            </div>
+            {% if user.is_authenticated %}
+            <form method="POST" action="{% url 'accounts:logout' %}" class="m-0 pt-1 border-t border-border-subtle">
+                {% csrf_token %}
+                <button type="submit"
+                    class="btn btn-sm btn-outline-primary w-full text-xs py-1.5 flex items-center justify-center gap-1">
+                    <span class="material-symbols-outlined text-[16px]">logout</span>
+                    <span>Sign Out</span>
+                </button>
+            </form>
+            {% endif %}
+        </div>
+    </aside>
 
+    <!-- ====================================================================
+         OFFICIAL CHANAKYA UNIVERSITY TOP UTILITY RIBBON
+    ==================================================================== -->
+    <div class="cu-top-ribbon d-none d-md-block">
+        <div class="container-fluid px-lg-5 d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-3">
+                <span class="text-white/90 font-medium italic tracking-wide">
+                    "A World Of Transformation Through Knowledge"
+                </span>
+                <span class="text-white/30">•</span>
+                <span
+                    class="badge bg-white/10 text-white font-normal text-[10px] tracking-wider uppercase px-2 py-0.5 rounded border border-white/20">
+                    Established under Karnataka Act No. 37 of 2021
+                </span>
+            </div>
+            <div class="d-flex align-items-center gap-3 text-xs">
+                <a href="https://chanakyauniversity.edu.in" target="_blank" rel="noopener"
+                    class="d-flex align-items-center gap-1 hover:text-white">
+                    <span class="material-symbols-outlined text-[14px]">public</span>
+                    <span>Official University Portal</span>
+                </a>
+                <span class="text-white/30">|</span>
+                <a href="{% url 'accounts:members' %}" class="hover:text-white">Faculty Directory (160+)</a>
+                <span class="text-white/30">|</span>
+                <a href="mailto:info@chanakyauniversity.edu.in" class="hover:text-white">Contact CU</a>
+            </div>
+        </div>
+    </div>
 
-    <!-- =================================
-         DJANGO MESSAGES
-    ================================== -->
+    <!-- ====================================================================
+         TOP NAVIGATION BAR (With Permanent Top-Right Auth & Profile Dock)
+    ==================================================================== -->
+    <header
+        class="sticky top-0 w-full z-40 bg-white/95 backdrop-blur-xl border-b border-border-subtle shadow-[0_1px_8px_rgba(4,40,99,0.06)]">
+        <nav class="navbar navbar-light py-2 px-3 sm:px-4">
+            <div class="container-fluid px-0 flex items-center justify-between">
 
-    {% if messages %}
-
-        <div class="container mt-3">
-
-            {% for message in messages %}
-
-                <div class="alert
-                    {% if message.tags == 'error' %}
-                        alert-danger
-                    {% elif message.tags %}
-                        alert-{{ message.tags }}
-                    {% else %}
-                        alert-info
-                    {% endif %}
-                    alert-dismissible fade show"
-                     role="alert">
-
-                    {{ message }}
-
-                    <button type="button"
-                            class="btn-close"
-                            data-bs-dismiss="alert"
-                            aria-label="Close">
+                <!-- Left Group: Top-Left Menu Button + Official University Logo + Quick Search -->
+                <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+                    <!-- Top-Left Dedicated Sliding Menu Button -->
+                    <button id="sidebarToggleBtn"
+                        class="btn btn-sm btn-outline-primary d-flex align-items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-border-subtle hover:border-primary shadow-xs"
+                        type="button" onclick="toggleSidebarMenu()"
+                        title="Open Navigation Menu (or move cursor to left edge)">
+                        <span class="material-symbols-outlined text-[20px] text-primary">menu</span>
+                        <span class="font-bold text-xs text-primary">Menu</span>
                     </button>
 
+                    <!-- Official University Crest Logo & Sub-Brand -->
+                    <a class="navbar-brand d-flex align-items-center gap-2 text-decoration-none m-0"
+                        href="{% url 'home' %}">
+                        <img src="{% static 'images/chanakya_university_official_logo.jpg' %}" alt="Chanakya University"
+                            class="cu-official-logo">
+                        <div class="d-none d-sm-flex flex-column border-s border-border-subtle ps-2 ms-1">
+                            <strong class="text-primary font-bold text-xs uppercase tracking-wider">Research
+                                Commons</strong>
+                            <small class="text-text-muted text-[10px]">Academic Gateway</small>
+                        </div>
+                    </a>
+
+                    <!-- Quick Search Input (Desktop) -->
+                    <form method="get" action="{% url 'unified_search:search' %}" class="d-none d-md-block ms-2">
+                        <div class="nav-search-bar">
+                            <span class="material-symbols-outlined search-icon">search</span>
+                            <input type="text" name="q" placeholder="Quick search papers, people..."
+                                aria-label="Quick search">
+                        </div>
+                    </form>
                 </div>
 
-            {% endfor %}
+                <!-- Center: Primary Horizontal Nav Links (Visible on Wide Displays) -->
+                <div class="d-none d-xl-flex items-center gap-1 mx-2">
+                    {# Subsystems Dropdown Menu (Role-Aware Presentation Launcher) #}
+                    <div class="dropdown">
+                        <button
+                            class="nav-link px-2.5 py-1.5 rounded-lg text-xs font-bold text-primary hover:bg-surface-subtle d-flex align-items-center gap-1.5 border border-primary/20 bg-primary/5 shadow-xs"
+                            type="button" data-bs-toggle="dropdown" aria-expanded="false"
+                            title="Subsystems presentation launcher">
+                            <span
+                                class="badge bg-primary text-white font-mono text-[10px] px-1.5 py-0.5 rounded shadow-xs">
+                                {% if user.profile.role == 'student' %}Modules{% else %}F1–F9{% endif %}
+                            </span>
+                            <span>{% if user.profile.role == 'student' %}Student Tools{% else %}Modules{% endif
+                                %}</span>
+                            <span class="material-symbols-outlined text-[14px]">expand_more</span>
+                        </button>
+                        <ul class="dropdown-menu shadow-2xl border border-border-subtle rounded-2xl p-2 min-w-[340px]">
+                            <li
+                                class="px-3 py-1.5 text-[10px] font-bold text-accent-gold-dark uppercase tracking-wider border-b border-border-subtle mb-1 flex items-center justify-between">
+                                <span>{% if user.profile.role == 'student' %}Student Subsystems{% else %}Project
+                                    Subsystems (F1 – F9){% endif %}</span>
+                                <span class="badge bg-primary text-white text-[9px]">
+                                    {% if user.profile.role == 'student' %}7 Modules{% else %}9 Modules{% endif %}
+                                </span>
+                            </li>
+                            {# F1 #}
+                            <li><a class="dropdown-item rounded-xl py-2 text-xs d-flex align-items-center gap-2.5"
+                                    href="{% url 'accounts:members' %}"><span
+                                        class="w-6 h-6 rounded bg-primary/10 text-primary font-mono font-bold flex items-center justify-center text-[10px] shrink-0">F1</span>
+                                    <div><strong class="d-block text-primary">{% if user.profile.role == 'student'
+                                            %}Find Faculty & Mentors{% else %}Accounts & Roles{% endif %}</strong><small
+                                            class="text-muted text-[10.5px]">164+ Faculty, Profiles & Follows</small>
+                                    </div>
+                                </a></li>
+                            {# F2 #}
+                            {% if user.is_authenticated %}
+                            <li><a class="dropdown-item rounded-xl py-2 text-xs d-flex align-items-center gap-2.5"
+                                    href="{% url 'research_library:library_home' %}"><span
+                                        class="w-6 h-6 rounded bg-primary/10 text-primary font-mono font-bold flex items-center justify-center text-[10px] shrink-0">F2</span>
+                                    <div><strong class="d-block text-primary">Research Library</strong><small
+                                            class="text-muted text-[10.5px]">Personal Collections, Notes & Saves</small>
+                                    </div>
+                                </a></li>
+                            {% endif %}
+                            {# F3 #}
+                            {% if user.is_authenticated %}
+                            <li><a class="dropdown-item rounded-xl py-2 text-xs d-flex align-items-center gap-2.5"
+                                    href="{% url 'discussions:post_list' %}"><span
+                                        class="w-6 h-6 rounded bg-primary/10 text-primary font-mono font-bold flex items-center justify-center text-[10px] shrink-0">F3</span>
+                                    <div><strong class="d-block text-primary">{% if user.profile.role == 'student'
+                                            %}Discussions & Q&A{% else %}Discussions & Peer Review{% endif
+                                            %}</strong><small class="text-muted text-[10.5px]">Peer Review, Threads &
+                                            Upvotes</small></div>
+                                </a></li>
+                            {% endif %}
+                            {# F4 #}
+                            <li><a class="dropdown-item rounded-xl py-2 text-xs d-flex align-items-center gap-2.5"
+                                    href="{% url 'papers:paper_list' %}"><span
+                                        class="w-6 h-6 rounded bg-primary/10 text-primary font-mono font-bold flex items-center justify-center text-[10px] shrink-0">F4</span>
+                                    <div><strong class="d-block text-primary">{% if user.profile.role == 'student'
+                                            %}Scholarly Publications{% else %}Scholarly Publications (F4){% endif
+                                            %}</strong><small class="text-muted text-[10.5px]">OpenAlex, arXiv & Google
+                                            Links</small></div>
+                                </a></li>
+                            {# F5 #}
+                            <li><a class="dropdown-item rounded-xl py-2 text-xs d-flex align-items-center gap-2.5"
+                                    href="{% url 'unified_search:search' %}"><span
+                                        class="w-6 h-6 rounded bg-primary/10 text-primary font-mono font-bold flex items-center justify-center text-[10px] shrink-0">F5</span>
+                                    <div><strong class="d-block text-primary">Unified 4-Panel Search</strong><small
+                                            class="text-muted text-[10.5px]">Hybrid tsvector + pgvector +
+                                            PageRank</small></div>
+                                </a></li>
+                            {# F6 #}
+                            {% if user.is_authenticated %}
+                            <li><a class="dropdown-item rounded-xl py-2 text-xs d-flex align-items-center gap-2.5"
+                                    href="{% url 'recommendations:recommendations_home' %}"><span
+                                        class="w-6 h-6 rounded bg-primary/10 text-primary font-mono font-bold flex items-center justify-center text-[10px] shrink-0">F6</span>
+                                    <div><strong class="d-block text-primary">Recommended For You</strong><small
+                                            class="text-muted text-[10.5px]">Centroid Cosine Vectors & Matches</small>
+                                    </div>
+                                </a></li>
+                            {% endif %}
+                            {# F7: HIDDEN FOR STUDENTS #}
+                            {% if user.profile.role != 'student' and user.is_authenticated %}
+                            <li><a class="dropdown-item rounded-xl py-2 text-xs d-flex align-items-center gap-2.5"
+                                    href="{% url 'trends:trends_home' %}"><span
+                                        class="w-6 h-6 rounded bg-primary/10 text-primary font-mono font-bold flex items-center justify-center text-[10px] shrink-0">F7</span>
+                                    <div><strong class="d-block text-primary">Velocity Trends & Spikes</strong><small
+                                            class="text-muted text-[10.5px]">Z &ge; 2.0 Surge & Moderation</small></div>
+                                </a></li>
+                            {% endif %}
+                            {# F8 #}
+                            <li><a class="dropdown-item rounded-xl py-2 text-xs d-flex align-items-center gap-2.5"
+                                    href="{% url 'research_assistant:assistant' %}"><span
+                                        class="w-6 h-6 rounded bg-accent-gold/20 text-accent-gold-dark font-mono font-bold flex items-center justify-center text-[10px] shrink-0">F8</span>
+                                    <div><strong class="d-block text-primary">AI Research Assistant</strong><small
+                                            class="text-muted text-[10.5px]">RAG with Inline Verifiable
+                                            Citations</small></div>
+                                </a></li>
+                            {# F9: HIDDEN FOR STUDENTS #}
+                            {% if user.is_staff or user.profile.role == 'faculty' or user.profile.role == 'admin' %}
+                            <li><a class="dropdown-item rounded-xl py-2 text-xs d-flex align-items-center gap-2.5"
+                                    href="{% url 'institutional_analytics:dashboard' %}"><span
+                                        class="w-6 h-6 rounded bg-primary/10 text-primary font-mono font-bold flex items-center justify-center text-[10px] shrink-0">F9</span>
+                                    <div><strong class="d-block text-primary">Institutional Analytics</strong><small
+                                            class="text-muted text-[10.5px]">DuckDB OLAP Star-Schema Parquet</small>
+                                    </div>
+                                </a></li>
+                            {% endif %}
+                        </ul>
+                    </div>
 
+                    <a class="nav-link px-2.5 py-1.5 rounded-lg text-xs font-semibold text-text-secondary hover:text-primary hover:bg-surface-subtle d-flex align-items-center gap-1 text-decoration-none transition-colors"
+                        href="{% url 'unified_search:search' %}">
+                        <span class="material-symbols-outlined text-[18px]">travel_explore</span>
+                        <span>Search</span>
+                    </a>
+
+                    <a class="nav-link px-2.5 py-1.5 rounded-lg text-xs font-semibold text-text-secondary hover:text-primary hover:bg-surface-subtle d-flex align-items-center gap-1 text-decoration-none transition-colors"
+                        href="{% url 'papers:paper_list' %}">
+                        <span class="material-symbols-outlined text-[18px]">description</span>
+                        <span>Papers</span>
+                    </a>
+
+                    <a class="nav-link px-2.5 py-1.5 rounded-lg text-xs font-semibold text-text-secondary hover:text-primary hover:bg-surface-subtle d-flex align-items-center gap-1 text-decoration-none transition-colors"
+                        href="{% url 'research_assistant:assistant' %}">
+                        <span class="material-symbols-outlined text-[18px] text-accent-gold-dark">smart_toy</span>
+                        <span class="text-primary font-bold">AI Assistant</span>
+                    </a>
+
+                    <a class="nav-link px-2.5 py-1.5 rounded-lg text-xs font-semibold text-text-secondary hover:text-primary hover:bg-surface-subtle d-flex align-items-center gap-1 text-decoration-none transition-colors"
+                        href="{% url 'accounts:members' %}">
+                        <span class="material-symbols-outlined text-[18px]">group</span>
+                        <span>Faculty (160+)</span>
+                    </a>
+
+                    {% if user.is_authenticated and user.is_staff %}
+                    <div class="dropdown">
+                        <button
+                            class="nav-link px-2.5 py-1.5 rounded-lg text-xs font-bold text-accent-gold-dark hover:bg-surface-subtle d-flex align-items-center gap-1 border-0 bg-transparent"
+                            type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span class="material-symbols-outlined text-[18px]">admin_panel_settings</span>
+                            <span>Admin Hub</span>
+                            <span class="material-symbols-outlined text-[14px]">expand_more</span>
+                        </button>
+                        <ul
+                            class="dropdown-menu dropdown-menu-end shadow-lg border border-border-subtle rounded-xl p-2">
+                            <li>
+                                <a class="dropdown-item rounded-lg py-2 d-flex align-items-center gap-2"
+                                    href="{% url 'institutional_analytics:dashboard' %}">
+                                    <span class="material-symbols-outlined text-primary text-[20px]">query_stats</span>
+                                    <div>
+                                        <span class="d-block font-semibold">Institutional Analytics</span>
+                                        <small class="text-muted text-[11px]">DuckDB & Star-Schema</small>
+                                    </div>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item rounded-lg py-2 d-flex align-items-center gap-2"
+                                    href="{% url 'trends:moderation_queue' %}">
+                                    <span class="material-symbols-outlined text-status-error text-[20px]">shield</span>
+                                    <div>
+                                        <span class="d-block font-semibold">Moderation Queue</span>
+                                        <small class="text-muted text-[11px]">Spike Alerts & Flags</small>
+                                    </div>
+                                </a>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider my-1">
+                            </li>
+                            <li>
+                                <a class="dropdown-item rounded-lg py-1.5 d-flex align-items-center gap-2 text-muted"
+                                    href="{% url 'admin:index' %}">
+                                    <span class="material-symbols-outlined text-[18px]">settings</span>
+                                    <span>Django System Admin</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- RIGHT GROUP: PERMANENTLY VISIBLE Top-Right Auth & Profile Utility Dock -->
+                <div class="flex items-center gap-2 sm:gap-2.5 shrink-0">
+                    <!-- Notification Bell -->
+                    <button aria-label="Notifications"
+                        class="relative w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-full text-text-secondary hover:bg-surface-subtle transition-colors"
+                        onclick="triggerToast('Campus Research Network operational. 520+ publications indexed.', 'Notifications', 'info')"
+                        type="button">
+                        <span class="material-symbols-outlined text-[19px]">notifications</span>
+                        <span
+                            class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-secondary-container ring-2 ring-white"></span>
+                    </button>
+
+                    {% if user.is_authenticated %}
+                    <!-- User Profile Pill (Clicks to Dashboard / Profile) -->
+                    <a href="{% url 'accounts:dashboard' %}"
+                        class="user-profile-pill text-decoration-none shadow-xs hover:border-primary transition-all flex items-center gap-2"
+                        title="Go to Your Academic Workspace Dashboard">
+                        <div class="user-avatar-circle">
+                            {{ request.user.first_name|first|default:request.user.username|first|upper }}
+                        </div>
+                        <div class="d-flex flex-col text-start pe-1 d-none d-sm-flex">
+                            <span class="font-bold text-[12px] leading-tight text-primary">
+                                {{ request.user.first_name|default:request.user.username }}
+                            </span>
+                            <span class="text-[9.5px] text-text-muted uppercase tracking-wider font-semibold">
+                                {{ request.user.profile.get_role_display|default:"Member" }}
+                            </span>
+                        </div>
+                    </a>
+
+                    <!-- Logout Button -->
+                    <form method="POST" action="{% url 'accounts:logout' %}" class="m-0">
+                        {% csrf_token %}
+                        <button type="submit"
+                            class="btn btn-sm btn-outline-primary py-1.5 px-2.5 text-xs rounded-xl flex items-center gap-1"
+                            title="Sign Out">
+                            <span class="material-symbols-outlined text-[16px]">logout</span>
+                            <span class="d-none d-lg-inline">Logout</span>
+                        </button>
+                    </form>
+                    {% else %}
+                    <!-- Unauthenticated Visitors: Sign In and Join Buttons -->
+                    <a href="{% url 'accounts:login' %}"
+                        class="btn btn-sm btn-outline-primary py-1.5 px-3 text-xs font-bold rounded-xl flex items-center gap-1 shadow-xs text-decoration-none">
+                        <span class="material-symbols-outlined text-[16px]">login</span>
+                        <span>Sign In</span>
+                    </a>
+                    <a href="{% url 'accounts:register' %}"
+                        class="btn btn-sm btn-gold py-1.5 px-3 text-xs font-bold rounded-xl flex items-center gap-1 shadow-xs text-decoration-none">
+                        <span class="material-symbols-outlined text-[16px]">person_add</span>
+                        <span>Join</span>
+                    </a>
+                    {% endif %}
+                </div>
+
+            </div>
+        </nav>
+    </header>
+
+    <!-- ====================================================================
+         FLOATING TOAST NOTIFICATION
+    ==================================================================== -->
+    <aside aria-live="polite"
+        class="fixed bottom-6 right-6 z-50 transform translate-y-28 opacity-0 pointer-events-none transition-all duration-300 ease-out flex items-center justify-between p-3.5 rounded-xl bg-primary text-white shadow-2xl max-w-md border border-white/10"
+        id="toast-notification">
+        <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-full bg-status-success flex items-center justify-center shrink-0 text-white"
+                id="toast-icon">
+                <span class="material-symbols-outlined text-[18px]">check_circle</span>
+            </div>
+            <div class="flex flex-col min-w-0">
+                <span class="font-bold text-sm leading-tight text-white" id="toast-title">Notification</span>
+                <span class="text-xs text-primary-fixed-dim truncate" id="toast-message">Action processed
+                    successfully.</span>
+            </div>
         </div>
+        <button aria-label="Dismiss toast"
+            class="p-1 rounded-full text-white/80 hover:text-white transition-colors shrink-0 ml-3"
+            onclick="dismissToast()">
+            <span class="material-symbols-outlined text-[18px]">close</span>
+        </button>
+    </aside>
 
+    <!-- ====================================================================
+         DJANGO SYSTEM MESSAGES
+    ==================================================================== -->
+    {% if messages %}
+    <div class="container-fluid px-lg-4 mt-3">
+        {% for message in messages %}
+        <div class="alert alert-dismissible fade show rounded-xl shadow-sm border p-3 flex items-center justify-between
+                    {% if message.tags == 'error' %}
+                        bg-status-error-surface border-status-error text-status-error
+                    {% elif message.tags == 'warning' %}
+                        bg-status-warning-surface border-status-warning text-status-warning
+                    {% elif message.tags == 'success' %}
+                        bg-status-success-surface border-status-success text-status-success
+                    {% else %}
+                        bg-surface-container border-border-strong text-primary
+                    {% endif %}" role="alert">
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-[20px]">
+                    {% if message.tags == 'error' %}error
+                    {% elif message.tags == 'warning' %}warning
+                    {% elif message.tags == 'success' %}check_circle
+                    {% else %}info{% endif %}
+                </span>
+                <span class="font-medium text-sm">{{ message }}</span>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
     {% endif %}
 
-
-    <!-- =================================
-         MAIN PAGE CONTENT
-    ================================== -->
-
-    <main>
-
+    <!-- ====================================================================
+         MAIN CONTENT INJECTION
+    ==================================================================== -->
+    <main class="flex-grow w-full">
         {% block content %}
         {% endblock %}
-
     </main>
 
+    <!-- ====================================================================
+         FOOTER (Modeled on Official Chanakya University Portal)
+    ==================================================================== -->
+    <footer class="main-footer mt-auto bg-white border-t border-border-subtle pt-5 pb-4">
+        <div class="container-fluid px-lg-5">
+            <div class="row g-4 pb-4 border-bottom border-border-subtle">
+                <!-- University Brand & Address -->
+                <div class="col-lg-4">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <img src="{% static 'images/chanakya_university_official_logo.jpg' %}" alt="Chanakya University"
+                            class="h-10 w-auto object-contain">
+                    </div>
+                    <p class="text-text-secondary text-xs leading-relaxed mb-3">
+                        <strong>Chanakya University</strong> is a premier multidisciplinary institution established by
+                        Karnataka Act No. 37 of 2021, dedicated to transformation through knowledge, cutting-edge
+                        scientific research, and human development.
+                    </p>
+                    <div class="text-xs text-text-muted mb-3 space-y-1">
+                        <p class="mb-1 flex items-start gap-1.5">
+                            <span
+                                class="material-symbols-outlined text-[16px] text-accent-gold-dark shrink-0">location_on</span>
+                            <span>Global Campus: NH 207, Boodigere Road, Brigade Orchards, Devanahalli, Bengaluru,
+                                Karnataka 562110, India</span>
+                        </p>
+                        <p class="mb-1 flex items-center gap-1.5">
+                            <span
+                                class="material-symbols-outlined text-[16px] text-accent-gold-dark shrink-0">mail</span>
+                            <a href="mailto:info@chanakyauniversity.edu.in"
+                                class="hover:text-primary">info@chanakyauniversity.edu.in</a>
+                        </p>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-status-success animate-pulse"></span>
+                        <span class="font-semibold text-xs text-status-success">Campus Research Commons
+                            Operational</span>
+                    </div>
+                </div>
 
-    <!-- =================================
-         FOOTER
-    ================================== -->
+                <!-- Academic Departments -->
+                <div class="col-6 col-lg-3">
+                    <h5 class="text-xs uppercase tracking-wider text-primary font-bold mb-3 flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[16px] text-accent-gold-dark">domain</span>
+                        <span>Academic Departments</span>
+                    </h5>
+                    <ul class="list-unstyled space-y-1.5 text-xs">
+                        <li><a href="{% url 'accounts:members' %}?dept=CSAI"
+                                class="hover:text-primary text-text-secondary">Computer Science & AI</a></li>
+                        <li><a href="{% url 'accounts:members' %}?dept=BIO"
+                                class="hover:text-primary text-text-secondary">Biological Sciences</a></li>
+                        <li><a href="{% url 'accounts:members' %}?dept=HUM"
+                                class="hover:text-primary text-text-secondary">Humanities & Indic Studies</a></li>
+                        <li><a href="{% url 'accounts:members' %}?dept=MGMT"
+                                class="hover:text-primary text-text-secondary">Management Sciences</a></li>
+                        <li><a href="{% url 'accounts:members' %}?dept=PHYS"
+                                class="hover:text-primary text-text-secondary">Physical & Natural Sciences</a></li>
+                        <li><a href="{% url 'accounts:members' %}?dept=LAW"
+                                class="hover:text-primary text-text-secondary">Law, Governance & Public Policy</a></li>
+                    </ul>
+                </div>
 
-    <footer class="main-footer text-center py-4">
+                <!-- Research Commons Tools -->
+                <div class="col-6 col-lg-2">
+                    <h5 class="text-xs uppercase tracking-wider text-primary font-bold mb-3 flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[16px] text-accent-gold-dark">travel_explore</span>
+                        <span>Research Suite</span>
+                    </h5>
+                    <ul class="list-unstyled space-y-1.5 text-xs">
+                        <li><a href="{% url 'unified_search:search' %}"
+                                class="hover:text-primary text-text-secondary">4-Panel Unified Search</a></li>
+                        <li><a href="{% url 'papers:paper_list' %}"
+                                class="hover:text-primary text-text-secondary">Scholarly Publications</a></li>
+                        <li><a href="{% url 'research_assistant:assistant' %}"
+                                class="hover:text-primary text-text-secondary">AI Research Assistant</a></li>
+                        <li><a href="{% url 'accounts:members' %}"
+                                class="hover:text-primary text-text-secondary">Faculty Directory (160+)</a></li>
+                        {% if user.is_authenticated %}
+                        <li><a href="{% url 'research_library:library_home' %}"
+                                class="hover:text-primary text-text-secondary">Research Library</a></li>
+                        <li><a href="{% url 'discussions:post_list' %}"
+                                class="hover:text-primary text-text-secondary">Discussions & Q&amp;A</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
 
-        <div class="container">
+                <!-- Centres of Excellence & Technology -->
+                <div class="col-lg-3">
+                    <h5 class="text-xs uppercase tracking-wider text-primary font-bold mb-3 flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[16px] text-accent-gold-dark">hub</span>
+                        <span>Centres of Excellence</span>
+                    </h5>
+                    <ul class="list-unstyled space-y-1 text-xs text-text-secondary mb-3">
+                        <li>• Centre for Indian Knowledge Systems (IKS)</li>
+                        <li>• Centre for Sustainability</li>
+                        <li>• Centre for Technology Development & Consultancy</li>
+                        <li>• Centre for the Study of Indian Languages</li>
+                    </ul>
+                    <div class="bg-surface-subtle p-2.5 rounded-xl border border-border-subtle">
+                        <div class="flex items-center justify-between text-[11px] text-text-secondary">
+                            <span>pgvector Embeddings</span>
+                            <span class="font-semibold text-status-success">384-dim Active</span>
+                        </div>
+                        <div class="flex items-center justify-between text-[11px] text-text-secondary mt-1">
+                            <span>DuckDB Parquet Lake</span>
+                            <span class="font-semibold text-primary">Synchronized</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-            <h5>Research Commons</h5>
-
-            <p>
-                Connecting researchers. Sharing knowledge.
-            </p>
-
-            <small>
-                © 2026 Chanakya University Research Commons.
-                All rights reserved.
-            </small>
-
+            <div class="pt-3 d-flex flex-wrap justify-content-between align-items-center gap-2 text-xs text-text-muted">
+                <span>© 2026 Chanakya University. All rights reserved. Established under Karnataka Act No. 37 of
+                    2021.</span>
+                <div class="d-flex flex-wrap items-center gap-3">
+                    <a href="https://chanakyauniversity.edu.in" target="_blank" rel="noopener"
+                        class="hover:text-primary">chanakyauniversity.edu.in</a>
+                    <span>•</span>
+                    <a href="{% url 'about' %}" class="hover:text-primary">About</a>
+                    <span>•</span>
+                    <a href="{% url 'support' %}" class="hover:text-primary">Support & FAQ</a>
+                    <span>•</span>
+                    <a href="{% url 'terms' %}" class="hover:text-primary">Terms of Service</a>
+                    <span>•</span>
+                    <a href="{% url 'privacy' %}" class="hover:text-primary">Privacy Policy</a>
+                </div>
+            </div>
         </div>
-
     </footer>
 
+    <!-- Bootstrap 5 JavaScript Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- Bootstrap JavaScript -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+    <!-- Sliding Sidebar Menu & Toast Script -->
+    <script>
+        let isSidebarPinned = false;
+        let sidebarCloseTimer = null;
+
+        function openSidebarMenu(pinned = false) {
+            if (sidebarCloseTimer) {
+                clearTimeout(sidebarCloseTimer);
+                sidebarCloseTimer = null;
+            }
+            const sidebar = document.getElementById('slidingSidebarMenu');
+            const backdrop = document.getElementById('sidebarBackdrop');
+            if (sidebar) sidebar.classList.add('open');
+            if (backdrop) backdrop.classList.add('active');
+            if (pinned) isSidebarPinned = true;
+        }
+
+        function closeSidebarMenu(force = false) {
+            if (!force && isSidebarPinned) return;
+            const sidebar = document.getElementById('slidingSidebarMenu');
+            const backdrop = document.getElementById('sidebarBackdrop');
+            if (sidebar) sidebar.classList.remove('open');
+            if (backdrop) backdrop.classList.remove('active');
+            if (force) isSidebarPinned = false;
+        }
+
+        function toggleSidebarMenu() {
+            const sidebar = document.getElementById('slidingSidebarMenu');
+            if (sidebar && sidebar.classList.contains('open')) {
+                closeSidebarMenu(true);
+            } else {
+                openSidebarMenu(true);
+            }
+        }
+
+        // Left Screen Edge Hover Listener
+        document.addEventListener('mousemove', function (e) {
+            // When cursor moves to the far left (within 24px)
+            if (e.clientX <= 24 && !isSidebarPinned) {
+                openSidebarMenu(false);
+            }
+        });
+
+        const sidebarElem = document.getElementById('slidingSidebarMenu');
+        if (sidebarElem) {
+            sidebarElem.addEventListener('mouseenter', function () {
+                if (sidebarCloseTimer) {
+                    clearTimeout(sidebarCloseTimer);
+                    sidebarCloseTimer = null;
+                }
+            });
+
+            sidebarElem.addEventListener('mouseleave', function () {
+                if (!isSidebarPinned) {
+                    sidebarCloseTimer = setTimeout(function () {
+                        closeSidebarMenu(false);
+                    }, 280);
+                }
+            });
+        }
+
+        const leftEdgeTrigger = document.getElementById('leftEdgeTrigger');
+        if (leftEdgeTrigger) {
+            leftEdgeTrigger.addEventListener('mouseenter', function () {
+                openSidebarMenu(false);
+            });
+        }
+
+        // Toast Notification System
+        function triggerToast(message, title = "Notification", type = "success") {
+            const toast = document.getElementById('toast-notification');
+            const toastTitle = document.getElementById('toast-title');
+            const toastMsg = document.getElementById('toast-message');
+            const toastIcon = document.getElementById('toast-icon');
+
+            if (toast && toastMsg) {
+                toastTitle.innerText = title;
+                toastMsg.innerText = message;
+
+                if (toastIcon) {
+                    if (type === 'error') {
+                        toastIcon.className = "w-8 h-8 rounded-full bg-status-error flex items-center justify-center shrink-0 text-white";
+                        toastIcon.innerHTML = '<span class="material-symbols-outlined text-[18px]">error</span>';
+                    } else if (type === 'warning') {
+                        toastIcon.className = "w-8 h-8 rounded-full bg-status-warning flex items-center justify-center shrink-0 text-white";
+                        toastIcon.innerHTML = '<span class="material-symbols-outlined text-[18px]">warning</span>';
+                    } else {
+                        toastIcon.className = "w-8 h-8 rounded-full bg-status-success flex items-center justify-center shrink-0 text-white";
+                        toastIcon.innerHTML = '<span class="material-symbols-outlined text-[18px]">check_circle</span>';
+                    }
+                }
+
+                toast.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-28');
+                toast.classList.add('opacity-100', 'pointer-events-auto', 'translate-y-0');
+
+                setTimeout(() => {
+                    dismissToast();
+                }, 4500);
+            }
+        }
+
+        function dismissToast() {
+            const toast = document.getElementById('toast-notification');
+            if (toast) {
+                toast.classList.add('opacity-0', 'pointer-events-none', 'translate-y-28');
+                toast.classList.remove('opacity-100', 'pointer-events-auto', 'translate-y-0');
+            }
+        }
+
+        // Global CSRF Token Synchronization & BFCache Protection
+        function getCsrfCookie(name = 'csrftoken') {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Ensure active CSRF token from cookie is always fresh in POST forms before submit
+        document.addEventListener('submit', function (e) {
+            const form = e.target;
+            if (form && form.tagName === 'FORM' && form.method && form.method.toLowerCase() === 'post') {
+                const activeToken = getCsrfCookie('csrftoken');
+                const csrfInput = form.querySelector('input[name="csrfmiddlewaretoken"]');
+                if (activeToken && csrfInput && csrfInput.value !== activeToken) {
+                    csrfInput.value = activeToken;
+                }
+            }
+        }, true);
+
+        // When navigating back via browser history (BFCache), refresh to sync auth & CSRF cookies
+        window.addEventListener('pageshow', function (event) {
+            if (event.persisted) {
+                window.location.reload();
+            }
+        });
     </script>
 
     {% block extra_js %}{% endblock %}
 
 </body>
+
 </html>

@@ -1,228 +1,152 @@
-
 {% extends "base.html" %}
 
-{% block title %}Register | Research Commons{% endblock %}
+{% block title %}Register | Chanakya University Academic Portal{% endblock %}
 
 {% block content %}
-
-<section class="auth-section">
+<section class="auth-section py-5">
     <div class="container">
+        <div class="w-full max-w-[640px] mx-auto flex flex-col items-center">
 
-        <div class="auth-card register-card mx-auto">
-
-            <div class="text-center mb-4">
-                <h2>Create Your Account</h2>
-                <p class="text-muted">
-                    Join the Chanakya University research community
-                </p>
-                <div class="gold-line"></div>
+            <!-- Emblem Header -->
+            <div class="flex flex-col items-center text-center mb-4">
+                <div class="relative flex items-center justify-center w-14 h-14 rounded-2xl bg-primary shadow-md mb-2">
+                    <svg class="w-8 h-8" fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M24 6L28 15H20L24 6Z" fill="#FE932C"></path>
+                        <path d="M24 16C21 16 18 19 18 23C18 27.5 24 33 24 33C24 33 30 27.5 30 23C30 19 27 16 24 16Z" fill="#FFB77D"></path>
+                        <path d="M12 30C15 28 20 28 24 31C28 28 33 28 36 30C38 31.3 40 33.5 40 36C32 35 27 38 24 42C21 38 16 35 8 36C8 33.5 10 31.3 12 30Z" fill="#FFFFFF"></path>
+                        <circle cx="24" cy="22" fill="#00236F" r="2.5"></circle>
+                    </svg>
+                </div>
+                <span class="font-semibold text-xs text-accent-gold uppercase tracking-wider">Chanakya University</span>
+                <h1 class="font-display text-2xl font-extrabold text-primary tracking-tight">Create Academic Account</h1>
+                <p class="text-sm text-text-secondary mt-0.5">Join the research and scholarly community</p>
             </div>
 
-            <form method="POST" novalidate>
-                {% csrf_token %}
+            <!-- Registration Card -->
+            <div class="w-full bg-white rounded-2xl p-6 sm:p-8 shadow-md border border-border-subtle">
+                <form method="POST" novalidate>
+                    {% csrf_token %}
 
-                {% if form.non_field_errors %}
-                    <div class="alert alert-danger">
-                        {{ form.non_field_errors }}
-                    </div>
-                {% endif %}
+                    {% if form.non_field_errors %}
+                        <div class="alert bg-status-error-surface border border-status-error text-status-error text-sm rounded-xl p-3 mb-4">
+                            {{ form.non_field_errors }}
+                        </div>
+                    {% endif %}
 
-                <h5 class="form-section-title">Personal Information</h5>
-
-                <div class="row g-3">
-
-                    <div class="col-md-6">
-                        {{ form.first_name.label_tag }}
-                        {{ form.first_name }}
-                        {% for error in form.first_name.errors %}
-                            <div class="text-danger small">{{ error }}</div>
-                        {% endfor %}
+                    <!-- Section: Personal Details -->
+                    <div class="flex items-center gap-2 mb-3 pb-2 border-b border-border-subtle">
+                        <span class="material-symbols-outlined text-primary text-[20px]">person</span>
+                        <h5 class="text-sm font-bold text-primary uppercase tracking-wider mb-0">Personal Information</h5>
                     </div>
 
-                    <div class="col-md-6">
-                        {{ form.last_name.label_tag }}
-                        {{ form.last_name }}
-                        {% for error in form.last_name.errors %}
-                            <div class="text-danger small">{{ error }}</div>
-                        {% endfor %}
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">{{ form.first_name.label }}</label>
+                            {{ form.first_name }}
+                            {% for error in form.first_name.errors %}
+                                <div class="text-status-error text-xs mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">{{ form.last_name.label }}</label>
+                            {{ form.last_name }}
+                            {% for error in form.last_name.errors %}
+                                <div class="text-status-error text-xs mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">{{ form.username.label }}</label>
+                            {{ form.username }}
+                            {% for error in form.username.errors %}
+                                <div class="text-status-error text-xs mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">{{ form.email.label }}</label>
+                            {{ form.email }}
+                            {% for error in form.email.errors %}
+                                <div class="text-status-error text-xs mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
                     </div>
 
-                    <div class="col-12">
-                        {{ form.username.label_tag }}
-                        {{ form.username }}
-                        {% for error in form.username.errors %}
-                            <div class="text-danger small">{{ error }}</div>
-                        {% endfor %}
+                    <!-- Section: Security -->
+                    <div class="flex items-center gap-2 mb-3 pb-2 border-b border-border-subtle">
+                        <span class="material-symbols-outlined text-primary text-[20px]">lock</span>
+                        <h5 class="text-sm font-bold text-primary uppercase tracking-wider mb-0">Security Credentials</h5>
                     </div>
 
-                    <div class="col-12">
-                        {{ form.email.label_tag }}
-                        {{ form.email }}
-                        {% for error in form.email.errors %}
-                            <div class="text-danger small">{{ error }}</div>
-                        {% endfor %}
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">Password</label>
+                            {{ form.password1 }}
+                            {% for error in form.password1.errors %}
+                                <div class="text-status-error text-xs mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Confirm Password</label>
+                            {{ form.password2 }}
+                            {% for error in form.password2.errors %}
+                                <div class="text-status-error text-xs mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
                     </div>
 
-                    <div class="col-md-6">
-                        <label for="id_password1" class="form-label">
-                            Password
-                        </label>
-                        {{ form.password1 }}
-                        {% for error in form.password1.errors %}
-                            <div class="text-danger small">{{ error }}</div>
-                        {% endfor %}
+                    <!-- Section: Academic Role & Affiliation -->
+                    <div class="flex items-center gap-2 mb-3 pb-2 border-b border-border-subtle">
+                        <span class="material-symbols-outlined text-primary text-[20px]">school</span>
+                        <h5 class="text-sm font-bold text-primary uppercase tracking-wider mb-0">Academic Information</h5>
                     </div>
 
-                    <div class="col-md-6">
-                        <label for="id_password2" class="form-label">
-                            Confirm Password
-                        </label>
-                        {{ form.password2 }}
-                        {% for error in form.password2.errors %}
-                            <div class="text-danger small">{{ error }}</div>
-                        {% endfor %}
+                    <div class="row g-3 mb-4">
+                        <div class="col-12">
+                            <label class="form-label">{{ form.role.label }}</label>
+                            {{ form.role }}
+                            {% for error in form.role.errors %}
+                                <div class="text-status-error text-xs mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        {% if form.school %}
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.school.label }}</label>
+                                {{ form.school }}
+                                {% for error in form.school.errors %}
+                                    <div class="text-status-error text-xs mt-1">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        {% if form.department %}
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.department.label }}</label>
+                                {{ form.department }}
+                                {% for error in form.department.errors %}
+                                    <div class="text-status-error text-xs mt-1">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
                     </div>
 
-                </div>
+                    <button type="submit" class="btn btn-navy w-full py-2.5 rounded-xl font-bold shadow-sm">
+                        Create Account & Join Commons
+                    </button>
+                </form>
 
-                <hr class="my-4">
-
-                <h5 class="form-section-title">Academic Information</h5>
-
-                <div class="row g-3">
-
-                    <div class="col-12">
-                        {{ form.role.label_tag }}
-                        {{ form.role }}
-                        {% for error in form.role.errors %}
-                            <div class="text-danger small">{{ error }}</div>
-                        {% endfor %}
-                    </div>
-
-                    <div class="col-12">
-                        {{ form.school.label_tag }}
-                        {{ form.school }}
-                        {% for error in form.school.errors %}
-                            <div class="text-danger small">{{ error }}</div>
-                        {% endfor %}
-                    </div>
-
-                    <div class="col-12">
-                        {{ form.department.label_tag }}
-                        {{ form.department }}
-                        {% for error in form.department.errors %}
-                            <div class="text-danger small">{{ error }}</div>
-                        {% endfor %}
-                    </div>
-
-                </div>
-
-                <hr class="my-4">
-
-                <h5 class="form-section-title">Research Information</h5>
-
-                <div class="mb-3">
-                    {{ form.topics.label_tag }}
-                    {{ form.topics }}
-                    <small class="form-text text-muted">
-                        Hold Ctrl on Windows to select multiple topics.
-                    </small>
-                    {% for error in form.topics.errors %}
-                        <div class="text-danger small">{{ error }}</div>
-                    {% endfor %}
-                </div>
-
-                <div class="mb-4">
-                    {{ form.bio.label_tag }}
-                    {{ form.bio }}
-                    {% for error in form.bio.errors %}
-                        <div class="text-danger small">{{ error }}</div>
-                    {% endfor %}
-                </div>
-
-                <button type="submit" class="btn btn-gold w-100">
-                    Create Account
-                </button>
-
-                <p class="text-center mt-4 mb-0">
-                    Already have an account?
-                    <a href="{% url 'accounts:login' %}">
-                        Sign in
+                <p class="text-center text-sm text-text-secondary mt-4 mb-0 pt-3 border-t border-border-subtle">
+                    Already registered?
+                    <a href="{% url 'accounts:login' %}" class="text-primary font-bold hover:underline">
+                        Sign In →
                     </a>
                 </p>
-
-            </form>
+            </div>
 
         </div>
-
     </div>
 </section>
-
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-
-    const schoolSelect = document.getElementById("id_school");
-    const departmentSelect = document.getElementById("id_department");
-
-    schoolSelect.addEventListener("change", async function () {
-
-        const schoolId = this.value;
-
-        departmentSelect.innerHTML =
-            '<option value="">Loading departments...</option>';
-
-        departmentSelect.disabled = true;
-
-        if (!schoolId) {
-            departmentSelect.innerHTML =
-                '<option value="">Select Department</option>';
-            return;
-        }
-
-        try {
-
-            const url =
-                "{% url 'accounts:departments_json' %}?school_id="
-                + encodeURIComponent(schoolId);
-
-            const response = await fetch(url);
-
-            if (!response.ok) {
-                throw new Error("Unable to load departments.");
-            }
-
-            const departments = await response.json();
-
-            departmentSelect.innerHTML =
-                '<option value="">Select Department</option>';
-
-            departments.forEach(function (department) {
-
-                const option = document.createElement("option");
-
-                option.value = department.id;
-                option.textContent = department.name;
-
-                departmentSelect.appendChild(option);
-            });
-
-            if (departments.length === 0) {
-                departmentSelect.innerHTML =
-                    '<option value="">No departments available</option>';
-            }
-
-            departmentSelect.disabled = false;
-
-        } catch (error) {
-
-            departmentSelect.innerHTML =
-                '<option value="">Error loading departments</option>';
-
-            console.error(error);
-        }
-    });
-
-});
-</script>
-
 {% endblock %}

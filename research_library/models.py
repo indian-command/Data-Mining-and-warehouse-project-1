@@ -112,6 +112,28 @@ class ResearchResource(models.Model):
     def __str__(self):
         return self.title
 
+    @property
+    def google_scholar_url(self):
+        """Direct search & view URL on Google Scholar."""
+        import urllib.parse
+        return f"https://scholar.google.com/scholar?q={urllib.parse.quote(self.title)}"
+
+    @property
+    def google_search_url(self):
+        """Direct search URL on Google Web."""
+        import urllib.parse
+        return f"https://www.google.com/search?q={urllib.parse.quote(self.title + ' research paper')}"
+
+    @property
+    def google_viewer_url(self):
+        """Online viewer link through Google Docs Viewer."""
+        import urllib.parse
+        if self.file:
+            return f"https://docs.google.com/viewer?url={urllib.parse.quote(self.file.url)}"
+        if self.url:
+            return f"https://docs.google.com/viewer?url={urllib.parse.quote(self.url)}"
+        return self.google_scholar_url
+
 
 # ==========================================
 # 2. MEMBER SAVED RESEARCH ITEMS

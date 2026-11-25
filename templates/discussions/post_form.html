@@ -1,131 +1,168 @@
-
 {% extends "base.html" %}
 
-{% block title %}{{ page_title }} | Research Commons{% endblock %}
+{% block title %}{{ page_title }} | Chanakya University{% endblock %}
 
 {% block content %}
-
 <section class="auth-section py-5">
-
     <div class="container">
+        <div class="w-full max-w-[760px] mx-auto flex flex-col items-center">
 
-        <div class="auth-card register-card mx-auto">
-
-            <div class="text-center mb-4">
-
-                <span class="section-eyebrow">
-                    CHANAKYA UNIVERSITY
-                </span>
-
-                <h2 class="mt-2">{{ page_title }}</h2>
-
-                <p>
-                    Share your knowledge with the university
-                    research community.
-                </p>
-
-                <div class="gold-line"></div>
-
+            <!-- Emblem Header -->
+            <div class="flex flex-col items-center text-center mb-4">
+                <div class="w-14 h-14 rounded-2xl bg-primary flex items-center justify-center text-white shadow-md mb-2">
+                    <span class="material-symbols-outlined text-[28px]">post_add</span>
+                </div>
+                <span class="font-semibold text-xs text-accent-gold uppercase tracking-wider">Chanakya University Research Commons</span>
+                <h1 class="font-display text-2xl font-extrabold text-primary tracking-tight">{{ page_title }}</h1>
+                <p class="text-sm text-text-secondary mt-0.5">Publish your research paper, preprint, discussion question, or experimental findings.</p>
             </div>
 
-            <form method="POST">
+            <!-- Post Form Card -->
+            <div class="w-full bg-white rounded-2xl p-6 sm:p-8 shadow-md border border-border-subtle">
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
 
-                {% csrf_token %}
-
-                {% if form.non_field_errors %}
-                    <div class="alert alert-danger">
-                        {{ form.non_field_errors }}
-                    </div>
-                {% endif %}
-
-                <!-- Post title -->
-                <div class="mb-4">
-                    {{ form.title.label_tag }}
-                    {{ form.title }}
-
-                    {% for error in form.title.errors %}
-                        <div class="text-danger small">
-                            {{ error }}
+                    {% if form.non_field_errors %}
+                        <div class="alert bg-status-error-surface text-status-error text-xs p-3 rounded-xl mb-4">
+                            {{ form.non_field_errors }}
                         </div>
-                    {% endfor %}
-                </div>
-
-                <!-- Post content -->
-                <div class="mb-4">
-                    {{ form.content.label_tag }}
-                    {{ form.content }}
-
-                    {% for error in form.content.errors %}
-                        <div class="text-danger small">
-                            {{ error }}
-                        </div>
-                    {% endfor %}
-                </div>
-
-                <!-- Research topic tags: INSIDE THE FORM -->
-                <div class="mb-4">
-
-                    {{ form.tags.label_tag }}
-
-                    <p class="text-muted small">
-                        Select one or more research topics related to your post.
-                    </p>
-
-                    <div class="border rounded p-3">
-                        {{ form.tags }}
-                    </div>
-
-                    {% for error in form.tags.errors %}
-                        <div class="text-danger small mt-2">
-                            {{ error }}
-                        </div>
-                    {% endfor %}
-
-                </div>
-                <!-- Attach research resources -->
-<div class="mb-4">
-
-    {{ form.resources.label_tag }}
-
-    <p class="text-muted small">
-        Attach research papers or links from the library.
-        You can select multiple resources.
-    </p>
-
-    <div class="border rounded p-3">
-        {{ form.resources }}
-    </div>
-
-    {% for error in form.resources.errors %}
-        <div class="text-danger small mt-2">
-            {{ error }}
-        </div>
-    {% endfor %}
-
-</div>
-
-                <!-- Submit -->
-                <button type="submit" class="btn btn-gold w-100">
-
-                    {% if post %}
-                        Save Changes
-                    {% else %}
-                        Publish Research Post
                     {% endif %}
 
-                </button>
+                    <!-- Post Category / Type -->
+                    <div class="mb-4">
+                        <label class="form-label font-bold text-xs uppercase tracking-wider text-primary flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-[18px] text-accent-gold-dark">category</span>
+                            <span>{{ form.post_type.label }}</span>
+                        </label>
+                        {{ form.post_type }}
+                        <small class="text-text-muted text-[11px] block mt-1">Choose whether you are posting a peer discussion question, a full research publication, or an update.</small>
+                        {% for error in form.post_type.errors %}
+                            <div class="text-status-error text-xs mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
 
-                <a href="{% url 'discussions:post_list' %}"
-                   class="btn btn-outline-primary w-100 mt-2">
-                    Cancel
-                </a>
+                    <!-- Post Title -->
+                    <div class="mb-4">
+                        <label class="form-label font-bold text-xs uppercase tracking-wider text-primary flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-[18px] text-accent-gold-dark">title</span>
+                            <span>{{ form.title.label }}</span>
+                        </label>
+                        {{ form.title }}
+                        {% for error in form.title.errors %}
+                            <div class="text-status-error text-xs mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
 
-            </form>
+                    <!-- Post Content / Abstract -->
+                    <div class="mb-4">
+                        <label class="form-label font-bold text-xs uppercase tracking-wider text-primary flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-[18px] text-accent-gold-dark">article</span>
+                            <span>{{ form.content.label }}</span>
+                        </label>
+                        {{ form.content }}
+                        <small class="text-text-muted text-[11px] block mt-1">Provide background, abstract, key methodology, questions, or findings.</small>
+                        {% for error in form.content.errors %}
+                            <div class="text-status-error text-xs mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Visual Attachment: Image / Figure / Poster -->
+                    <div class="mb-4 p-4 rounded-xl bg-surface-subtle border border-border-subtle">
+                        <label class="form-label font-bold text-xs uppercase tracking-wider text-primary flex items-center gap-1.5 mb-1">
+                            <span class="material-symbols-outlined text-[18px] text-primary">image</span>
+                            <span>{{ form.image.label }}</span>
+                        </label>
+                        <p class="text-xs text-text-muted mb-2">Upload visual assets: experimental graphs, diagrams, posters, or screenshots (PNG, JPG, WebP).</p>
+                        {{ form.image }}
+                        {% if post.image %}
+                            <div class="mt-2 flex items-center gap-2">
+                                <span class="text-xs text-text-muted">Current image:</span>
+                                <a href="{{ post.image.url }}" target="_blank" class="text-xs font-semibold text-primary underline">View current</a>
+                            </div>
+                        {% endif %}
+                        {% for error in form.image.errors %}
+                            <div class="text-status-error text-xs mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Scholarly Paper Attachment: PDF or External Link -->
+                    <div class="mb-4 p-4 rounded-xl bg-surface-container border border-border-strong">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="material-symbols-outlined text-primary text-[20px]">menu_book</span>
+                            <span class="font-bold text-xs uppercase tracking-wider text-primary">Research Paper Documents & Links</span>
+                        </div>
+                        <p class="text-xs text-text-secondary mb-3">Attach your full-text publication PDF or provide an external link (Google Scholar, arXiv, DOI, publisher) for peers to read.</p>
+
+                        <!-- PDF Upload -->
+                        <div class="mb-3">
+                            <label class="form-label text-xs font-semibold text-primary flex items-center gap-1">
+                                <span class="material-symbols-outlined text-status-error text-[16px]">picture_as_pdf</span>
+                                <span>{{ form.paper_file.label }}</span>
+                            </label>
+                            {{ form.paper_file }}
+                            {% if post.paper_file %}
+                                <div class="mt-1">
+                                    <a href="{{ post.paper_file.url }}" target="_blank" class="text-xs font-semibold text-primary underline">View current PDF</a>
+                                </div>
+                            {% endif %}
+                            {% for error in form.paper_file.errors %}
+                                <div class="text-status-error text-xs mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- External Link & DOI row -->
+                        <div class="row g-2">
+                            <div class="col-sm-8">
+                                <label class="form-label text-xs font-semibold text-primary flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-[16px]">link</span>
+                                    <span>{{ form.paper_link.label }}</span>
+                                </label>
+                                {{ form.paper_link }}
+                                {% for error in form.paper_link.errors %}
+                                    <div class="text-status-error text-xs mt-1">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="col-sm-4">
+                                <label class="form-label text-xs font-semibold text-primary flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-[16px]">fingerprint</span>
+                                    <span>{{ form.paper_doi.label }}</span>
+                                </label>
+                                {{ form.paper_doi }}
+                                {% for error in form.paper_doi.errors %}
+                                    <div class="text-status-error text-xs mt-1">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Research Topics (Tags) -->
+                    <div class="mb-4">
+                        <label class="form-label font-bold text-xs uppercase tracking-wider text-primary flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-[18px] text-accent-gold-dark">tag</span>
+                            <span>{{ form.tags.label }}</span>
+                        </label>
+                        <p class="text-xs text-text-muted mb-2">Select one or more research disciplines relevant to your post.</p>
+                        <div class="p-3 bg-surface-subtle rounded-xl border border-border-subtle max-h-48 overflow-y-auto">
+                            {{ form.tags }}
+                        </div>
+                        {% for error in form.tags.errors %}
+                            <div class="text-status-error text-xs mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="flex items-center gap-3 pt-3 border-t border-border-subtle">
+                        <button type="submit" class="btn btn-navy flex-1 py-2.5 font-bold shadow-sm flex items-center justify-center gap-1.5">
+                            <span class="material-symbols-outlined text-[18px]">send</span>
+                            <span>Publish to Research Commons</span>
+                        </button>
+                        <a href="{% url 'discussions:post_list' %}" class="btn btn-outline-primary py-2.5 px-4 font-semibold text-decoration-none">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
 
         </div>
-
     </div>
-
 </section>
-
 {% endblock %}

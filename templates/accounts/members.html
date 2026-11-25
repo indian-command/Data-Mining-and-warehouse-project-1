@@ -1,117 +1,333 @@
-
 {% extends "base.html" %}
 
-{% block title %}Find Researchers | Research Commons{% endblock %}
+{% block title %}Find Researchers | Chanakya University{% endblock %}
 
 {% block content %}
+<div class="container-fluid px-lg-5 py-4">
 
-<section class="dashboard-section py-5">
-
-    <div class="container">
-
-        <div class="text-center mb-5">
-
-            <span class="section-eyebrow">
-                CHANAKYA UNIVERSITY
-            </span>
-
-            <h2 class="section-title">
-                Discover Researchers
-            </h2>
-
-            <p class="section-subtitle">
-                Connect with students, faculty and researchers
-                across our university.
-            </p>
-
-        </div>
-
-        <div class="row g-4">
-
-            {% for profile in profiles %}
-
-            <div class="col-md-6 col-lg-4">
-
-                <div class="feature-card">
-
-                    <div class="dashboard-avatar">
-                        {{ profile.user.first_name|first|default:profile.user.username|first|upper }}
+    <!-- ====================================================================
+         INSTAGRAM-STYLE USER PROFILE BANNER (Your Academic Profile & Counts)
+    ==================================================================== -->
+    <section class="card p-4 sm:p-6 border-0 bg-white shadow-sm mb-5 rounded-2xl">
+        <div class="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
+            
+            <!-- Your Profile Photo with Instagram Story Gradient Ring -->
+            <div class="relative shrink-0">
+                <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-full p-[3px] bg-gradient-to-tr from-[#FE932C] via-[#D97706] to-[#00236F] shadow-md flex items-center justify-center">
+                    <div class="w-full h-full rounded-full bg-white p-[2px] flex items-center justify-center">
+                        <div class="w-full h-full rounded-full bg-primary flex items-center justify-center text-white font-display font-extrabold text-2xl sm:text-3xl shadow-inner select-none">
+                            {{ request.user.first_name|first|default:request.user.username|first|upper }}
+                        </div>
                     </div>
-
-                    <h5>
-                        {{ profile.user.get_full_name|default:profile.user.username }}
-                    </h5>
-
-                    <p class="text-muted">
-                        {{ profile.user.email }}
-                    </p>
-
-                    <p>
-                        <strong>Role:</strong>
-                        {{ profile.get_role_display }}
-                    </p>
-
-                    <p>
-                        <strong>Department:</strong>
-
-                        {% if profile.department %}
-                            {{ profile.department.name }}
-                        {% else %}
-                            Not assigned
-                        {% endif %}
-                    </p>
-
-                    <div class="mb-3">
-
-                        {% for topic in profile.topics.all %}
-
-                            <span class="topic-badge me-1 mb-1">
-                                {{ topic.name }}
-                            </span>
-
-                        {% endfor %}
-
-                    </div>
-
-                    <form method="POST"
-                          action="{% url 'accounts:toggle_follow' profile.user.id %}">
-
-                        {% csrf_token %}
-
-                        {% if profile.user.id in followed_ids %}
-
-                            <button type="submit"
-                                    class="btn btn-outline-primary w-100">
-                                Unfollow
-                            </button>
-
-                        {% else %}
-
-                            <button type="submit"
-                                    class="btn btn-gold w-100">
-                                Follow Member
-                            </button>
-
-                        {% endif %}
-
-                    </form>
-
                 </div>
+                <span class="absolute bottom-1 right-1 w-5 h-5 rounded-full bg-status-success ring-2 ring-white flex items-center justify-center shadow-xs" title="Active on Campus">
+                    <span class="material-symbols-outlined text-[12px] text-white font-bold">check</span>
+                </span>
+            </div>
+
+            <!-- Profile Info & Counts (Instagram Layout) -->
+            <div class="flex-grow text-center sm:text-start min-w-0">
+                <!-- Top Row: Handle, Badges, and Action Buttons -->
+                <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 mb-2.5">
+                    <h2 class="font-display text-lg sm:text-xl font-bold text-primary mb-0 flex items-center gap-1.5">
+                        <span>@{{ request.user.username }}</span>
+                        <span class="material-symbols-outlined text-primary text-[18px]" title="Verified Chanakya University Member" style="font-variation-settings: 'FILL' 1;">verified</span>
+                    </h2>
+                    <span class="badge topic-badge text-[11px]">
+                        {{ my_profile.get_role_display|default:"Researcher" }}
+                    </span>
+                    <div class="flex items-center gap-2 ms-0 sm:ms-2 mt-1 sm:mt-0">
+                        <a href="{% url 'accounts:profile_edit' %}" class="btn btn-sm btn-outline-primary text-xs py-1 px-3 rounded-lg font-semibold flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[15px]">edit</span>
+                            <span>Edit Profile</span>
+                        </a>
+                        <a href="{% url 'accounts:dashboard' %}" class="btn btn-sm btn-outline-secondary text-xs py-1 px-3 rounded-lg font-semibold flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[15px]">dashboard</span>
+                            <span>Dashboard</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Stats Count Row (Instagram Style: Posts | Followers | Following) -->
+                <div class="flex items-center justify-center sm:justify-start gap-6 py-2 border-t border-b border-border-subtle my-2 text-xs sm:text-sm">
+                    <div>
+                        <strong class="font-extrabold text-primary text-sm sm:text-base">{{ my_posts_count }}</strong>
+                        <span class="text-text-secondary ms-1">posts</span>
+                    </div>
+                    <div>
+                        <strong class="font-extrabold text-primary text-sm sm:text-base">{{ my_followers_count }}</strong>
+                        <span class="text-text-secondary ms-1">followers</span>
+                    </div>
+                    <div>
+                        <strong class="font-extrabold text-primary text-sm sm:text-base">{{ my_following_count }}</strong>
+                        <span class="text-text-secondary ms-1">following</span>
+                    </div>
+                </div>
+
+                <!-- Bio & Academic Affiliation -->
+                <div class="mt-2 text-xs leading-relaxed text-text-secondary">
+                    <p class="font-bold text-primary text-xs mb-0.5">
+                        {{ request.user.get_full_name|default:request.user.username }}
+                    </p>
+                    <p class="text-[11px] text-text-muted mb-1">
+                        {% if my_profile.department %}
+                            {{ my_profile.department.name }}
+                            {% if my_profile.department.school %} • {{ my_profile.department.school.name }}{% endif %}
+                        {% else %}
+                            Chanakya University Research Network
+                        {% endif %}
+                    </p>
+                    <p class="text-xs text-text-secondary mb-1 max-w-xl">
+                        {{ my_profile.bio|default:"Chanakya University researcher. Connect to collaborate on academic publications and discussions." }}
+                    </p>
+                    {% if my_profile.personal_website %}
+                        <a href="{{ my_profile.personal_website }}" target="_blank" rel="noopener" class="text-primary font-semibold hover:underline flex items-center gap-1 text-[11px]">
+                            <span class="material-symbols-outlined text-[14px]">link</span>
+                            <span>{{ my_profile.personal_website }}</span>
+                        </a>
+                    {% endif %}
+                </div>
+
+                <!-- Story Highlights (Your Followed Research Topics) -->
+                {% if my_profile.topics.all %}
+                    <div class="mt-3 pt-2 border-t border-border-subtle flex items-center gap-3 overflow-x-auto no-scrollbar py-1">
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-text-muted shrink-0">Topic Highlights:</span>
+                        {% for topic in my_profile.topics.all %}
+                            <a href="{% url 'unified_search:search' %}?q={{ topic.name }}" class="flex flex-col items-center gap-1 text-decoration-none shrink-0 group">
+                                <div class="w-9 h-9 rounded-full p-[2px] bg-gradient-to-tr from-accent-gold to-primary flex items-center justify-center transition-transform group-hover:scale-105">
+                                    <div class="w-full h-full rounded-full bg-white flex items-center justify-center text-primary font-bold text-[11px]">
+                                        #
+                                    </div>
+                                </div>
+                                <span class="text-[10px] text-text-secondary group-hover:text-primary font-semibold max-w-[70px] truncate">{{ topic.name }}</span>
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% endif %}
 
             </div>
 
-            {% empty %}
-
-                <div class="col-12 text-center">
-                    <p>No other researchers have registered yet.</p>
-                </div>
-
-            {% endfor %}
-
         </div>
+    </section>
 
+    <!-- ====================================================================
+         DIRECTORY CONTROLS: SEARCH & FILTER TABS (Official Chanakya Schools)
+    ==================================================================== -->
+    <div class="card p-3 sm:p-4 border-0 bg-white shadow-sm mb-4 rounded-xl">
+        <form method="GET" action="{% url 'accounts:members' %}" class="row g-2 align-items-center">
+            {% if school_filter %}
+                <input type="hidden" name="school" value="{{ school_filter }}">
+            {% endif %}
+
+            <!-- Search Input -->
+            <div class="col-md-5">
+                <div class="relative">
+                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-[18px]">search</span>
+                    <input type="text"
+                           name="q"
+                           value="{{ query }}"
+                           class="form-control pl-9 text-xs py-2 rounded-xl"
+                           placeholder="Search researchers by name, username, department, bio, or topic...">
+                </div>
+            </div>
+
+            <!-- Role Filter Dropdown -->
+            <div class="col-md-3">
+                <select name="role" class="form-select text-xs py-2 rounded-xl" onchange="this.form.submit()">
+                    <option value="">All Academic Roles</option>
+                    <option value="faculty" {% if role_filter == "faculty" %}selected{% endif %}>Faculty Members</option>
+                    <option value="researcher" {% if role_filter == "researcher" %}selected{% endif %}>Research Scholars</option>
+                    <option value="student" {% if role_filter == "student" %}selected{% endif %}>Student Fellows</option>
+                    <option value="admin" {% if role_filter == "admin" %}selected{% endif %}>Administrators</option>
+                </select>
+            </div>
+
+            <!-- Following Filter Toggle -->
+            <div class="col-md-2">
+                <a href="{% url 'accounts:members' %}{% if following_only == '1' %}?{% if query %}q={{ query }}&{% endif %}{% if role_filter %}role={{ role_filter }}&{% endif %}{% if school_filter %}school={{ school_filter }}&{% endif %}{% else %}?following=1{% if query %}&q={{ query }}{% endif %}{% if role_filter %}&role={{ role_filter }}{% endif %}{% if school_filter %}&school={{ school_filter }}{% endif %}{% endif %}"
+                   class="btn btn-sm {% if following_only == '1' %}btn-navy{% else %}btn-outline-primary{% endif %} text-xs py-2 w-full rounded-xl flex items-center justify-center gap-1 font-semibold text-decoration-none">
+                    <span class="material-symbols-outlined text-[16px]">how_to_reg</span>
+                    <span>Following ({{ my_following_count }})</span>
+                </a>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-navy text-xs py-2 font-bold w-full rounded-xl">
+                    Filter Directory
+                </button>
+            </div>
+        </form>
+
+        <!-- Official Multidisciplinary School Filter Pills -->
+        <div class="mt-3 pt-3 border-t border-border-subtle">
+            <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
+                <span class="text-[11px] font-bold text-text-muted uppercase tracking-wider shrink-0 me-1">School:</span>
+                <a href="{% url 'accounts:members' %}?{% if query %}q={{ query }}&{% endif %}{% if role_filter %}role={{ role_filter }}&{% endif %}{% if following_only %}following={{ following_only }}{% endif %}"
+                   class="badge px-3 py-1.5 rounded-full text-xs font-semibold text-decoration-none shrink-0 transition-all {% if not school_filter %}bg-primary text-white shadow-xs{% else %}bg-surface-subtle text-text-secondary hover:bg-surface-container border border-border-subtle{% endif %}">
+                    All Schools
+                </a>
+                {% for s in schools %}
+                    <a href="{% url 'accounts:members' %}?school={{ s.code }}{% if query %}&q={{ query }}{% endif %}{% if role_filter %}&role={{ role_filter }}{% endif %}{% if following_only %}&following={{ following_only }}{% endif %}"
+                       class="badge px-3 py-1.5 rounded-full text-xs font-semibold text-decoration-none shrink-0 transition-all {% if school_filter == s.code %}bg-primary text-white shadow-xs border border-accent-gold{% else %}bg-surface-subtle text-text-secondary hover:bg-surface-container border border-border-subtle{% endif %}"
+                       title="{{ s.name }}">
+                        {{ s.code }} &bull; {{ s.name|truncatechars:26 }}
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
     </div>
 
-</section>
+    <!-- Directory Header Meta -->
+    <div class="flex items-center justify-between mb-3 px-1 text-xs text-text-muted">
+        <span class="font-bold text-primary">{{ total_researchers }} Researcher{{ total_researchers|pluralize }} in Network</span>
+        {% if query or role_filter or following_only %}
+            <a href="{% url 'accounts:members' %}" class="text-accent-gold-dark font-semibold hover:underline">
+                Clear Filters ✕
+            </a>
+        {% endif %}
+    </div>
 
+    <!-- ====================================================================
+         INSTAGRAM-STYLE RESEARCHER CARDS GRID
+    ==================================================================== -->
+    <div class="row g-4">
+        {% for profile in profiles %}
+            <div class="col-md-6 col-lg-4">
+                <!-- Instagram Profile Card -->
+                <article class="card h-100 p-4 border border-border-subtle bg-white shadow-xs hover:shadow-md transition-all rounded-2xl flex flex-col justify-between">
+                    <div>
+                        <!-- Top Header: Instagram Story Ring Avatar + Handle & Name -->
+                        <div class="flex items-start gap-3 mb-3">
+                            <div class="relative shrink-0">
+                                <div class="w-14 h-14 rounded-full p-[2.5px] bg-gradient-to-tr from-[#FE932C] via-[#D97706] to-[#00236F] shadow-sm flex items-center justify-center">
+                                    <div class="w-full h-full rounded-full bg-white p-[1.5px] flex items-center justify-center">
+                                        <div class="w-full h-full rounded-full bg-primary flex items-center justify-center text-white font-display font-bold text-base shadow-inner select-none">
+                                            {{ profile.user.first_name|first|default:profile.user.username|first|upper }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="min-w-0 flex-grow">
+                                <div class="flex items-center gap-1">
+                                    <h3 class="font-display text-sm font-bold text-primary truncate mb-0">
+                                        @{{ profile.user.username }}
+                                    </h3>
+                                    <span class="material-symbols-outlined text-primary text-[15px]" title="Verified Member" style="font-variation-settings: 'FILL' 1;">verified</span>
+                                </div>
+                                <h4 class="text-xs font-semibold text-text-secondary truncate mb-0">
+                                    {{ profile.user.get_full_name|default:profile.user.username }}
+                                </h4>
+                                <div class="flex flex-wrap items-center gap-1 mt-1">
+                                    <span class="badge topic-badge text-[10px]">
+                                        {{ profile.get_role_display|default:"Faculty" }}
+                                    </span>
+                                    {% if profile.department.school %}
+                                        <span class="badge bg-primary/10 text-primary border border-primary/20 text-[10px] font-bold" title="{{ profile.department.school.name }}">
+                                            {{ profile.department.school.code }}
+                                        </span>
+                                    {% endif %}
+                                    {% if profile.department %}
+                                        <span class="text-[10px] text-text-muted truncate max-w-[140px]" title="{{ profile.department.name }}">
+                                            &bull; {{ profile.department.name }}
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Stats Row (Instagram 3-Count: Posts | Followers | Following) -->
+                        <div class="grid grid-cols-3 text-center py-2 px-1 bg-surface-subtle/80 rounded-xl mb-3 border border-border-subtle text-xs">
+                            <div class="border-r border-border-subtle">
+                                <div class="font-extrabold text-primary text-xs">{{ profile.posts_count }}</div>
+                                <div class="text-[10px] text-text-muted">posts</div>
+                            </div>
+                            <div class="border-r border-border-subtle">
+                                <div class="font-extrabold text-primary text-xs">{{ profile.followers_count }}</div>
+                                <div class="text-[10px] text-text-muted">followers</div>
+                            </div>
+                            <div>
+                                <div class="font-extrabold text-primary text-xs">{{ profile.following_count }}</div>
+                                <div class="text-[10px] text-text-muted">following</div>
+                            </div>
+                        </div>
+
+                        <!-- Bio / Designation Text -->
+                        <p class="text-xs text-text-secondary leading-relaxed mb-2 line-clamp-2" style="min-height: 36px;" title="{{ profile.bio }}">
+                            {{ profile.bio|default:"Chanakya University academic scholar. Active in university research programs."|truncatewords:20 }}
+                        </p>
+
+                        <!-- Faculty Official Portal Profile Link (if available) -->
+                        {% if profile.personal_website %}
+                            <div class="mb-2">
+                                <a href="{{ profile.personal_website }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-[11px] text-primary font-semibold hover:underline">
+                                    <span class="material-symbols-outlined text-[13px] text-accent-gold">school</span>
+                                    <span>Chanakya University Faculty Profile</span>
+                                    <span class="material-symbols-outlined text-[12px]">open_in_new</span>
+                                </a>
+                            </div>
+                        {% endif %}
+
+                        <!-- Research Topic Pills (Instagram Highlights Style) -->
+                        <div class="mb-3">
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-text-muted block mb-1">Topics</span>
+                            <div class="flex flex-wrap gap-1">
+                                {% for topic in profile.topics.all|slice:":4" %}
+                                    <a href="{% url 'unified_search:search' %}?q={{ topic.name }}" class="badge topic-badge text-decoration-none text-[10px]">
+                                        #{{ topic.name }}
+                                    </a>
+                                {% empty %}
+                                    <span class="text-[11px] text-text-muted">General research</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Action Buttons (Instagram Follow / Following) -->
+                    <div class="pt-3 border-t border-border-subtle flex items-center gap-2">
+                        <form method="POST" action="{% url 'accounts:toggle_follow' profile.user.id %}" class="flex-grow m-0">
+                            {% csrf_token %}
+                            {% if profile.user.id in followed_ids %}
+                                <!-- Instagram-Style Following State (subtle outline, hover to unfollow) -->
+                                <button type="submit"
+                                        class="btn btn-sm btn-outline-secondary w-full py-1.5 text-xs font-bold rounded-xl flex items-center justify-center gap-1 group hover:border-status-error hover:bg-status-error-surface hover:text-status-error transition-all"
+                                        title="Click to unfollow">
+                                    <span class="material-symbols-outlined text-[15px] text-status-success group-hover:text-status-error">check</span>
+                                    <span class="group-hover:hidden">Following</span>
+                                    <span class="hidden group-hover:inline">Unfollow</span>
+                                </button>
+                            {% else %}
+                                <!-- Instagram-Style Follow State (solid primary navy button) -->
+                                <button type="submit" class="btn btn-sm btn-navy w-full py-1.5 text-xs font-bold rounded-xl flex items-center justify-center gap-1 shadow-xs">
+                                    <span class="material-symbols-outlined text-[15px]">person_add</span>
+                                    <span>Follow</span>
+                                </button>
+                            {% endif %}
+                        </form>
+
+                        <!-- Secondary Action: View In Search -->
+                        <a href="{% url 'unified_search:search' %}?q={{ profile.user.username }}"
+                           class="btn btn-sm btn-outline-primary text-xs py-1.5 px-2.5 rounded-xl flex items-center justify-center shrink-0"
+                           title="Explore research and discussions by this author">
+                            <span class="material-symbols-outlined text-[16px]">visibility</span>
+                        </a>
+                    </div>
+                </article>
+            </div>
+        {% empty %}
+            <div class="col-12 text-center py-5">
+                <div class="w-16 h-16 rounded-full bg-surface-subtle flex items-center justify-center text-text-muted mx-auto mb-3">
+                    <span class="material-symbols-outlined text-[32px]">group_off</span>
+                </div>
+                <h4 class="font-display text-base font-bold text-primary mb-1">No Researchers Matched</h4>
+                <p class="text-xs text-text-muted mb-3">Try clearing search filters or search with another topic or username.</p>
+                <a href="{% url 'accounts:members' %}" class="btn btn-outline-primary text-xs py-1.5 px-3">
+                    Reset Directory
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+
+</div>
 {% endblock %}

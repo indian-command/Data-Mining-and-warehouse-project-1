@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}Terms of Service & Scholarly Honor Code | Chanakya University{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-lg-5 py-4">
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="flex items-center gap-2 text-xs text-text-muted p-0 m-0 list-unstyled">
+            <li><a href="{% url 'home' %}" class="hover:text-primary">Home</a></li>
+            <li>/</li>
+            <li class="font-bold text-primary">Terms of Service</li>
+        </ol>
+    </nav>
+
+    <div class="max-w-4xl mx-auto">
+        <!-- Header Card -->
+        <div class="card p-5 sm:p-6 border-0 bg-white shadow-sm rounded-2xl mb-4">
+            <div class="flex items-center gap-2.5 mb-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-accent-gold"></span>
+                <span class="text-xs font-bold uppercase tracking-wider text-accent-gold-dark">Institutional Governance &bull; Karnataka Act No. 37 of 2021</span>
+            </div>
+            <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-primary mb-2">
+                Terms of Service & Scholarly Honor Code
+            </h1>
+            <p class="text-xs text-text-muted mb-0">
+                Governing all academic research, data exchange, discussions, and AI-assisted workflows within Chanakya University Research Commons.
+            </p>
+        </div>
+
+        <!-- Terms Content Sections -->
+        <div class="card p-5 sm:p-6 border-0 bg-white shadow-sm rounded-2xl space-y-6 text-xs sm:text-sm text-text-secondary leading-relaxed">
+            
+            <section>
+                <h3 class="font-display text-base font-bold text-primary mb-2 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary text-[20px]">gavel</span>
+                    <span>1. Acceptable Academic Use</span>
+                </h3>
+                <p>
+                    The Chanakya University Research Commons is established exclusively to advance academic inquiry, open scientific research, and peer collaboration. Access is granted to verified faculty, enrolled students, research scholars, and authorized institutional affiliates. All automated scrapers, denial-of-service tools, or unauthorized credential sharing are strictly prohibited.
+                </p>
+            </section>
+
+            <section>
+                <h3 class="font-display text-base font-bold text-primary mb-2 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary text-[20px]">copyright</span>
+                    <span>2. Intellectual Property & Open Access Attribution</span>
+                </h3>
+                <p>
+                    Scholarly works indexed within the Commons remain the intellectual property of their original authors, publishers, or preprint servers under their respective Creative Commons or institutional licenses. When citing works discovered through the platform, members must provide full bibliographic attribution including canonical DOIs or arXiv identifiers.
+                </p>
+            </section>
+
+            <section>
+                <h3 class="font-display text-base font-bold text-primary mb-2 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary text-[20px]">smart_toy</span>
+                    <span>3. AI Research Assistant & RAG Ethics (F8)</span>
+                </h3>
+                <div class="p-3 rounded-xl bg-surface-subtle">
+                    <p class="mb-2">The integrated AI Research Assistant synthesizes passages retrieved via cosine similarity over indexed papers. Members agree to the following ethical guidelines:</p>
+                    <ul class="list-disc pl-4 space-y-1 text-xs">
+                        <li>AI-synthesized responses are research aides and must not be submitted as original scholarly work without primary source review.</li>
+                        <li>Inline citations provided by the assistant must be cross-verified against primary literature before citing in academic theses or journal submissions.</li>
+                        <li>Automated query flooding or jailbreak prompt injections targeting the local LLM runtime are subject to automated moderation flags under Subsystem F7.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <section>
+                <h3 class="font-display text-base font-bold text-primary mb-2 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary text-[20px]">forum</span>
+                    <span>4. Peer Review & Discussion Guidelines (F3)</span>
+                </h3>
+                <p>
+                    The Research Discussions forum is a civil, evidence-grounded environment. Harassment, abusive language, non-academic promotions, or unsubstantiated claims will be removed by the institutional moderation queue. Subsystem F7 continuously monitors for automated spam bursts or duplicate posting anomalies.
+                </p>
+            </section>
+
+            <section>
+                <h3 class="font-display text-base font-bold text-primary mb-2 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary text-[20px]">policy</span>
+                    <span>5. Disciplinary Sanctions & Due Process</span>
+                </h3>
+                <p>
+                    Violations of this Scholarly Honor Code are reviewed by the Chanakya University Academic Senate and Discipline Committee in accordance with the university statues. Sanctions may range from repository privileges suspension to formal academic review.
+                </p>
+            </section>
+
+            <div class="p-4 rounded-xl bg-surface-subtle border border-border-subtle text-xs text-text-muted">
+                <span>Inquiries regarding research copyright or code interpretation may be addressed to:</span>
+                <strong class="text-primary block mt-1">Dean of Research & Academic Affairs &bull; Chanakya University</strong>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+{% endblock %}

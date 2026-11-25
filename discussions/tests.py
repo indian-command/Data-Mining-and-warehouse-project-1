@@ -842,3 +842,62 @@ class DiscussionViewsTests(TestCase):
                 id=old_resource.id
             ).exists()
         )
+
+    # =====================================
+    # NEW TESTS: PAPER POSTS, LIKES, SAVES, DETAIL
+    # =====================================
+
+    def test_student_and_faculty_can_post_paper(self):
+        self.client.force_login(self.student_a)
+
+        response = self.client.post(
+            reverse("discussions:post_create"),
+            {
+                "title": "Novel Quantum Algorithm Preprint",
+                "content": "Full preprint details on quantum annealing for optimization.",
+                "post_type": "paper",
+                "paper_link": "https://arxiv.org/abs/2301.00001",
+                "paper_doi": "10.1145/3543507",
+            }
+        )
+        self.assertEqual(response.status_code, 302)
+
+        paper_post = DiscussionPost.objects.get(title="Novel Quantum Algorithm Preprint")
+        self.assertEqual(paper_post.post_type, "paper")
+        self.assertEqual(paper_post.paper_link, "https://arxiv.org/abs/2301.00001")
+        self.assertTrue(paper_post.is_paper)
+
+    def test_user_can_save_and_toggle_save_post(self):
+        self.client.force_login(self.student_b)
+
+        # 1. Save post
+        resp = self.client.post(
+            reverse("discussions:toggle_save", args=[self.post.id])
+        )
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(self.post.save_count, 1)
+
+        # Check saved feed
+        resp_feed = self.client.get(
+            reverse("discussions:post_list") + "?feed=saved"
+        )
+        self.assertEqual(resp_feed.status_code, 200)
+        self.assertIn(self.post, resp_feed.context["posts"])
+
+        # 2. Toggle save off
+        resp_toggle = self.client.post(
+            reverse("discussions:toggle_save", args=[self.post.id])
+        )
+        self.assertEqual(resp_toggle.status_code, 302)
+        self.assertEqual(self.post.save_count, 0)
+
+    def test_post_detail_view(self):
+        self.client.force_login(self.student_b)
+
+        resp = self.client.get(
+            reverse("discussions:post_detail", args=[self.post.id])
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertTemplateUsed(resp, "discussions/post_detail.html")
+        self.assertEqual(resp.context["post"], self.post)
+

@@ -1,26 +1,71 @@
-
 services:
   db:
-    image: pgvector/pgvector:pg16
+    image: pgvector/pgvector:pg17
+    pull_policy: if_not_present
     container_name: research_commons_db
     restart: unless-stopped
-
     environment:
-      POSTGRES_DB: research_commons
-      POSTGRES_USER: research_user
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-
+      POSTGRES_DB: ${POSTGRES_DB:-research_commons}
+      POSTGRES_USER: ${POSTGRES_USER:-research_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-research_password}
     ports:
-      - "5433:5432"
-
+      - "${POSTGRES_PORT:-5433}:5432"
     volumes:
-      - research_commons_data:/var/lib/postgresql/data
-
+      - pg_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U research_user -d research_commons"]
-      interval: 10s
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-research_user} -d ${POSTGRES_DB:-research_commons}"]
+      interval: 5s
       timeout: 5s
       retries: 5
 
+  minio:
+    image: minio/minio:latest
+    pull_policy: if_not_present
+    container_name: research_commons_minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-admin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-admin12345}
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+
+  web:
+    build:
+      context: .
+      pull: false
+    container_name: research_commons_web
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      minio:
+        condition: service_started
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-research_commons}
+      POSTGRES_USER: ${POSTGRES_USER:-research_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-research_password}
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-admin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-admin12345}
+      MINIO_SECURE: "False"
+      MINIO_BUCKET_RAW: ${MINIO_BUCKET_RAW:-raw-ingestion}
+      MINIO_BUCKET_PARQUET: ${MINIO_BUCKET_PARQUET:-analytics-parquet}
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.2}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-all-MiniLM-L6-v2}
+      DEBUG: ${DEBUG:-True}
+      SECRET_KEY: ${SECRET_KEY:-django-insecure-m@o9=-d&z4l*b3abkgjj(m)ftv1!i%7dm30^r2p&doz6)=g&su}
+    ports:
+      - "${WEB_PORT:-8080}:8000"
+    volumes:
+      - .:/app
+
 volumes:
-  research_commons_data:
+  pg_data:
+  minio_data:

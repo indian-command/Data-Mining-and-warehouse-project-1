@@ -141,6 +141,13 @@ def profile_edit_view(request):
 
 @login_required
 def member_list_view(request):
+    from django.db.models import Count, Q
+    from .models import School
+
+    query = request.GET.get("q", "").strip()
+    role_filter = request.GET.get("role", "").strip()
+    school_filter = request.GET.get("school", "").strip()
+    following_only = request.GET.get("following", "").strip()
 
     profiles = (
         Profile.objects
@@ -151,8 +158,29 @@ def member_list_view(request):
             "department__school"
         )
         .prefetch_related("topics")
-        .order_by("user__first_name")
+        .annotate(
+            posts_count=Count("user__discussion_posts", distinct=True),
+            followers_count=Count("user__follower_links", distinct=True),
+            following_count=Count("user__following_links", distinct=True),
+        )
     )
+
+    if query:
+        profiles = profiles.filter(
+            Q(user__username__icontains=query) |
+            Q(user__first_name__icontains=query) |
+            Q(user__last_name__icontains=query) |
+            Q(department__name__icontains=query) |
+            Q(department__school__name__icontains=query) |
+            Q(bio__icontains=query) |
+            Q(topics__name__icontains=query)
+        ).distinct()
+
+    if role_filter:
+        profiles = profiles.filter(role=role_filter)
+
+    if school_filter:
+        profiles = profiles.filter(department__school__code=school_filter)
 
     followed_ids = set(
         MemberFollow.objects.filter(
@@ -160,12 +188,35 @@ def member_list_view(request):
         ).values_list("followed_id", flat=True)
     )
 
+    if following_only == "1":
+        profiles = profiles.filter(user_id__in=followed_ids)
+
+    profiles = profiles.order_by("-followers_count", "user__first_name")
+
+    # Current user's Instagram-style profile stats
+    my_profile = getattr(request.user, "profile", None)
+    my_posts_count = request.user.discussion_posts.count()
+    my_followers_count = request.user.follower_links.count()
+    my_following_count = request.user.following_links.count()
+
+    schools = School.objects.all().order_by("name")
+
     return render(
         request,
         "accounts/members.html",
         {
             "profiles": profiles,
             "followed_ids": followed_ids,
+            "my_profile": my_profile,
+            "my_posts_count": my_posts_count,
+            "my_followers_count": my_followers_count,
+            "my_following_count": my_following_count,
+            "query": query,
+            "role_filter": role_filter,
+            "school_filter": school_filter,
+            "schools": schools,
+            "following_only": following_only,
+            "total_researchers": profiles.count(),
         }
     )
 

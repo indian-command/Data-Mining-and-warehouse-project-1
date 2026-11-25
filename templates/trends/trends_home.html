@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}Research Trends & Velocity | Chanakya University{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-lg-5 py-4">
+
+    <!-- Header Section -->
+    <div class="flex flex-wrap justify-between items-center gap-3 pb-3 mb-4 border-b border-border-subtle">
+        <div>
+            <span class="section-eyebrow">STATISTICAL VELOCITY MONITOR</span>
+            <h1 class="section-title mb-0">Research Trends & Velocity</h1>
+            <p class="text-xs text-text-secondary mt-1">Sliding-window topic monitoring, growth velocity, and statistical spike anomaly detection.</p>
+        </div>
+        {% if user.is_staff %}
+            <div>
+                <a href="{% url 'trends:moderation_queue' %}" class="btn btn-outline-danger text-xs py-2 px-3 font-bold flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[16px]">shield</span>
+                    <span>Moderation Queue</span>
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- 1. Spike Alerts Banner (Z >= 2.0) -->
+    {% if spike_alerts %}
+        <div class="rounded-2xl bg-status-error-surface border border-status-error/30 p-4 sm:p-5 shadow-sm mb-5">
+            <div class="flex items-center gap-2 mb-2">
+                <span class="material-symbols-outlined text-status-error text-[24px]">crisis_alert</span>
+                <h3 class="font-display text-base font-bold text-status-error mb-0">Sudden Topic Spike Alerts Detected</h3>
+            </div>
+            <p class="text-xs text-text-secondary mb-3">
+                The following research topics have exhibited statistically significant surges (Z-score &ge; 2.0) over the last 7 days compared to their 30-day baseline:
+            </p>
+            <div class="row g-3">
+                {% for spike in spike_alerts %}
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card p-3.5 bg-white border border-status-error/30 shadow-xs h-100 flex flex-col justify-between">
+                            <div class="flex justify-between items-start mb-1.5">
+                                <h4 class="font-display text-sm font-bold text-primary mb-0">#{{ spike.topic.name }}</h4>
+                                <span class="badge bg-status-error text-white font-mono text-[11px]">Z = +{{ spike.z_score }}</span>
+                            </div>
+                            <p class="text-xs text-text-muted mb-2">
+                                7-Day: <strong>{{ spike.current_count }}</strong> events • Baseline: {{ spike.baseline_count }}/wk
+                            </p>
+                            <span class="badge badge-gold text-[10px] w-fit">
+                                Growth: +{{ spike.growth_rate }}%
+                            </span>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- 2. Trending Topics Grid & Live Activity -->
+    <div class="row g-4 mb-5">
+        <!-- Left: Active Topics by Velocity -->
+        <div class="col-lg-8">
+            <div class="flex items-center gap-2 mb-3">
+                <span class="material-symbols-outlined text-primary text-[22px]">trending_up</span>
+                <h3 class="font-display text-base font-bold text-primary mb-0">Active Research Topics by Growth Velocity</h3>
+            </div>
+
+            <div class="row g-3">
+                {% for t in top_trending %}
+                    <div class="col-md-6">
+                        <div class="card p-4 border-0 bg-white shadow-sm hover:shadow-md transition-shadow h-100 flex flex-col justify-between">
+                            <div>
+                                <div class="flex justify-between items-start mb-2">
+                                    <h4 class="font-display text-base font-bold text-primary mb-0">
+                                        <a href="{% url 'unified_search:search' %}?q={{ t.topic.name }}" class="hover:underline text-primary">
+                                            #{{ t.topic.name }}
+                                        </a>
+                                    </h4>
+                                    <span class="badge badge-success text-[11px] font-bold">
+                                        +{{ t.growth_rate }}%
+                                    </span>
+                                </div>
+                                <p class="text-xs text-text-muted mb-2">
+                                    Recent 7-day activity: <strong>{{ t.current_count }}</strong> interactions
+                                </p>
+                                <div class="w-full h-1.5 rounded-full bg-surface-subtle overflow-hidden mb-3">
+                                    <div class="h-full bg-accent-gold rounded-full" style="width: {{ t.growth_rate|default:15 }}%; max-width: 100%;"></div>
+                                </div>
+                            </div>
+
+                            <div class="flex justify-between items-center pt-2 border-t border-border-subtle text-[11px] text-text-muted">
+                                <span>Baseline: {{ t.baseline_count }}/wk</span>
+                                <span>Z-Score: {{ t.z_score }}</span>
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="col-12 text-center py-5">
+                        <p class="text-xs text-text-muted">No topic trends calculated yet. Trends compute automatically as activity occurs.</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Right: Real-Time Activity Feed -->
+        <div class="col-lg-4">
+            <div class="flex items-center gap-2 mb-3">
+                <span class="material-symbols-outlined text-accent-gold-dark text-[22px]">bolt</span>
+                <h3 class="font-display text-base font-bold text-primary mb-0">Live Research Feed</h3>
+            </div>
+
+            <div class="card p-4 border-0 bg-white shadow-sm">
+                <div class="space-y-3">
+                    {% for ev in recent_events %}
+                        <div class="p-2.5 rounded-xl bg-surface-subtle border border-border-subtle text-xs">
+                            <div class="flex items-center justify-between gap-1 mb-1">
+                                <span class="badge topic-badge text-[10px]">{{ ev.get_event_type_display|default:ev.event_type }}</span>
+                                <span class="text-[10px] text-text-muted">{{ ev.timestamp|date:"M d, H:i" }}</span>
+                            </div>
+                            <p class="text-xs text-text-primary mb-0">
+                                <strong>{{ ev.user.username }}</strong> interacted with
+                                <span class="font-semibold text-primary">#{{ ev.topic.name|default:"Research" }}</span>
+                            </p>
+                        </div>
+                    {% empty %}
+                        <p class="text-xs text-text-muted text-center py-3 mb-0">No recent activity recorded.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

@@ -29,7 +29,20 @@ SECRET_KEY = 'django-insecure-m@o9=-d&z4l*b3abkgjj(m)ftv1!i%7dm30^r2p&doz6)=g&su
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
+
+# CSRF Trusted Origins for local development & containerized environments
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:8080",
+    "http://127.0.0.1:8080",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+    "http://0.0.0.0:8080",
+    "http://0.0.0.0:8000",
+]
+
+# Custom CSRF Failure View with automatic session recovery
+CSRF_FAILURE_VIEW = "core.views.csrf_failure_view"
 
 
 # Application definition
@@ -41,6 +54,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.postgres',
+    'pgvector.django',
     'core',
     'accounts',
     'discussions',
@@ -91,9 +106,9 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.getenv('POSTGRES_DB', 'research_commons'),
         'USER': os.getenv('POSTGRES_USER', 'research_user'),
-        'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
-        'HOST': '127.0.0.1',
-        'PORT': '5433',
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'research_password'),
+        'HOST': os.getenv('POSTGRES_HOST', '127.0.0.1'),
+        'PORT': os.getenv('POSTGRES_PORT', '5433'),
     }
 }
 
@@ -157,3 +172,20 @@ LOGOUT_REDIRECT_URL = "/"
 # Research paper and library resource uploads
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
+
+# MinIO (S3-compatible Object Storage)
+MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT", "localhost:9000")
+MINIO_ROOT_USER = os.getenv("MINIO_ROOT_USER", "admin")
+MINIO_ROOT_PASSWORD = os.getenv("MINIO_ROOT_PASSWORD", "admin12345")
+MINIO_SECURE = os.getenv("MINIO_SECURE", "False").lower() in ("true", "1", "yes")
+MINIO_BUCKET_RAW = os.getenv("MINIO_BUCKET_RAW", "raw-ingestion")
+MINIO_BUCKET_PARQUET = os.getenv("MINIO_BUCKET_PARQUET", "analytics-parquet")
+
+# Local LLM (Ollama) & Vector Embeddings
+OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.2")
+EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "all-MiniLM-L6-v2")
+
+# Analytics Star-Schema Parquet Local Cache / Storage Directory
+ANALYTICS_DATA_DIR = BASE_DIR / "data" / "analytics"
+ANALYTICS_DATA_DIR.mkdir(parents=True, exist_ok=True)

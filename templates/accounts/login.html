@@ -1,94 +1,228 @@
-
 {% extends "base.html" %}
 
-{% block title %}Login | Research Commons{% endblock %}
+{% block title %}Sign In | Chanakya University Academic Portal{% endblock %}
 
 {% block content %}
-
-<section class="auth-section">
-
+<section class="auth-section py-5">
     <div class="container">
+        <div class="w-full max-w-[480px] mx-auto flex flex-col items-center">
 
-        <div class="auth-card mx-auto">
+            <!-- University Crest & Emblem Header -->
+            <div class="flex flex-col items-center text-center mb-4">
+                <div class="relative flex items-center justify-center w-16 h-16 rounded-2xl bg-primary shadow-lg mb-3">
+                    <!-- Chanakya Wisdom Lotus & Torch Shield Emblem -->
+                    <svg class="w-9 h-9" fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M24 6L28 15H20L24 6Z" fill="#FE932C"></path>
+                        <path d="M24 16C21 16 18 19 18 23C18 27.5 24 33 24 33C24 33 30 27.5 30 23C30 19 27 16 24 16Z" fill="#FFB77D"></path>
+                        <path d="M12 30C15 28 20 28 24 31C28 28 33 28 36 30C38 31.3 40 33.5 40 36C32 35 27 38 24 42C21 38 16 35 8 36C8 33.5 10 31.3 12 30Z" fill="#FFFFFF"></path>
+                        <circle cx="24" cy="22" fill="#00236F" r="2.5"></circle>
+                    </svg>
+                    <div class="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-secondary-container flex items-center justify-center shadow-sm">
+                        <span class="material-symbols-outlined text-[12px] text-white font-bold">school</span>
+                    </div>
+                </div>
 
-            <div class="text-center mb-4">
-                <h2>Welcome Back</h2>
-                <p class="text-muted">
-                    Sign in to your Research Commons account
-                </p>
-                <div class="gold-line"></div>
+                <span class="font-semibold text-xs text-accent-gold uppercase tracking-wider mb-1">Chanakya University</span>
+                <h1 class="font-display text-2xl sm:text-3xl font-extrabold text-primary tracking-tight">Academic Portal</h1>
+                <p class="text-sm text-text-secondary mt-1">Sign in to your Research Commons workspace</p>
             </div>
 
-            <form method="POST">
-                {% csrf_token %}
-
-                {% if form.non_field_errors %}
-                    <div class="alert alert-danger">
-                        {{ form.non_field_errors }}
-                    </div>
-                {% endif %}
-
-                <div class="mb-3">
-                    <label for="id_username" class="form-label">
-                        Username
-                    </label>
-
-                    <input
-                        type="text"
-                        name="username"
-                        id="id_username"
-                        class="form-control"
-                        placeholder="Enter your username"
-                        autocomplete="username"
-                        required
-                    >
-
-                    {% for error in form.username.errors %}
-                        <div class="text-danger small">{{ error }}</div>
-                    {% endfor %}
-                </div>
-
-                <div class="mb-4">
-                    <label for="id_password" class="form-label">
-                        Password
-                    </label>
-
-                    <input
-                        type="password"
-                        name="password"
-                        id="id_password"
-                        class="form-control"
-                        placeholder="Enter your password"
-                        autocomplete="current-password"
-                        required
-                    >
-
-                    {% for error in form.password.errors %}
-                        <div class="text-danger small">{{ error }}</div>
-                    {% endfor %}
-                </div>
-
-                {% if next %}
-                    <input type="hidden" name="next" value="{{ next }}">
-                {% endif %}
-
-                <button type="submit" class="btn btn-gold w-100">
-                    Login
+            <!-- Role Switcher Segmented Pills (Stitch Interactive Component) -->
+            <div class="w-full bg-surface-subtle p-1.5 rounded-xl flex items-center justify-between mb-4 border border-border-subtle shadow-xs">
+                <button class="role-btn flex-1 py-2 px-3 rounded-lg text-xs font-bold text-center transition-all bg-white text-primary shadow-sm" id="role-student" onclick="switchRole('Student / Scholar', 'arjun_sharma')" type="button">
+                    Student / Scholar
                 </button>
+                <button class="role-btn flex-1 py-2 px-3 rounded-lg text-xs font-medium text-center transition-all text-text-secondary hover:text-primary" id="role-faculty" onclick="switchRole('Faculty / Staff', 'admin_commons')" type="button">
+                    Faculty / Staff
+                </button>
+            </div>
 
-                <p class="text-center mt-4 mb-0">
-                    Don't have an account?
-                    <a href="{% url 'accounts:register' %}">
-                        Register here
+            <!-- Main Auth Card -->
+            <div class="w-full bg-white rounded-2xl p-6 sm:p-8 shadow-md border border-border-subtle flex flex-col">
+
+                <form method="POST" id="loginForm" onsubmit="handleLoginSubmit(event, this)">
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                        <div class="alert bg-status-error-surface border border-status-error text-status-error text-sm rounded-xl p-3 mb-4 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[18px]">error</span>
+                            <span>{{ form.non_field_errors }}</span>
+                        </div>
+                    {% endif %}
+
+                    <!-- Username Field -->
+                    <div class="mb-4">
+                        <label for="id_username" class="form-label flex items-center justify-between">
+                            <span>Username / ID</span>
+                            <span class="text-[11px] font-semibold text-primary px-2 py-0.5 rounded-full bg-surface-container" id="role-badge">Student Portal</span>
+                        </label>
+                        <div class="relative flex items-center">
+                            <span class="material-symbols-outlined absolute left-3 text-text-muted text-[18px]">badge</span>
+                            <input
+                                type="text"
+                                name="username"
+                                id="id_username"
+                                class="form-control pl-10 pr-3 py-2.5 rounded-xl"
+                                placeholder="Enter username"
+                                autocomplete="username"
+                                required
+                            >
+                        </div>
+                        {% for error in form.username.errors %}
+                            <div class="text-status-error text-xs mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Password Field -->
+                    <div class="mb-4">
+                        <div class="flex items-center justify-between mb-1.5">
+                            <label for="id_password" class="form-label mb-0">Password</label>
+                            <a href="javascript:void(0)" onclick="triggerToast('Please contact IT Helpdesk (Ext: 4402) for master password reset.', 'Password Assistance', 'info')" class="text-xs text-primary font-semibold hover:underline">
+                                Forgot password?
+                            </a>
+                        </div>
+                        <div class="relative flex items-center">
+                            <span class="material-symbols-outlined absolute left-3 text-text-muted text-[18px]">lock</span>
+                            <input
+                                type="password"
+                                name="password"
+                                id="id_password"
+                                class="form-control pl-10 pr-10 py-2.5 rounded-xl"
+                                placeholder="Enter your password"
+                                autocomplete="current-password"
+                                required
+                            >
+                            <button aria-label="Toggle password view" class="absolute right-3 text-text-muted hover:text-primary transition-colors flex items-center justify-center p-1" onclick="togglePasswordVisibility()" type="button">
+                                <span class="material-symbols-outlined text-[18px]" id="password-toggle-icon">visibility</span>
+                            </button>
+                        </div>
+                        {% for error in form.password.errors %}
+                            <div class="text-status-error text-xs mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    {% if next %}
+                        <input type="hidden" name="next" value="{{ next }}">
+                    {% endif %}
+
+                    <!-- Security & SSL Badge -->
+                    <div class="flex items-center justify-between mb-4">
+                        <label class="flex items-center gap-2 cursor-pointer select-none mb-0">
+                            <input type="checkbox" checked class="w-4 h-4 rounded text-primary focus:ring-primary cursor-pointer">
+                            <span class="text-xs text-text-secondary">Keep me signed in</span>
+                        </label>
+                        <div class="flex items-center gap-1 text-status-success text-xs font-semibold">
+                            <span class="material-symbols-outlined text-[14px]">encrypted</span>
+                            <span>SSL 256-bit</span>
+                        </div>
+                    </div>
+
+                    <!-- Primary Action Button -->
+                    <button type="submit" class="btn btn-navy w-full py-2.5 rounded-xl font-bold text-sm shadow-sm flex items-center justify-center gap-2">
+                        <span>Sign In to Portal</span>
+                        <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+                    </button>
+
+                    <!-- Mandatory Domain Security Notice -->
+                    <div class="flex items-start gap-2 p-3 rounded-xl bg-status-warning-surface text-accent-gold-dark mt-4 border border-accent-gold-light">
+                        <span class="material-symbols-outlined text-[18px] text-accent-gold-dark shrink-0 mt-0.5">lock_person</span>
+                        <p class="text-xs leading-relaxed mb-0">
+                            Access strictly restricted to authenticated <strong class="text-primary font-semibold">Chanakya University</strong> accounts. All sessions are logged for audit compliance.
+                        </p>
+                    </div>
+
+                </form>
+
+                <p class="text-center text-sm text-text-secondary mt-4 mb-0 pt-3 border-t border-border-subtle">
+                    Don't have an account yet?
+                    <a href="{% url 'accounts:register' %}" class="text-primary font-bold hover:underline">
+                        Register here →
                     </a>
                 </p>
 
-            </form>
+            </div>
+
+            <!-- Campus Support & Helpdesk Quick Actions -->
+            <div class="w-full mt-4 grid grid-cols-2 gap-3">
+                <a class="flex items-center gap-2 p-3 rounded-xl bg-white border border-border-subtle hover:border-primary transition-colors shadow-xs text-text-secondary text-decoration-none" href="javascript:void(0)" onclick="triggerToast('IT Helpdesk Hotline: Ext 4402 / Hall-1. Operating 9 AM - 6 PM.', 'IT Support', 'info')">
+                    <span class="material-symbols-outlined text-accent-gold-dark text-[20px]">support_agent</span>
+                    <div class="flex flex-col min-w-0">
+                        <span class="text-xs font-bold text-primary truncate">IT Helpdesk</span>
+                        <span class="text-[11px] text-text-muted truncate">Ext: 4402 / Hall-1</span>
+                    </div>
+                </a>
+                <a class="flex items-center gap-2 p-3 rounded-xl bg-white border border-border-subtle hover:border-primary transition-colors shadow-xs text-text-secondary text-decoration-none" href="javascript:void(0)" onclick="triggerToast('Academic Honor Code guidelines and user manuals are available in the Library repository.', 'Knowledge Base', 'info')">
+                    <span class="material-symbols-outlined text-primary text-[20px]">menu_book</span>
+                    <div class="flex flex-col min-w-0">
+                        <span class="text-xs font-bold text-primary truncate">Portal FAQ</span>
+                        <span class="text-[11px] text-text-muted truncate">Self-service guides</span>
+                    </div>
+                </a>
+            </div>
 
         </div>
-
     </div>
-
 </section>
 
+<script>
+    function togglePasswordVisibility() {
+        const pwdInput = document.getElementById('id_password');
+        const icon = document.getElementById('password-toggle-icon');
+        if (pwdInput.type === 'password') {
+            pwdInput.type = 'text';
+            icon.textContent = 'visibility_off';
+        } else {
+            pwdInput.type = 'password';
+            icon.textContent = 'visibility';
+        }
+    }
+
+    function handleLoginSubmit(event, form) {
+        if (form.dataset.submitting === 'true') {
+            event.preventDefault();
+            return false;
+        }
+        form.dataset.submitting = 'true';
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span>Signing In...</span><span class="spinner-border spinner-border-sm ms-2" role="status" style="width: 14px; height: 14px;"></span>';
+        }
+    }
+
+    // Reset button state if user navigates back using BFCache
+    window.addEventListener('pageshow', function (event) {
+        const form = document.getElementById('loginForm');
+        if (form) {
+            form.dataset.submitting = 'false';
+            const submitBtn = form.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<span>Sign In to Portal</span><span class="material-symbols-outlined text-[18px]">arrow_forward</span>';
+            }
+        }
+    });
+
+    function switchRole(roleName, sampleUsername) {
+        const buttons = document.querySelectorAll('.role-btn');
+        buttons.forEach(btn => {
+            btn.className = 'role-btn flex-1 py-2 px-3 rounded-lg text-xs font-medium text-center transition-all text-text-secondary hover:text-primary';
+        });
+
+        const activeBtnId = roleName.startsWith('Student') ? 'role-student' : 'role-faculty';
+        const activeBtn = document.getElementById(activeBtnId);
+        if (activeBtn) {
+            activeBtn.className = 'role-btn flex-1 py-2 px-3 rounded-lg text-xs font-bold text-center transition-all bg-white text-primary shadow-sm';
+        }
+
+        const usernameInput = document.getElementById('id_username');
+        const roleBadge = document.getElementById('role-badge');
+        if (usernameInput && sampleUsername) {
+            usernameInput.value = sampleUsername;
+        }
+        if (roleBadge) {
+            roleBadge.textContent = roleName;
+        }
+    }
+</script>
 {% endblock %}

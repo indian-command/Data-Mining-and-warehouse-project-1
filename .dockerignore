@@ -1,0 +1,10 @@
+.venv/
+.venv-dmw/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.parquet
+.git/
+.DS_Store
+

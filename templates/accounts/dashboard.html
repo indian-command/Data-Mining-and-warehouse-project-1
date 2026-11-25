@@ -1,142 +1,335 @@
-
 {% extends "base.html" %}
 
-{% block title %}My Dashboard | Research Commons{% endblock %}
+{% block title %}Dashboard | Chanakya University Academic Portal{% endblock %}
 
 {% block content %}
+<div class="container-fluid px-lg-5 py-4">
 
-<section class="dashboard-section py-5">
-
-    <div class="container">
-
-        <div class="dashboard-heading mb-4">
-            <span class="section-eyebrow">RESEARCH COMMONS</span>
-            <h2>Welcome, {{ request.user.first_name|default:request.user.username }}</h2>
-            <p class="text-muted">
-                Your research and collaboration workspace
-            </p>
+    <!-- Top Greeting Header Banner (Stitch Student/Faculty Dashboard) -->
+    <section class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary via-primary-container to-secondary p-space-lg sm:p-space-2xl text-white shadow-lg mb-4">
+        <!-- Ambient Background Glow -->
+        <div class="absolute -right-10 -bottom-10 w-60 h-60 rounded-full bg-white/5 pointer-events-none blur-2xl"></div>
+        <div class="absolute top-2 right-4 text-white/10 select-none pointer-events-none hidden sm:block">
+            <span class="material-symbols-outlined text-[110px] leading-none">school</span>
         </div>
 
-        {% if profile %}
+        <div class="relative z-10 flex flex-col space-y-2">
+            <div class="flex items-center justify-between">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 backdrop-blur-md text-white text-xs font-semibold">
+                    <span class="w-2 h-2 rounded-full bg-secondary-container animate-pulse"></span>
+                    Academic Session 2026 • Research Portal
+                </span>
+                <span class="text-xs text-primary-fixed-dim font-mono hidden sm:inline">
+                    Chanakya University Commons
+                </span>
+            </div>
 
-            <div class="row g-4">
+            <div class="pt-1">
+                <h1 class="font-display text-2xl sm:text-4xl font-extrabold tracking-tight text-white">
+                    Welcome back, {{ request.user.first_name|default:request.user.username }}!
+                </h1>
+                <p class="text-sm text-primary-fixed-dim mt-1">
+                    {{ profile.get_role_display|default:"Researcher" }} • 
+                    {% if profile.department %}
+                        {{ profile.department.name }}
+                        {% if profile.department.school %} ({{ profile.department.school.name }}){% endif %}
+                    {% else %}
+                        Chanakya University Research Network
+                    {% endif %}
+                </p>
+            </div>
 
-                <div class="col-lg-4">
-                    <div class="dashboard-card">
+            <!-- Quick Context Navigation Pills -->
+            <div class="pt-2 flex flex-wrap items-center gap-2">
+                <a href="{% url 'unified_search:search' %}" class="bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 text-decoration-none">
+                    <span class="material-symbols-outlined text-[16px] text-accent-gold-light">travel_explore</span>
+                    <span>Search Publications</span>
+                </a>
+                <a href="{% url 'research_library:library_home' %}" class="bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 text-decoration-none">
+                    <span class="material-symbols-outlined text-[16px] text-accent-gold-light">local_library</span>
+                    <span>My Library</span>
+                </a>
+                <a href="{% url 'research_assistant:assistant' %}" class="bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 text-decoration-none">
+                    <span class="material-symbols-outlined text-[16px] text-accent-gold-light">smart_toy</span>
+                    <span>Ask AI Assistant</span>
+                </a>
+            </div>
+        </div>
+    </section>
 
-                        <div class="dashboard-avatar">
-                            {{ request.user.first_name|first|upper }}
+    <!-- Key Metrics Snapshot Cards -->
+    <section class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-4">
+        <!-- Metric 1: Research Role -->
+        <div class="card p-3 sm:p-4 border-0 bg-white shadow-sm flex flex-col justify-between">
+            <div class="flex items-center justify-between text-text-muted mb-2">
+                <span class="text-xs font-bold uppercase tracking-wider">Member Role</span>
+                <span class="material-symbols-outlined text-primary text-[20px]">badge</span>
+            </div>
+            <div class="font-display text-xl sm:text-2xl font-extrabold text-primary">
+                {{ profile.get_role_display|default:"Researcher" }}
+            </div>
+            <div class="mt-2 flex items-center gap-1 text-[11px] text-status-success font-semibold">
+                <span class="material-symbols-outlined text-[14px]">verified</span>
+                <span>Active University Member</span>
+            </div>
+        </div>
+
+        <!-- Metric 2: Research Interests -->
+        <div class="card p-3 sm:p-4 border-0 bg-white shadow-sm flex flex-col justify-between">
+            <div class="flex items-center justify-between text-text-muted mb-2">
+                <span class="text-xs font-bold uppercase tracking-wider">Followed Topics</span>
+                <span class="material-symbols-outlined text-accent-gold-dark text-[20px]">label</span>
+            </div>
+            <div class="font-display text-xl sm:text-2xl font-extrabold text-primary">
+                {{ profile.topics.count|default:0 }}
+            </div>
+            <div class="mt-2 text-[11px] text-text-muted">
+                Research specializations tracked
+            </div>
+        </div>
+
+        <!-- Metric 3: Academic School -->
+        <div class="card p-3 sm:p-4 border-0 bg-white shadow-sm flex flex-col justify-between">
+            <div class="flex items-center justify-between text-text-muted mb-2">
+                <span class="text-xs font-bold uppercase tracking-wider">Department</span>
+                <span class="material-symbols-outlined text-status-success text-[20px]">domain</span>
+            </div>
+            <div class="font-bold text-sm sm:text-base text-primary truncate" title="{{ profile.department.name }}">
+                {{ profile.department.name|default:"General Research" }}
+            </div>
+            <div class="mt-2 text-[11px] text-text-muted truncate">
+                {{ profile.department.school.name|default:"University Wide" }}
+            </div>
+        </div>
+
+        <!-- Metric 4: Library Quick Link -->
+        <div class="card p-3 sm:p-4 border-0 bg-white shadow-sm flex flex-col justify-between">
+            <div class="flex items-center justify-between text-text-muted mb-2">
+                <span class="text-xs font-bold uppercase tracking-wider">Personal Library</span>
+                <span class="material-symbols-outlined text-primary text-[20px]">collections_bookmark</span>
+            </div>
+            <a href="{% url 'research_library:library_home' %}" class="font-display text-base font-bold text-primary hover:text-accent-gold transition-colors flex items-center gap-1">
+                <span>Open Library</span>
+                <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+            </a>
+            <div class="mt-2 text-[11px] text-text-muted">
+                Collections & Saved Papers
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Dashboard Content Grid -->
+    <div class="row g-4">
+        <!-- Left Column: Member Profile Details & Research Topics -->
+        <div class="col-lg-4">
+            <!-- Profile Identity Card -->
+            <div class="card p-4 border-0 bg-white shadow-sm mb-4">
+                <div class="flex items-start justify-between gap-3 mb-3">
+                    <div class="flex items-center gap-3">
+                        <div class="dashboard-avatar mb-0">
+                            {{ request.user.first_name|first|default:request.user.username|first|upper }}
                         </div>
+                        <div>
+                            <h3 class="font-display text-lg font-bold text-primary mb-0">
+                                {{ request.user.get_full_name|default:request.user.username }}
+                            </h3>
+                            <p class="text-xs text-text-muted mb-0">{{ request.user.email }}</p>
+                        </div>
+                    </div>
+                    <span class="badge topic-badge text-xs">
+                        {{ profile.get_role_display|default:"Researcher" }}
+                    </span>
+                </div>
 
-                        <h4>
-                            {{ request.user.get_full_name|default:request.user.username }}
-                        </h4>
-
-                        <p class="text-muted">
-                            {{ request.user.email }}
-                        </p>
-
-                        <span class="topic-badge">
-                            {{ profile.get_role_display }}
+                <div class="py-3 border-t border-b border-border-subtle space-y-2 text-xs">
+                    <div class="flex justify-between">
+                        <span class="text-text-muted">School:</span>
+                        <span class="font-semibold text-primary text-end">
+                            {{ profile.department.school.name|default:"Not assigned" }}
                         </span>
-
                     </div>
+                    <div class="flex justify-between">
+                        <span class="text-text-muted">Department:</span>
+                        <span class="font-semibold text-primary text-end">
+                            {{ profile.department.name|default:"Not assigned" }}
+                        </span>
+                    </div>
+                    {% if profile.personal_website %}
+                        <div class="flex justify-between">
+                            <span class="text-text-muted">Website:</span>
+                            <a href="{{ profile.personal_website }}" target="_blank" rel="noopener" class="font-semibold text-accent-gold-dark truncate max-w-[180px]">
+                                {{ profile.personal_website }}
+                            </a>
+                        </div>
+                    {% endif %}
+                    {% if profile.publication_url %}
+                        <div class="flex justify-between">
+                            <span class="text-text-muted">Publications URL:</span>
+                            <a href="{{ profile.publication_url }}" target="_blank" rel="noopener" class="font-semibold text-accent-gold-dark truncate max-w-[180px]">
+                                Profile Link
+                            </a>
+                        </div>
+                    {% endif %}
                 </div>
 
-                <div class="col-lg-8">
+                <div class="pt-3">
+                    <h5 class="text-xs font-bold text-primary uppercase tracking-wider mb-2">Biography</h5>
+                    <p class="text-xs text-text-secondary leading-relaxed mb-4">
+                        {{ profile.bio|default:"No biography added yet. Click edit profile to add your academic background and research focus." }}
+                    </p>
 
-                    <div class="dashboard-card">
+                    <a href="{% url 'accounts:profile_edit' %}" class="btn btn-outline-primary w-full py-2 text-xs font-bold flex items-center justify-center gap-1">
+                        <span class="material-symbols-outlined text-[16px]">edit</span>
+                        <span>Edit Academic Profile</span>
+                    </a>
+                </div>
+            </div>
 
-                        <h4>Academic Information</h4>
-
-                        <hr>
-
-                        <p>
-                            <strong>School:</strong>
-                            {% if profile.department and profile.department.school %}
-                                {{ profile.department.school.name }}
-                            {% else %}
-                                Not assigned
-                            {% endif %}
-                        </p>
-
-                        <p>
-                            <strong>Department:</strong>
-                            {% if profile.department %}
-                                {{ profile.department.name }}
-                            {% else %}
-                                Not assigned
-                            {% endif %}
-                        </p>
-
-                        <p>
-                            <strong>About:</strong>
-                            {{ profile.bio|default:"No biography added yet." }}
-                        </p>
-
-                        <hr>
-
-                        <h5>Research Interests</h5>
-
-                        {% for topic in profile.topics.all %}
-
-                            <span class="topic-badge me-2 mb-2">
-                                {{ topic.name }}
-                            </span>
-
-                        {% empty %}
-
-                            <p class="text-muted">
-                                No research interests selected yet.
-                            </p>
-
-                        {% endfor %}
-
-                    </div>
-
+            <!-- Followed Topics Card -->
+            <div class="card p-4 border-0 bg-white shadow-sm mb-4">
+                <div class="flex items-center justify-between mb-3">
+                    <h4 class="font-display text-sm font-bold text-primary uppercase tracking-wider mb-0">Research Interests</h4>
+                    <span class="text-xs text-text-muted">{{ profile.topics.count }} topics</span>
                 </div>
 
+                <div class="flex flex-wrap gap-1.5">
+                    {% for topic in profile.topics.all %}
+                        <a href="{% url 'unified_search:search' %}?q={{ topic.name }}" class="badge topic-badge text-decoration-none">
+                            #{{ topic.name }}
+                        </a>
+                    {% empty %}
+                        <p class="text-xs text-text-muted mb-0">No research interests selected yet.</p>
+                    {% endfor %}
+                </div>
+
+                <div class="pt-3 mt-3 border-t border-border-subtle">
+                    <a href="{% url 'accounts:profile_edit' %}" class="text-xs text-primary font-semibold hover:underline flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[14px]">add_circle</span>
+                        <span>Manage research topics</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Quick Launch Action Hub & Portal Services -->
+        <div class="col-lg-8">
+            <!-- Action Hub: 4 Interactive Bento Cards -->
+            <div class="card p-4 border-0 bg-white shadow-sm mb-4">
+                <div class="flex items-center justify-between mb-3 pb-2 border-b border-border-subtle">
+                    <div>
+                        <h3 class="font-display text-base font-bold text-primary mb-0">Research Action Hub</h3>
+                        <p class="text-xs text-text-secondary mb-0">Key shortcuts for your academic workflow</p>
+                    </div>
+                    <span class="text-xs text-text-muted font-mono">Chanakya Commons v2.4</span>
+                </div>
+
+                <div class="row g-3">
+                    <!-- 1. Search -->
+                    <div class="col-sm-6">
+                        <a href="{% url 'unified_search:search' %}" class="text-decoration-none">
+                            <div class="p-3.5 rounded-xl bg-surface-subtle border border-border-subtle hover:border-primary transition-all hover:shadow-sm h-100 flex flex-col justify-between">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <div class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+                                        <span class="material-symbols-outlined text-[20px]">travel_explore</span>
+                                    </div>
+                                    <h4 class="text-sm font-bold text-primary mb-0">4-Panel Search</h4>
+                                </div>
+                                <p class="text-xs text-text-secondary mb-2">
+                                    Simultaneous search across arXiv, OpenAlex, shared library, faculty, and discussions.
+                                </p>
+                                <span class="text-xs font-semibold text-primary flex items-center gap-1">
+                                    Launch Search →
+                                </span>
+                            </div>
+                        </a>
+                    </div>
+
+                    <!-- 2. AI Assistant -->
+                    <div class="col-sm-6">
+                        <a href="{% url 'research_assistant:assistant' %}" class="text-decoration-none">
+                            <div class="p-3.5 rounded-xl bg-surface-subtle border border-border-subtle hover:border-accent-gold transition-all hover:shadow-sm h-100 flex flex-col justify-between">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <div class="w-8 h-8 rounded-lg bg-accent-gold-light flex items-center justify-center text-accent-gold-dark">
+                                        <span class="material-symbols-outlined text-[20px]">smart_toy</span>
+                                    </div>
+                                    <h4 class="text-sm font-bold text-primary mb-0">AI Assistant</h4>
+                                </div>
+                                <p class="text-xs text-text-secondary mb-2">
+                                    Ask literature questions answered strictly from verified paper chunks with inline citations.
+                                </p>
+                                <span class="text-xs font-semibold text-accent-gold-dark flex items-center gap-1">
+                                    Ask Assistant →
+                                </span>
+                            </div>
+                        </a>
+                    </div>
+
+                    <!-- 3. Discussions -->
+                    <div class="col-sm-6">
+                        <a href="{% url 'discussions:post_list' %}" class="text-decoration-none">
+                            <div class="p-3.5 rounded-xl bg-surface-subtle border border-border-subtle hover:border-primary transition-all hover:shadow-sm h-100 flex flex-col justify-between">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <div class="w-8 h-8 rounded-lg bg-primary-fixed flex items-center justify-center text-primary">
+                                        <span class="material-symbols-outlined text-[20px]">forum</span>
+                                    </div>
+                                    <h4 class="text-sm font-bold text-primary mb-0">Research Discussions</h4>
+                                </div>
+                                <p class="text-xs text-text-secondary mb-2">
+                                    Exchange ideas, discuss methodologies, and attach research library items to threads.
+                                </p>
+                                <span class="text-xs font-semibold text-primary flex items-center gap-1">
+                                    Open Discussions →
+                                </span>
+                            </div>
+                        </a>
+                    </div>
+
+                    <!-- 4. Recommendations -->
+                    <div class="col-sm-6">
+                        <a href="{% url 'recommendations:recommendations_home' %}" class="text-decoration-none">
+                            <div class="p-3.5 rounded-xl bg-surface-subtle border border-border-subtle hover:border-status-success transition-all hover:shadow-sm h-100 flex flex-col justify-between">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <div class="w-8 h-8 rounded-lg bg-status-success-surface flex items-center justify-center text-status-success">
+                                        <span class="material-symbols-outlined text-[20px]">auto_awesome</span>
+                                    </div>
+                                    <h4 class="text-sm font-bold text-primary mb-0">Personalized Feed</h4>
+                                </div>
+                                <p class="text-xs text-text-secondary mb-2">
+                                    AI-driven paper and collaborator recommendations matched to your profile topics.
+                                </p>
+                                <span class="text-xs font-semibold text-status-success flex items-center gap-1">
+                                    View Recommendations →
+                                </span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
             </div>
 
-        {% else %}
-
-            <div class="alert alert-info">
-                Your profile has not been created yet.
-                Please contact the administrator.
+            <!-- Library & Community Highlights -->
+            <div class="card p-4 border-0 bg-white shadow-sm">
+                <div class="flex items-center justify-between mb-3 pb-2 border-b border-border-subtle">
+                    <h3 class="font-display text-base font-bold text-primary mb-0">University Network & Directory</h3>
+                    <a href="{% url 'accounts:members' %}" class="text-xs text-primary font-semibold hover:underline">
+                        Find Researchers →
+                    </a>
+                </div>
+                <p class="text-xs text-text-secondary leading-relaxed mb-3">
+                    Connect with fellow research scholars, professors, and student researchers across all schools of Chanakya University. Follow peers to receive updates on newly published papers and discussions.
+                </p>
+                <div class="flex flex-wrap gap-2">
+                    <a href="{% url 'accounts:members' %}" class="btn btn-sm btn-outline-primary">
+                        <span class="material-symbols-outlined text-[16px]">group</span>
+                        <span>Browse Member Directory</span>
+                    </a>
+                    <a href="{% url 'trends:trends_home' %}" class="btn btn-sm btn-outline-gold">
+                        <span class="material-symbols-outlined text-[16px]">trending_up</span>
+                        <span>View Velocity Trends</span>
+                    </a>
+                </div>
             </div>
-
-        {% endif %}
-
-        
-<div class="mt-4">
-
-    <a href="{% url 'research_library:library_home' %}"
-       class="btn btn-gold">
-        <i class="bi bi-journal-bookmark"></i>
-        My Research Library
-    </a>
-
-    <a href="{% url 'accounts:profile_edit' %}"
-       class="btn btn-outline-primary">
-        Edit My Profile
-    </a>
-
-    <a href="{% url 'accounts:members' %}"
-       class="btn btn-primary">
-        <i class="bi bi-people"></i>
-        Find University Members
-    </a>
-
-    <a href="{% url 'home' %}"
-       class="btn btn-outline-primary">
-        Back to Home
-    </a>
-
-</div>
-
-
+        </div>
     </div>
 
-</section>
-
+</div>
 {% endblock %}

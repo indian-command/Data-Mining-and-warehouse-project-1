@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}Scholarly Publications | Chanakya University{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-lg-5 py-4">
+
+    <!-- Header & Search Toolbar -->
+    <div class="flex flex-wrap justify-between items-center gap-3 pb-3 mb-4 border-b border-border-subtle">
+        <div>
+            <span class="section-eyebrow">ACADEMIC REPOSITORY</span>
+            <h1 class="section-title mb-0">Scholarly Publications</h1>
+            <p class="text-xs text-text-secondary mt-1">Discover verified academic papers, preprints, and research articles with citation metrics.</p>
+        </div>
+        <div class="flex items-center gap-2">
+            <a href="{% url 'unified_search:search' %}" class="btn btn-outline-primary text-xs py-2 px-3">
+                <span class="material-symbols-outlined text-[16px]">travel_explore</span>
+                <span>4-Panel Search</span>
+            </a>
+            <a href="{% url 'research_assistant:assistant' %}" class="btn btn-gold text-xs py-2 px-3">
+                <span class="material-symbols-outlined text-[16px]">smart_toy</span>
+                <span>Ask AI Assistant</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter & Sort Bar Card -->
+    <div class="card p-3 mb-4 border-0 bg-white shadow-sm">
+        <form method="get" class="row g-2 align-items-center">
+            <div class="col-md-5">
+                <div class="relative">
+                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-[18px]">search</span>
+                    <input type="text" name="q" value="{{ query }}" class="form-control pl-9 text-xs py-2" placeholder="Search publications by title or topic...">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select name="source" class="form-select text-xs py-2">
+                    <option value="">All Ingestion Sources</option>
+                    <option value="openalex" {% if source_filter == "openalex" %}selected{% endif %}>OpenAlex</option>
+                    <option value="arxiv" {% if source_filter == "arxiv" %}selected{% endif %}>arXiv</option>
+                    <option value="rss" {% if source_filter == "rss" %}selected{% endif %}>Curated RSS Feeds</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="sort" class="form-select text-xs py-2">
+                    <option value="pagerank" {% if sort_by == "pagerank" %}selected{% endif %}>Citation PageRank</option>
+                    <option value="year" {% if sort_by == "year" %}selected{% endif %}>Publication Year</option>
+                    <option value="saves" {% if sort_by == "saves" %}selected{% endif %}>Most Saved</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-navy w-full text-xs py-2 font-bold">
+                    Apply Filter
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Paper Cards List -->
+    <div class="row g-3">
+        {% for paper in page_obj %}
+            <div class="col-12">
+                <div class="card p-4 border-0 bg-white shadow-sm hover:shadow-md transition-shadow">
+                    <div class="flex flex-wrap justify-between items-start gap-2 mb-2">
+                        <h4 class="font-display text-base font-bold text-primary mb-0">
+                            <a href="{% url 'papers:paper_detail' paper.id %}" class="hover:underline text-primary">
+                                {{ paper.title }}
+                            </a>
+                        </h4>
+                        <span class="badge bg-surface-subtle text-text-secondary text-xs border border-border-subtle shrink-0">
+                            PageRank: {{ paper.pagerank_score|floatformat:4 }}
+                        </span>
+                    </div>
+
+                    <p class="text-xs text-text-muted mb-2">
+                        <strong>{{ paper.authors_display }}</strong> • 
+                        {% if paper.published_year %}{{ paper.published_year }} • {% endif %}
+                        <span class="text-text-secondary">{{ paper.venue|default:"Academic Repository" }}</span>
+                    </p>
+
+                    <p class="text-xs text-text-secondary leading-relaxed mb-3">
+                        {{ paper.abstract|truncatewords:38|default:"Abstract available in external scholarly record." }}
+                    </p>
+
+                    <div class="flex flex-wrap justify-between items-center gap-2 pt-2 border-t border-border-subtle">
+                        <div class="flex flex-wrap items-center gap-1.5 text-xs">
+                            {% for s in paper.sources %}
+                                <span class="badge topic-badge text-[10px]">{{ s|upper }}</span>
+                            {% endfor %}
+                            {% if paper.canonical_doi %}
+                                <span class="badge bg-surface-subtle text-text-secondary text-[10px] border border-border-subtle">DOI: {{ paper.canonical_doi|truncatechars:20 }}</span>
+                            {% endif %}
+                            {% if paper.arxiv_id %}
+                                <span class="badge bg-status-error-surface text-status-error text-[10px]">arXiv: {{ paper.arxiv_id }}</span>
+                            {% endif %}
+                            <span class="badge badge-gold text-[10px]">⭐ {{ paper.save_count }} saves</span>
+                        </div>
+
+                        <div class="flex flex-wrap items-center gap-2">
+                            <a href="{{ paper.google_scholar_url }}"
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               class="btn btn-sm btn-outline-secondary text-xs py-1 px-2.5 inline-flex items-center gap-1.5 hover:border-primary hover:text-primary transition-all bg-white"
+                               title="Open and view research paper through Google">
+                                <svg class="w-3.5 h-3.5 shrink-0 inline-block" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                                </svg>
+                                <span>View on Google</span>
+                                <span class="material-symbols-outlined text-[13px]">open_in_new</span>
+                            </a>
+                            <a href="{% url 'papers:paper_detail' paper.id %}" class="btn btn-sm btn-outline-primary text-xs py-1 px-3">
+                                View Citations & Summary →
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12 text-center py-5">
+                <div class="w-16 h-16 rounded-full bg-surface-subtle flex items-center justify-center text-text-muted mx-auto mb-3">
+                    <span class="material-symbols-outlined text-[32px]">menu_book</span>
+                </div>
+                <h4 class="font-display text-lg font-bold text-primary">No Publications Found</h4>
+                <p class="text-xs text-text-muted">Try adjusting your keyword filter or source criteria.</p>
+            </div>
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}

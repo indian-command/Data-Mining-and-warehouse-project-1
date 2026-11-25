@@ -101,8 +101,8 @@ To launch the complete infrastructure stack (PostgreSQL + pgvector, MinIO, MinIO
 
 ```bash
 # Clone the repository
-git clone https://github.com/indian-command/Data-Mining-and-warehouse-project.git
-cd Data-Mining-and-warehouse-project
+git clone https://github.com/indian-command/Data-Mining-and-warehouse-project-1.git
+cd Data-Mining-and-warehouse-project-1
 
 # Copy environment configuration
 cp .env.example .env

@@ -1,9 +1,11 @@
+import json
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_POST
 
 from institutional_analytics.services import DuckDBAnalyticsService, StarSchemaETLService
+from trends.services import TrendAnalyzer
 
 
 def analytics_dashboard_view(request):
@@ -27,6 +29,25 @@ def analytics_dashboard_view(request):
         selected_dept_id=selected_dept_id, selected_topic_id=selected_topic_id
     )
 
+    # 1. Top Departments Ranking
+    top_departments = DuckDBAnalyticsService.get_top_departments_ranking()
+
+    # 2. Top Student vs. Faculty Topics
+    student_faculty_topics = DuckDBAnalyticsService.get_student_vs_faculty_topics()
+
+    # 3. Cross-Department Collaboration Matrix & Heatmap
+    collaboration_network = DuckDBAnalyticsService.get_cross_department_collaboration_network()
+    collaboration_heatmap = DuckDBAnalyticsService.get_cross_department_collaboration_heatmap()
+
+    # 4. Monthly Activity & Topic Velocity
+    monthly_velocity = DuckDBAnalyticsService.get_monthly_activity_velocity(
+        selected_dept_id=selected_dept_id, selected_topic_id=selected_topic_id
+    )
+
+    # 5. Anomaly & Trend Alert Card (F7 integration)
+    trend_alerts = DuckDBAnalyticsService.get_trend_anomaly_summary()
+    zscore_chart_data = TrendAnalyzer.get_topic_zscore_chart_data(limit=10)
+
     return render(
         request,
         "institutional_analytics/dashboard.html",
@@ -37,6 +58,18 @@ def analytics_dashboard_view(request):
             "drill_down": drill_down,
             "selected_dept_id": selected_dept_id,
             "selected_topic_id": selected_topic_id,
+            # Enhanced visual analytics datasets
+            "top_departments": top_departments,
+            "top_departments_json": json.dumps(top_departments),
+            "student_faculty_topics": student_faculty_topics,
+            "student_faculty_topics_json": json.dumps(student_faculty_topics),
+            "collaboration_heatmap": collaboration_heatmap,
+            "collaboration_heatmap_json": json.dumps(collaboration_heatmap),
+            "collaboration_network_json": json.dumps(collaboration_network),
+            "monthly_velocity": monthly_velocity,
+            "monthly_velocity_json": json.dumps(monthly_velocity),
+            "trend_alerts": trend_alerts,
+            "zscore_chart_json": json.dumps(zscore_chart_data),
         },
     )
 

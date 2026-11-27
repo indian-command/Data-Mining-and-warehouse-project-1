@@ -11,33 +11,34 @@ Chanakya Research Commons connects researchers, faculty, and students across dis
 2. [Data Layer & Storage Architecture](#data-layer--storage-architecture)
 3. [One-Command Quickstart](#one-command-quickstart)
 4. [Subsystem Feature Guide (F1 – F9)](#subsystem-feature-guide-f1--f9)
-5. [Synthetic Data Generator & Planted Ground Truth](#synthetic-data-generator--planted-ground-truth)
-6. [Quantitative Evaluation Benchmark Suite](#quantitative-evaluation-benchmark-suite)
-7. [Running the Test Suite](#running-the-test-suite)
-8. [Project Structure & File Organization](#project-structure--file-organization)
+5. [Real Chanakya University & External Ingestion](#real-chanakya-university--external-ingestion)
+6. [Automated Scheduled Ingestion & Warehouse Sync](#automated-scheduled-ingestion--warehouse-sync)
+7. [Planted Ground Truth & Evaluation Suite](#planted-ground-truth--evaluation-suite)
+8. [Running the Test Suite & Audits](#running-the-test-suite--audits)
+9. [Project Structure & File Organization](#project-structure--file-organization)
 
 ---
 
 ## Architectural Overview
 
-Chanakya Research Commons is built with **Django 5.x / Python 3.12** using modern, free, open-source infrastructure components:
+Chanakya Research Commons is built with **Django 6.1.3 / Python 3.12** using modern, free, open-source infrastructure components:
 
 ```mermaid
 flowchart TD
     subgraph ClientLayer ["User Interface & Interaction"]
-        UI["Server-Rendered UI (Django Templates + CSS)"]
+        UI["Server-Rendered UI (Django Templates + Tailwind + CSS)"]
         SearchUI["4-Panel Unified Search"]
         RAGUI["Grounded RAG Assistant"]
-        AnalyticsUI["Institutional Analytics Dashboard"]
+        AnalyticsUI["Institutional Analytics Dashboard (Chart.js + Vis.js)"]
     end
 
     subgraph AppLayer ["Django Application Services"]
         F1["accounts: Profiles, Roles, Topics"]
-        F2["research_library: Collections & Saves"]
-        F3["discussions: Academic Posts & Comments"]
-        F4["papers: Ingestion Pipeline & Chunker"]
+        F2["discussions: Academic Posts, Comments, Upvotes"]
+        F3["research_library: Collections, Saved Items, Notes"]
+        F4["papers: Ingestion Pipeline, Lakehouse Archival, Chunker"]
         F5["unified_search: Hybrid Ranking & EntityResolver"]
-        F6["recommendations: Centroid Vector + CF"]
+        F6["recommendations: Centroid Vector, CF, FP-Growth Rules"]
         F7["trends: TrendAnalyzer & AnomalyDetector"]
         F8["research_assistant: RAG Q&A & Ollama"]
         F9["institutional_analytics: Star-Schema ETL & DuckDB"]
@@ -45,7 +46,7 @@ flowchart TD
 
     subgraph DataLayer ["Data & Storage Layer"]
         PG[("PostgreSQL 17 + pgvector\n(Dense 384-d vectors, tsvector)")]
-        MinIO[("MinIO S3 Object Storage\nraw-ingestion | analytics-parquet")]
+        MinIO[("MinIO S3 Object Storage\nchanakya-lakehouse | analytics-parquet")]
         DuckDB[("Embedded DuckDB\n(In-Memory OLAP on Parquet)")]
         Ollama[("Ollama Local LLM\n(llama3.2:3b / mistral)")]
     end
@@ -75,12 +76,12 @@ The platform uses a specialized polyglot storage model optimized for operational
    - Network citation edges (`PaperCitation`) powering NetworkX PageRank calculation.
 
 2. **MinIO S3-Compatible Object Storage (`minio/minio`)**:
-   - `raw-ingestion`: Immutable archive storing raw, unmodified JSON/XML payloads from OpenAlex, arXiv, and RSS feeds with ISO timestamps and provenance metadata.
+   - `chanakya-lakehouse`: Immutable archive storing raw, unmodified JSON/XML payloads from Chanakya University public research pages, OpenAlex, arXiv, and RSS feeds with ISO timestamps and provenance metadata.
    - `analytics-parquet`: Star-schema columnar Parquet files (`dim_department`, `dim_user`, `dim_topic`, `dim_time`, `fact_activity`) synchronized via scheduled ETL.
 
 3. **Embedded DuckDB**:
    - High-throughput embedded analytical engine in Python that queries the star-schema Parquet files directly from local storage and MinIO.
-   - Powers the Institutional Analytics Dashboard and Department Trend queries with sub-second aggregations without placing heavy OLAP load on PostgreSQL.
+   - Powers the Institutional Analytics Dashboard with interactive Chart.js visualizations, Vis.js network graphs, and sub-second aggregations without placing heavy OLAP load on PostgreSQL.
 
 4. **Ollama Local LLM (`llama3.2`)**:
    - Generates answers strictly grounded in retrieved vector chunks with bracketed inline citations `[1]`, `[2]`.
@@ -97,7 +98,7 @@ The platform uses a specialized polyglot storage model optimized for operational
 
 ### 1. Running with Docker Compose (Recommended)
 
-To launch the complete infrastructure stack (PostgreSQL + pgvector, MinIO, MinIO Bucket Initializer, and Django Web Application):
+To launch the complete infrastructure stack (PostgreSQL + pgvector, MinIO, Django Web Application on port `8080`, and background ingestion scheduler):
 
 ```bash
 # Clone the repository
@@ -112,14 +113,14 @@ docker compose up --build
 ```
 
 Once running:
-- **Web Application:** [http://localhost:8000](http://localhost:8000)
+- **Web Application:** [http://localhost:8080](http://localhost:8080)
 - **MinIO Console:** [http://localhost:9001](http://localhost:9001) (User: `admin`, Password: `admin12345`)
 - **PostgreSQL Port:** `5433` (externally mapped)
 
 ### 2. Native Local Setup (Virtual Environment)
 
 ```bash
-# Create and activate virtual environment (uv or venv)
+# Create and activate virtual environment
 python3.12 -m venv .venv
 source .venv/bin/activate
 
@@ -127,70 +128,85 @@ source .venv/bin/activate
 pip install -r requirements.txt
 
 # Start background services via Docker (PostgreSQL & MinIO)
-docker compose up -d db minio minio-init
+docker compose up -d db minio
 
 # Apply migrations
 python manage.py migrate
 
-# Seed data and run evaluations
+# Seed data and run initial Chanakya paper ingestion
 python manage.py seed_commons
-python manage.py evaluate_models
+python manage.py ingest_chanakya_papers
 
 # Run development server
-python manage.py runserver 0.0.0.0:8000
+python manage.py runserver 0.0.0.0:8080
 ```
 
 ---
 
 ## Subsystem Feature Guide (F1 – F9)
 
+Matches the official DMW-CS502 Problem Statement specification:
+
 | Subsystem | App | Key Capabilities |
 | :--- | :--- | :--- |
-| **F1: Accounts & Roles** | `accounts` | Faculty, student, researcher, and admin profiles, academic departments, schools, profile bios, topic interests, and member follow graphs. |
-| **F2: Research Library** | `research_library` | University research catalog, personal/curated collections, private notes, and saved research items linked to papers. |
-| **F3: Discussions** | `discussions` | Peer-to-peer scholarly discussions, threaded comments, resource attachments, tags, and community upvotes. |
-| **F4: Content Ingestion** | `papers` | Multi-source ingestion (OpenAlex, arXiv, RSS), MinIO raw archiving, incremental refresh, text chunking, and 384-d MiniLM embeddings. |
-| **F5: Unified Search** | `unified_search` | Single search bar returning 4 distinct panels: (1) Scholarly Sources, (2) Shared Library, (3) University Members, (4) Discussions. Hybrid tsvector + pgvector cosine + NetworkX PageRank. MinHash LSH deduplication. |
-| **F6: Recommendations** | `recommendations` | Personalized paper recommendations (content-based centroid + collaborative filtering), member-to-member matching, and "Members who saved this also saved" co-occurrence rules. Cold-start fallback for new members. |
+| **F1: Accounts & Profiles** | `accounts` | Registration and login with 4 roles: Student, Faculty, Researcher, Admin. Department affiliations across 6 Schools, research bio, topic interests, and member follow graphs. |
+| **F2: Posts & Discussions** | `discussions` | Peer-to-peer scholarly discussions, threaded comments, paper/resource attachments from the library, tags, and community upvotes. |
+| **F3: Shared University Library** | `research_library` | Shared university research library catalog, personal/curated collections, private notes, and saved research items linked to verified papers. |
+| **F4: Content Ingestion** | `papers` | Multi-source ingestion (Chanakya University public portals, OpenAlex, arXiv, RSS), MinIO lakehouse archival, incremental refresh, text chunking (120-word chunks, 25-word overlap), and 384-d MiniLM embeddings. |
+| **F5: Unified Search** | `unified_search` | Centerpiece single search bar returning 4 distinct panels in one view: (1) External Scholarly Sources, (2) Shared Library, (3) University Members, (4) Discussions. Hybrid tsvector + pgvector cosine + NetworkX PageRank with MinHash LSH deduplication. |
+| **F6: Recommendations** | `recommendations` | Personalized paper recommendations (content-based centroid + collaborative filtering), member-to-member matching, and *"Members who saved this also saved"* association rule mining via `mlxtend.frequent_patterns.fpgrowth`. |
 | **F7: Trends & Monitoring**| `trends` | Sliding-window topic popularity (7-day vs 30-day baseline), statistical spike detection ($Z \ge 2.0$), and anomaly detection for spam accounts and duplicate post floods with admin moderation queue. |
 | **F8: Research Assistant**| `research_assistant` | Plain-language RAG interface querying top-k `pgvector` chunks across papers and library items. Generates answers with inline citations `[1]`, `[2]` via Ollama (`llama3.2`) with deterministic fallback and clickable source passage cards. |
-| **F9: Institutional Analytics**| `institutional_analytics` | Star-Schema Parquet ETL (`fact_activity`, `dim_department`, `dim_user`, `dim_topic`, `dim_time`) queried by embedded DuckDB. Interactive drill-down: University $\rightarrow$ Department $\rightarrow$ Topic $\rightarrow$ Member. |
+| **F9: Institutional Analytics**| `institutional_analytics` | Star-Schema Parquet ETL (`fact_activity`, `dim_department`, `dim_user`, `dim_topic`, `dim_time`) queried by embedded DuckDB. Interactive Chart.js charts, Vis.js cross-department collaboration network graph, and hierarchical drill-down (`University → Department → Topic → Member`). |
 
 ---
 
-## Synthetic Data Generator & Planted Ground Truth
+## Real Chanakya University & External Ingestion
 
-The platform includes a deterministic synthetic data generator and seeder that mirrors realistic university research activity over 6+ months:
+To fetch real faculty and center publications from Chanakya University public pages:
 
 ```bash
-python manage.py seed_commons
-# or: python scripts/generate_synthetic.py
+# Ingest publications from Chanakya University public portals
+python manage.py ingest_chanakya_papers --faculty-limit 50 --batch-size 300
+
+# Ingest external papers from OpenAlex, arXiv, or RSS
+python manage.py ingest_external --query "deep learning" --max-results 20
 ```
 
-### Seeding Scope
-- **520+ Scholarly Papers:** Real metadata, abstracts, DOIs, arXiv IDs, text chunks, and 384-dimensional MiniLM embeddings across 6 university departments (Computer Science, Bioengineering, Electrical Engineering, Physics, Chemical Engineering, Public Policy).
-- **55+ University Members:** Faculty, PhD researchers, undergraduate students, and department chairs with bios, topic follows, and department affiliations.
-- **2,190+ Community Discussions & Comments:** Realistic academic inquiry posts, threaded peer reviews, and attached research resources.
-- **10,000+ Activity Events:** Searches, paper views, library saves, and upvotes spread across a 6-month historical timeline.
-- **Star-Schema Parquet Export:** Synchronizes all dimension and fact tables to MinIO and `data/analytics/*.parquet`.
-
-### Planted Ground Truth (`data/ground_truth.json`)
-To enable quantitative, reproducible evaluation against known ground truth, the seeder plants deliberate signals:
-- **25 Planted Duplicate Clusters:** Controlled near-duplicate papers with title variations, subtitle additions, conference proceedings variations, and cross-source identifiers (arXiv vs. OpenAlex vs. Crossref).
-- **5 Planted Spam Accounts:** Automated bots exhibiting rapid burst posting (>5 posts in minutes) and duplicate flood content.
-- **3 Planted Topic Spikes:** Controlled activity surges in *Quantum Computing*, *Deep Learning*, and *Genomics & Bioinformatics* within the recent 7-day window.
-- **5 Search Benchmark Queries:** Natural-language academic queries paired with ground-truth target paper IDs.
-- **3 RAG Benchmark Questions:** Technical questions with expected key factual entities and source citations.
+### Crawl Scope & Politeness Policy
+- Sources:
+  - `https://chanakyauniversity.edu.in/research/publications/`
+  - `https://chanakyauniversity.edu.in/ciks/publication/research-papers/`
+  - `https://chanakyauniversity.edu.in/bioscience/journals/`
+  - Faculty directory under `https://chanakyauniversity.edu.in/faculties/`
+- Politeness: 1.5s delay between HTTP requests, descriptive `User-Agent: ChanakyaResearchCommonsBot/1.0`, zero impact on external paywalled libraries.
+- Raw Archival: JSON payload archived to `data/chanakya_univ_publications_raw.json` and uploaded to MinIO `chanakya-lakehouse`.
+- Entity Resolution: Deduplicated using canonical DOI and MinHash LSH Jaccard similarity ($\ge 0.40$).
 
 ---
 
-## Quantitative Evaluation Benchmark Suite
+## Automated Scheduled Ingestion & Warehouse Sync
 
-To rigorously verify search quality, entity resolution, recommendations, anomaly detection, and RAG faithfulness, run the quantitative evaluation suite:
+The platform provides a background scheduled ingestion mechanism that periodically queries scholarly sources, recalculates PageRank, and refreshes the analytical Parquet star schema:
+
+```bash
+# Single scheduled batch execution
+python manage.py run_scheduled_ingestion --source all --limit 15
+
+# Continuous background daemon (e.g., every hour)
+python manage.py run_scheduled_ingestion --daemon --interval 3600
+```
+
+When running with Docker Compose, the `scheduler` service automatically executes this daemon in the background alongside the web server.
+
+---
+
+## Planted Ground Truth & Evaluation Suite
+
+Run the quantitative evaluation suite to test search quality, entity resolution, recommendations, anomaly detection, and RAG faithfulness against planted ground truth:
 
 ```bash
 python manage.py evaluate_models
-# or: python scripts/evaluate.py
 ```
 
 ### Official Evaluation Results
@@ -252,48 +268,19 @@ Questions Evaluated             : 3
 Retrieval Recall@5              : 1.0000 (100.0%)
 Citation Inclusion Rate [1], [2]: 1.0000 (100.0%)
 Factual Faithfulness Score      : 0.8000 (80.0%)
-
-================================================================================
-ALL QUANTITATIVE EVALUATIONS FINISHED WITH NUMERIC BENCHMARK OUTPUTS
-================================================================================
 ```
 
 ---
 
-## Running the Test Suite
-
-The test suite covers all pre-existing and newly added applications, including unit tests for entity resolution, PageRank computation, collaborative filtering, RAG retrieval and citation grounding, and DuckDB star-schema queries:
+## Running the Test Suite & Audits
 
 ```bash
+# Run all Django unit tests
 python manage.py test
+
+# Run the 28-point end-to-end self-check audit across F1 to F9
+python scripts/self_check_all_pages.py
 ```
-
-### Test Suite Execution Output
-```
-Ran 60 tests in 28.780s
-
-OK
-```
-*Zero regressions across all 37 pre-existing tests in `accounts`, `discussions`, and `research_library`, plus 23 new comprehensive tests in `papers`, `unified_search`, `recommendations`, `trends`, `research_assistant`, and `institutional_analytics`.*
-
----
-
-## Ingesting External Scholarly Content
-
-To fetch live external papers from OpenAlex, arXiv, and curated RSS feeds:
-
-```bash
-# Ingest papers matching query terms across sources
-python manage.py ingest_external --query "quantum computing" --max-results 25
-
-# Ingest specifically from arXiv
-python manage.py ingest_external --source arxiv --query "deep learning" --max-results 20
-
-# Ingest from curated scholarly RSS feeds
-python manage.py ingest_external --source rss
-```
-
-Raw responses are automatically archived to the MinIO `raw-ingestion` bucket with timestamps and metadata, while transformed records are indexed in PostgreSQL with embeddings and citation links.
 
 ---
 
@@ -301,52 +288,33 @@ Raw responses are automatically archived to the MinIO `raw-ingestion` bucket wit
 
 ```
 chanakya-research-commons/
-├── config/                     # Django core settings, WSGI, URLs
+├── config/                     # Django core settings (environment-configured), WSGI, URLs
 │   ├── settings.py             # Configured for PostgreSQL+pgvector, MinIO, DuckDB, Ollama
 │   └── urls.py                 # Central URL routing for all apps
 ├── accounts/                   # F1: Academic roles, departments, user profiles
-├── research_library/           # F2: Collections, saved resources, library views
-├── discussions/                # F3: Forum posts, threaded comments, upvotes
+├── discussions/                # F2: Forum posts, threaded comments, upvotes
+├── research_library/           # F3: Collections, saved resources, shared library views
 ├── papers/                     # F4: Ingestion pipeline, Paper models, citations, chunks
 │   ├── models.py               # Paper, PaperCitation, PaperChunk with pgvector VectorField
-│   ├── services.py             # OpenAlex, arXiv, RSS scrapers, EmbeddingService, Chunker
+│   ├── services.py             # ChanakyaUniversityIngester, OpenAlex, arXiv, EmbeddingService
 │   └── management/commands/
-│       ├── ingest_external.py  # Ingestion CLI command
-│       ├── seed_commons.py     # Synthetic data generation command
-│       └── evaluate_models.py  # Benchmark evaluation runner
+│       ├── ingest_chanakya_papers.py   # Chanakya University public publication ingester
+│       ├── run_scheduled_ingestion.py  # Automated batch scheduler & warehouse ETL sync
+│       ├── ingest_external.py          # OpenAlex, arXiv, RSS manual fetcher
+│       ├── seed_commons.py             # Synthetic data generator
+│       └── evaluate_models.py          # Benchmark evaluation suite runner
 ├── unified_search/             # F5: 4-panel hybrid search and deduplication
-│   ├── services.py             # Hybrid search (tsvector + pgvector + PageRank), MinHash LSH
-│   └── views.py                # 4-panel search view
-├── recommendations/            # F6: Paper & member recommendations, association rules
-│   ├── services.py             # Centroid embedding similarity, CF, association rules
-│   └── views.py                # Personalized recommendations dashboard
+├── recommendations/            # F6: Paper & member recommendations, FP-Growth association rules
 ├── trends/                     # F7: Sliding-window trends, spike detection, moderation
-│   ├── models.py               # ActivityEvent, TopicTrend, ModerationFlag
-│   ├── services.py             # TrendAnalyzer (Z-score), AnomalyDetector (burst/spam)
-│   └── views.py                # Trends overview and admin moderation queue
-├── research_assistant/         # F8: Grounded RAG Q&A interface
-│   ├── services.py             # Vector chunk retriever, Ollama synthesis, extractive fallback
-│   └── views.py                # Plain-language Q&A interface with source passages
-├── institutional_analytics/    # F9: Star-schema Parquet ETL & DuckDB analytics
-│   ├── services.py             # StarSchemaETLService, DuckDB query service
-│   └── views.py                # Interactive 4-level drill-down admin dashboard
-├── scripts/
-│   ├── generate_synthetic.py   # Seeder engine with planted ground truth
-│   └── evaluate.py             # Benchmark evaluation script
-├── templates/                  # Server-rendered HTML templates matching Chanakya theme
-│   ├── base.html               # Global navigation, brand header, and styling
-│   ├── unified_search/         # 4-panel search template
-│   ├── recommendations/        # Recommendations template
-│   ├── trends/                 # Trends & moderation templates
-│   ├── research_assistant/     # RAG Q&A interface template
-│   └── institutional_analytics/# Interactive analytics dashboard template
-├── static/                     # CSS stylesheets and UI assets
+├── research_assistant/         # F8: Grounded RAG Q&A interface with inline citations
+├── institutional_analytics/    # F9: Star-schema Parquet ETL & DuckDB analytics dashboard
 ├── data/
 │   ├── ground_truth.json       # Planted ground truth records for evaluation
+│   ├── chanakya_univ_publications_raw.json # Raw lakehouse payload
 │   └── analytics/              # Parquet star-schema analytical files
-├── docker-compose.yml          # One-command orchestration (Postgres, MinIO, Django)
-├── Dockerfile                  # Production container definition
-├── requirements.txt            # Python dependencies (pgvector, duckdb, pyarrow, minio, etc.)
+├── docker-compose.yml          # Container orchestration (web:8080, db:5433, minio, scheduler)
+├── Dockerfile                  # Container definition
+├── requirements.txt            # Python dependencies (pgvector, duckdb, pyarrow, minio, mlxtend)
 └── .env.example                # Example environment configuration
 ```
 
@@ -355,4 +323,3 @@ chanakya-research-commons/
 ## License
 
 This project is developed for academic and institutional research use under the **Apache 2.0 License**.
-

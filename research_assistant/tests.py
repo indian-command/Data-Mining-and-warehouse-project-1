@@ -50,3 +50,13 @@ class ResearchAssistantTests(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed(resp, "research_assistant/assistant.html")
         self.assertContains(resp, "AlphaFold")
+
+    def test_greeting_handling_and_cleaning(self):
+        res = ResearchAssistantService.ask("hlo", user=self.user)
+        self.assertTrue(res.get("is_greeting"))
+        self.assertFalse(res.get("grounded"))
+        self.assertEqual(res.get("sources"), [])
+        self.assertEqual(len(res.get("sample_questions", [])), 3)
+
+        cleaned = ResearchAssistantService.clean_garbled_text("Kau?ilya Artha??stra and AI?")
+        self.assertEqual(cleaned, "Kautilya Arthashastra and AI?")

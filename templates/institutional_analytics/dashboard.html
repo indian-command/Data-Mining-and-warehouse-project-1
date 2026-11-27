@@ -8,7 +8,7 @@
     <!-- Header & ETL Refresh Button -->
     <div class="flex flex-wrap justify-between items-center gap-3 pb-3 mb-4 border-b border-border-subtle">
         <div>
-            <span class="section-eyebrow">DUCKDB STAR-SCHEMA ENGINE</span>
+            <span class="section-eyebrow">DUCKDB STAR-SCHEMA ENGINE &middot; F9 ANALYTICS</span>
             <h1 class="section-title mb-0">Institutional Research Analytics</h1>
             <p class="text-xs text-text-secondary mt-1">
                 Embedded DuckDB analytical query engine executing over Star-Schema Parquet tables in MinIO.
@@ -22,6 +22,86 @@
                     <span>Regenerate Star-Schema Parquet (MinIO)</span>
                 </button>
             </form>
+        </div>
+    </div>
+
+    <!-- 5. Anomaly & Trend Alert Card (F7 Integration) -->
+    {% if trend_alerts.has_alerts %}
+    <div class="card border-0 bg-white shadow-sm p-4 mb-4 border-l-4 border-l-amber-500 rounded-xl">
+        <div class="flex flex-wrap justify-between items-start gap-3">
+            <div class="flex items-start gap-3">
+                <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center shrink-0 border border-amber-200">
+                    <span class="material-symbols-outlined text-[24px]">crisis_alert</span>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h4 class="font-display text-sm font-bold text-primary mb-0">
+                            F7 Real-Time Anomaly & Topic Trend Monitoring
+                        </h4>
+                        <span class="badge badge-gold text-[10px] uppercase font-bold tracking-wider">
+                            Active Stream Alerts
+                        </span>
+                    </div>
+                    <p class="text-xs text-text-secondary mt-1 mb-2">
+                        Detected <strong>{{ trend_alerts.spike_count }}</strong> research topic spike{{ trend_alerts.spike_count|pluralize }} ($Z \ge 2.0$) and 
+                        <strong>{{ trend_alerts.flag_count }}</strong> moderation flag{{ trend_alerts.flag_count|pluralize }} pending audit.
+                    </p>
+                    
+                    <!-- Spikes Chips -->
+                    <div class="flex flex-wrap items-center gap-2 mt-1">
+                        {% for spk in trend_alerts.spikes %}
+                            <div class="inline-flex items-center gap-1.5 py-1 px-2.5 rounded-lg bg-surface-subtle border border-border-subtle text-xs">
+                                <span class="font-bold text-primary">#{{ spk.topic_name }}</span>
+                                <span class="badge badge-gold text-[10px] font-mono">Z: +{{ spk.z_score }}</span>
+                                <span class="text-[11px] text-status-success font-semibold">+{{ spk.growth_rate }}%</span>
+                                <span class="text-[10px] text-text-muted">({{ spk.current_count }} vs {{ spk.baseline_count }}/wk)</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Direct Action Links -->
+            <div class="flex items-center gap-2 mt-2 sm:mt-0">
+                <a href="{% url 'trends:trends_home' %}" class="btn btn-outline-primary text-xs py-1.5 px-3 flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[16px]">trending_up</span>
+                    <span>Explore Trends</span>
+                </a>
+                <a href="{% url 'trends:moderation_queue' %}" class="btn btn-navy text-xs py-1.5 px-3 flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[16px]">gavel</span>
+                    <span>Moderation Hub ({{ trend_alerts.flag_count }})</span>
+                </a>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="card border-0 bg-white shadow-sm p-3.5 mb-4 rounded-xl flex items-center justify-between">
+        <div class="flex items-center gap-2.5 text-xs text-text-secondary">
+            <span class="material-symbols-outlined text-status-success text-[20px]">check_circle</span>
+            <span>All university research topics are operating within normal baseline activity ($Z < 2.0$). No anomalous spikes detected.</span>
+        </div>
+        <a href="{% url 'trends:trends_home' %}" class="text-xs text-primary font-bold hover:underline">
+            View Trend Engine &rarr;
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- Compact F7 Topic Spike Z-Score Chart (Mirrored from /trends/) -->
+    <div class="card border-0 bg-white shadow-sm mb-4">
+        <div class="p-3.5 border-b border-border-subtle flex flex-wrap justify-between items-center gap-2">
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-status-error text-[20px]">monitoring</span>
+                <div>
+                    <h3 class="font-display text-sm font-bold text-primary mb-0">F7 Anomaly &amp; Spike Detection Monitor (Top 10 Topics Z-Score)</h3>
+                    <p class="text-[11px] text-text-muted mb-0">7-day sliding window vs. 30-day baseline (red dashed line marks Z = 2.0 anomaly threshold)</p>
+                </div>
+            </div>
+            <a href="{% url 'trends:trends_home' %}" class="text-xs text-primary font-bold hover:underline">Open Full Trend &amp; Burst Monitor &rarr;</a>
+        </div>
+        <div class="p-3">
+            <div style="position: relative; height: 210px; width: 100%;">
+                <canvas id="analyticsZScoreChart"></canvas>
+            </div>
         </div>
     </div>
 
@@ -60,55 +140,132 @@
         </div>
     </div>
 
-    <!-- Section 1 & Section 2 Row -->
+    <!-- Visual Analytics: Charts Grid -->
     <div class="row g-4 mb-4">
-        <!-- 1. Research Topics by Department Over Time -->
-        <div class="col-lg-7">
+        <!-- 1. Top Departments Ranking (Horizontal Bar Chart) -->
+        <div class="col-lg-6">
             <div class="card border-0 bg-white shadow-sm h-100">
-                <div class="p-4 border-b border-border-subtle">
-                    <h3 class="font-display text-base font-bold text-primary mb-0">1. Research Topics by Department Over Time</h3>
-                    <p class="text-xs text-text-muted mb-0">Monthly activity aggregated by DuckDB (fact_activity join dim_time)</p>
+                <div class="p-4 border-b border-border-subtle flex justify-between items-center">
+                    <div>
+                        <h3 class="font-display text-base font-bold text-primary mb-0">1. Top Academic Departments Ranking</h3>
+                        <p class="text-xs text-text-muted mb-0">Total engagement breakdown (saves, searches, discussions) per department</p>
+                    </div>
+                    <span class="badge badge-gold text-[10px]">DuckDB fact_activity</span>
                 </div>
-                <div class="p-0">
-                    <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
-                        <table class="table table-hover align-middle mb-0 text-xs">
-                            <thead class="table-light sticky-top">
-                                <tr>
-                                    <th class="ps-4">Department</th>
-                                    <th>Topic</th>
-                                    <th>Period</th>
-                                    <th class="text-end pe-4">Activity Volume</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for r in dept_topics_over_time %}
-                                    <tr>
-                                        <td class="ps-4 font-semibold text-primary">{{ r.department }}</td>
-                                        <td><span class="badge topic-badge text-[11px]">#{{ r.topic }}</span></td>
-                                        <td>{{ r.month_name }} {{ r.year }}</td>
-                                        <td class="text-end pe-4 font-bold text-primary">{{ r.activity_count }}</td>
-                                    </tr>
-                                {% empty %}
-                                    <tr>
-                                        <td colspan="4" class="text-center py-4 text-text-muted">No topic history found.</td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                <div class="p-4">
+                    <div style="position: relative; height: 320px; width: 100%;">
+                        <canvas id="deptRankingChart"></canvas>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- 2. Cross-Department Collaboration Matrix -->
+        <!-- 2. Top Student vs. Faculty Topics (Grouped Bar Chart) -->
+        <div class="col-lg-6">
+            <div class="card border-0 bg-white shadow-sm h-100">
+                <div class="p-4 border-b border-border-subtle flex justify-between items-center">
+                    <div>
+                        <h3 class="font-display text-base font-bold text-primary mb-0">2. Student vs. Faculty Research Focus</h3>
+                        <p class="text-xs text-text-muted mb-0">Comparative activity volume across top specializations by academic role</p>
+                    </div>
+                    <span class="badge bg-surface-subtle text-primary border border-border-subtle text-[10px]">Role Disparity</span>
+                </div>
+                <div class="p-4">
+                    <div style="position: relative; height: 320px; width: 100%;">
+                        <canvas id="studentFacultyTopicsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Cross-Department Collaboration Network & Matrix -->
+    <div class="row g-4 mb-4">
+        <!-- 3A. Cross-Department Collaboration Matrix -->
+        <div class="col-lg-7">
+            <div class="card border-0 bg-white shadow-sm h-100">
+                <div class="p-4 border-b border-border-subtle flex justify-between items-center">
+                    <div>
+                        <h3 class="font-display text-base font-bold text-primary mb-0">3. Cross-Department Collaboration Matrix</h3>
+                        <p class="text-xs text-text-muted mb-0">Shows how often departments share papers, discussions, and saved research.</p>
+                    </div>
+                    <span class="badge badge-gold text-[10px]">Inter-Departmental Heatmap</span>
+                </div>
+                <div class="p-4">
+                    <!-- View Mode Toggle -->
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="text-xs font-semibold text-text-secondary">6&times;6 Academic Department Interaction Density</span>
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button type="button" class="btn btn-outline-primary btn-sm active" id="btnShowMatrix">Matrix Grid</button>
+                            <button type="button" class="btn btn-outline-primary btn-sm" id="btnShowApex">Chart Heatmap</button>
+                        </div>
+                    </div>
+
+                    <!-- Matrix Grid View (HTML Heatmap Table) -->
+                    <div id="matrixGridView" class="table-responsive">
+                        <table class="table table-bordered align-middle text-center mb-0" style="border-collapse: separate; border-spacing: 4px; border: none;">
+                            <thead>
+                                <tr>
+                                    <th style="width: 105px; background: transparent; border: none;" class="text-start text-xs font-bold text-text-muted">Origin \ Target</th>
+                                    {% for d in collaboration_heatmap.departments %}
+                                        <th style="min-width: 72px; background: #f8fafc; border: 1px solid #e2e8f0; font-size: 11px; font-weight: 700; color: #042863;" class="py-2">
+                                            {{ d }}
+                                        </th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for r in collaboration_heatmap.grid_rows %}
+                                    <tr>
+                                        <th class="text-start text-xs font-bold text-primary py-2 pe-2" style="background: transparent; border: none; white-space: nowrap;">
+                                            {{ r.row_dept }}
+                                        </th>
+                                        {% for cell in r.cells %}
+                                            <td style="background-color: {{ cell.bg_color }}; color: {{ cell.text_color }}; border: {{ cell.border }}; min-width: 72px; height: 42px; border-radius: 6px; font-size: 13px; font-weight: 700; cursor: pointer; transition: transform 0.15s ease;"
+                                                data-bs-toggle="tooltip"
+                                                data-bs-placement="top"
+                                                title="{{ cell.tooltip }}"
+                                                onmouseover="this.style.transform='scale(1.08)'"
+                                                onmouseout="this.style.transform='scale(1.0)'">
+                                                {{ cell.display }}
+                                            </td>
+                                        {% endfor %}
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- ApexCharts Heatmap Canvas -->
+                    <div id="apexHeatmapView" style="display: none; height: 320px; width: 100%;">
+                        <div id="collabHeatmapApex" style="height: 320px;"></div>
+                    </div>
+
+                    <!-- Heatmap Legend -->
+                    <div class="flex flex-wrap items-center justify-between gap-2 mt-3 pt-2 border-t border-border-subtle text-[11px] text-text-muted">
+                        <span class="flex items-center gap-2">
+                            <span class="font-bold text-text-secondary">Scale:</span>
+                            <span class="inline-flex items-center gap-1"><span class="inline-block w-3 h-3 rounded" style="background: #f8fafc; border: 1px solid #e2e8f0;"></span> — Base</span>
+                            <span class="inline-flex items-center gap-1"><span class="inline-block w-3 h-3 rounded" style="background: #e0f2fe; border: 1px solid #bae6fd;"></span> 1–29 Low</span>
+                            <span class="inline-flex items-center gap-1"><span class="inline-block w-3 h-3 rounded" style="background: #38bdf8; border: 1px solid #0284c7;"></span> 30–59 Mod</span>
+                            <span class="inline-flex items-center gap-1"><span class="inline-block w-3 h-3 rounded" style="background: #0284c7; border: 1px solid #0369a1;"></span> 60–84 High</span>
+                            <span class="inline-flex items-center gap-1"><span class="inline-block w-3 h-3 rounded" style="background: #042863; border: 2px solid #c18e0e;"></span> 85+ Intensive</span>
+                        </span>
+                        <span class="italic text-[10px]">Hover any cell to inspect mutual collaboration details.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3B. Collaboration Link Table -->
         <div class="col-lg-5">
             <div class="card border-0 bg-white shadow-sm h-100">
                 <div class="p-4 border-b border-border-subtle">
-                    <h3 class="font-display text-base font-bold text-primary mb-0">2. Cross-Department Collaboration Matrix</h3>
+                    <h3 class="font-display text-base font-bold text-primary mb-0">Collaboration Link Frequency</h3>
                     <p class="text-xs text-text-muted mb-0">Inter-departmental replies, co-authorship & co-saves</p>
                 </div>
                 <div class="p-0">
-                    <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                    <div class="table-responsive" style="max-height: 410px; overflow-y: auto;">
                         <table class="table table-hover align-middle mb-0 text-xs">
                             <thead class="table-light sticky-top">
                                 <tr>
@@ -120,8 +277,8 @@
                             <tbody>
                                 {% for row in collaboration_matrix %}
                                     <tr>
-                                        <td class="ps-4 font-semibold text-primary">{{ row.dept_from|truncatechars:22 }}</td>
-                                        <td class="font-semibold text-text-secondary">{{ row.dept_to|truncatechars:22 }}</td>
+                                        <td class="ps-4 font-semibold text-primary">{{ row.dept_from|truncatechars:20 }}</td>
+                                        <td class="font-semibold text-text-secondary">{{ row.dept_to|truncatechars:20 }}</td>
                                         <td class="text-end pe-4">
                                             <span class="badge badge-success text-[11px]">
                                                 {{ row.interactions }} connection{{ row.interactions|pluralize }}
@@ -141,10 +298,34 @@
         </div>
     </div>
 
-    <!-- Section 3: High-Impact Publications & Engagement Trends -->
+    <!-- 4. Monthly Activity & Topic Velocity (Line Chart) -->
+    <div class="card border-0 bg-white shadow-sm mb-4">
+        <div class="p-4 border-b border-border-subtle flex flex-wrap justify-between items-center gap-2">
+            <div>
+                <h3 class="font-display text-base font-bold text-primary mb-0">4. Monthly Research Activity & Topic Velocity</h3>
+                <p class="text-xs text-text-muted mb-0">
+                    Historical time-series trend of activity events, active researchers, and distinct topics from Star-Schema <code>dim_time</code>.
+                    {% if selected_dept_id %}
+                        <span class="badge badge-gold ms-1">Filtered by Dept #{{ selected_dept_id }}</span>
+                    {% endif %}
+                    {% if selected_topic_id %}
+                        <span class="badge bg-primary text-white ms-1">Filtered by Topic #{{ selected_topic_id }}</span>
+                    {% endif %}
+                </p>
+            </div>
+            <span class="badge bg-surface-subtle text-primary border border-border-subtle text-[11px]">Dual-Axis Time Series</span>
+        </div>
+        <div class="p-4">
+            <div style="position: relative; height: 280px; width: 100%;">
+                <canvas id="monthlyVelocityChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section: High-Impact Publications & Engagement Trends -->
     <div class="card border-0 bg-white shadow-sm mb-4">
         <div class="p-4 border-b border-border-subtle">
-            <h3 class="font-display text-base font-bold text-primary mb-0">3. High-Impact Publications & Engagement Trends</h3>
+            <h3 class="font-display text-base font-bold text-primary mb-0">5. High-Impact Publications & Engagement Trends</h3>
             <p class="text-xs text-text-muted mb-0">Top papers ranked by university save count, citation graph PageRank, and community engagement.</p>
         </div>
         <div class="p-0">
@@ -174,7 +355,7 @@
                                 <td><span class="badge bg-surface-subtle text-text-secondary border border-border-subtle">{{ p.pagerank_score|floatformat:4 }}</span></td>
                                 <td class="text-end pe-4">
                                     <a href="{% url 'papers:paper_detail' p.id %}" class="btn btn-sm btn-outline-primary text-xs py-1 px-2.5">
-                                        View Details →
+                                        View Details &rarr;
                                     </a>
                                 </td>
                             </tr>
@@ -189,11 +370,11 @@
         </div>
     </div>
 
-    <!-- Section 4: Interactive Hierarchical Drill-Down -->
+    <!-- Section: Interactive Hierarchical Drill-Down -->
     <div class="card border-0 bg-white shadow-sm mb-4">
         <div class="p-4 border-b border-border-subtle flex flex-wrap justify-between items-center gap-2">
             <div>
-                <h3 class="font-display text-base font-bold text-primary mb-0">4. Interactive Hierarchical Drill-Down</h3>
+                <h3 class="font-display text-base font-bold text-primary mb-0">6. Interactive Hierarchical Drill-Down</h3>
                 <p class="text-xs text-text-muted mb-0">University &rarr; Department &rarr; Topic &rarr; Member</p>
             </div>
             {% if selected_dept_id %}
@@ -224,7 +405,7 @@
                     <h6 class="text-xs font-bold uppercase tracking-wider text-primary border-b border-border-subtle pb-2 mb-2">
                         Departments (Click to Filter)
                     </h6>
-                    <div class="space-y-1.5">
+                    <div class="space-y-1.5" style="max-height: 400px; overflow-y: auto;">
                         {% for dept in drill_down.departments %}
                             <a href="?dept={{ dept.department_id }}" class="flex items-center justify-between p-2.5 rounded-xl border text-decoration-none transition-all {% if selected_dept_id == dept.department_id %}bg-primary text-white border-primary shadow-sm{% else %}bg-surface-subtle text-text-primary border-border-subtle hover:border-primary{% endif %}">
                                 <div>
@@ -247,7 +428,7 @@
                         Active Topics in Department
                     </h6>
                     {% if drill_down.topics %}
-                        <div class="space-y-1.5">
+                        <div class="space-y-1.5" style="max-height: 400px; overflow-y: auto;">
                             {% for topic in drill_down.topics %}
                                 <a href="?dept={{ selected_dept_id }}&topic={{ topic.topic_id }}" class="flex items-center justify-between p-2.5 rounded-xl border text-decoration-none transition-all {% if selected_topic_id == topic.topic_id %}bg-accent-gold-light border-accent-gold text-accent-gold-dark font-bold{% else %}bg-surface-subtle text-text-primary border-border-subtle hover:border-accent-gold{% endif %}">
                                     <div>
@@ -271,7 +452,7 @@
                         Active Researchers & Activity
                     </h6>
                     {% if drill_down.members %}
-                        <div class="space-y-1.5">
+                        <div class="space-y-1.5" style="max-height: 400px; overflow-y: auto;">
                             {% for mem in drill_down.members %}
                                 <div class="p-2.5 rounded-xl bg-surface-subtle border border-border-subtle flex items-center justify-between">
                                     <div>
@@ -293,4 +474,409 @@
     </div>
 
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Chart.js and ApexCharts CDNs -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // -------------------------------------------------------------
+    // Data Ingestion from Django Context
+    // -------------------------------------------------------------
+    const topDepts = {{ top_departments_json|safe }};
+    const studentFacultyTopics = {{ student_faculty_topics_json|safe }};
+    const collabHeatmapData = {{ collaboration_heatmap_json|safe }};
+    const monthlyVelocity = {{ monthly_velocity_json|safe }};
+    const zScoreData = {{ zscore_chart_json|safe }};
+
+    // Shared typography and palette options
+    Chart.defaults.font.family = "'Inter', sans-serif";
+    Chart.defaults.color = "#4a5568";
+
+    // -------------------------------------------------------------
+    // 1. Top Departments Ranking (Horizontal Stacked Bar Chart)
+    // -------------------------------------------------------------
+    const deptCanvas = document.getElementById("deptRankingChart");
+    if (deptCanvas && topDepts.length > 0) {
+        // Take top 8 for clean visual rendering
+        const slicedDepts = topDepts.slice(0, 8);
+        const labels = slicedDepts.map(d => d.department_name.length > 25 ? d.department_name.substring(0, 23) + '…' : d.department_name);
+        const saveCounts = slicedDepts.map(d => d.save_count);
+        const searchCounts = slicedDepts.map(d => d.search_count);
+        const discussionCounts = slicedDepts.map(d => d.discussion_count);
+
+        new Chart(deptCanvas, {
+            type: "bar",
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: "Paper Saves",
+                        data: saveCounts,
+                        backgroundColor: "#c18e0e",
+                        borderRadius: 4,
+                        barPercentage: 0.75,
+                    },
+                    {
+                        label: "Search Queries",
+                        data: searchCounts,
+                        backgroundColor: "#042863",
+                        borderRadius: 4,
+                        barPercentage: 0.75,
+                    },
+                    {
+                        label: "Discussions & Comments",
+                        data: discussionCounts,
+                        backgroundColor: "#3b82f6",
+                        borderRadius: 4,
+                        barPercentage: 0.75,
+                    }
+                ]
+            },
+            options: {
+                indexAxis: "y",
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        stacked: true,
+                        grid: { color: "#f1f5f9" },
+                        ticks: { font: { size: 10 } }
+                    },
+                    y: {
+                        stacked: true,
+                        grid: { display: false },
+                        ticks: { font: { size: 10, weight: "600" } }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: "top",
+                        labels: { boxWidth: 12, font: { size: 11 } }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            afterTitle: function(context) {
+                                const idx = context[0].dataIndex;
+                                return "School: " + slicedDepts[idx].school_name;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // -------------------------------------------------------------
+    // 2. Student vs. Faculty Topics (Grouped Bar Chart)
+    // -------------------------------------------------------------
+    const topicsCanvas = document.getElementById("studentFacultyTopicsChart");
+    if (topicsCanvas && studentFacultyTopics.length > 0) {
+        const slicedTopics = studentFacultyTopics.slice(0, 8);
+        const topicLabels = slicedTopics.map(t => "#" + (t.topic_name.length > 18 ? t.topic_name.substring(0, 16) + '…' : t.topic_name));
+        const studentActs = slicedTopics.map(t => t.student_activity);
+        const facultyActs = slicedTopics.map(t => t.faculty_activity);
+
+        new Chart(topicsCanvas, {
+            type: "bar",
+            data: {
+                labels: topicLabels,
+                datasets: [
+                    {
+                        label: "Student Interactions",
+                        data: studentActs,
+                        backgroundColor: "#3b82f6",
+                        borderRadius: 4,
+                        barPercentage: 0.7,
+                    },
+                    {
+                        label: "Faculty & Researcher Interactions",
+                        data: facultyActs,
+                        backgroundColor: "#c18e0e",
+                        borderRadius: 4,
+                        barPercentage: 0.7,
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { font: { size: 10 } }
+                    },
+                    y: {
+                        grid: { color: "#f1f5f9" },
+                        ticks: { font: { size: 10 } }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: "top",
+                        labels: { boxWidth: 12, font: { size: 11 } }
+                    }
+                }
+            }
+        });
+    }
+
+    // -------------------------------------------------------------
+    // 3. Cross-Department Collaboration Heatmap & Matrix
+    // -------------------------------------------------------------
+    // Bootstrap Tooltips initialization for matrix cells
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+
+    // ApexCharts Heatmap Initialization
+    const apexContainer = document.getElementById("collabHeatmapApex");
+    let apexChartInstance = null;
+    if (apexContainer && collabHeatmapData && collabHeatmapData.apex_series && typeof ApexCharts !== "undefined") {
+        const apexOptions = {
+            chart: {
+                height: 310,
+                type: "heatmap",
+                toolbar: { show: false },
+                fontFamily: "'Inter', sans-serif"
+            },
+            dataLabels: {
+                enabled: true,
+                formatter: function (val) {
+                    return val === 0 ? "—" : val;
+                },
+                style: {
+                    colors: ["#ffffff"],
+                    fontSize: "12px",
+                    fontWeight: 700
+                }
+            },
+            plotOptions: {
+                heatmap: {
+                    shadeIntensity: 0.5,
+                    radius: 4,
+                    useFillColorAsStroke: true,
+                    colorScale: {
+                        ranges: [
+                            { from: 0, to: 0, color: "#f1f5f9", name: "Base" },
+                            { from: 1, to: 29, color: "#bae6fd", name: "1–29 Low" },
+                            { from: 30, to: 59, color: "#38bdf8", name: "30–59 Mod" },
+                            { from: 60, to: 84, color: "#0284c7", name: "60–84 High" },
+                            { from: 85, to: 500, color: "#042863", name: "85+ Intensive" }
+                        ]
+                    }
+                }
+            },
+            series: collabHeatmapData.apex_series,
+            xaxis: {
+                categories: collabHeatmapData.departments,
+                labels: {
+                    style: { fontSize: "11px", fontWeight: 600, colors: "#042863" }
+                }
+            },
+            yaxis: {
+                labels: {
+                    style: { fontSize: "11px", fontWeight: 600, colors: "#042863" }
+                }
+            },
+            tooltip: {
+                custom: function ({ series, seriesIndex, dataPointIndex, w }) {
+                    const rowDept = w.globals.seriesNames[seriesIndex];
+                    const colDept = w.globals.labels[dataPointIndex];
+                    const val = series[seriesIndex][dataPointIndex];
+                    if (val === 0 || rowDept === colDept) {
+                        return '<div class="p-2 text-xs font-semibold bg-white border border-slate-200 rounded shadow-sm">' + rowDept + ' (Internal Base)</div>';
+                    }
+                    return '<div class="p-2 text-xs font-semibold bg-white border border-slate-200 rounded shadow-sm text-primary">' +
+                        '<b>' + rowDept + ' &harr; ' + colDept + '</b>: ' + val + ' shared research interactions' +
+                        '</div>';
+                }
+            }
+        };
+        apexChartInstance = new ApexCharts(apexContainer, apexOptions);
+        apexChartInstance.render();
+    }
+
+    // Toggle controls between Matrix Grid and Chart Heatmap
+    const btnMatrix = document.getElementById("btnShowMatrix");
+    const btnApex = document.getElementById("btnShowApex");
+    const gridView = document.getElementById("matrixGridView");
+    const apexView = document.getElementById("apexHeatmapView");
+
+    if (btnMatrix && btnApex && gridView && apexView) {
+        btnMatrix.addEventListener("click", function () {
+            btnMatrix.classList.add("active");
+            btnApex.classList.remove("active");
+            gridView.style.display = "block";
+            apexView.style.display = "none";
+        });
+        btnApex.addEventListener("click", function () {
+            btnApex.classList.add("active");
+            btnMatrix.classList.remove("active");
+            gridView.style.display = "none";
+            apexView.style.display = "block";
+            if (apexChartInstance) {
+                apexChartInstance.windowResizeHandler();
+            }
+        });
+    }
+
+    // -------------------------------------------------------------
+    // 4. Monthly Activity & Topic Velocity (Line Chart)
+    // -------------------------------------------------------------
+    const velocityCanvas = document.getElementById("monthlyVelocityChart");
+    if (velocityCanvas && monthlyVelocity.length > 0) {
+        const labels = monthlyVelocity.map(m => m.label);
+        const events = monthlyVelocity.map(m => m.total_events);
+        const users = monthlyVelocity.map(m => m.active_users);
+        const topics = monthlyVelocity.map(m => m.active_topics);
+
+        new Chart(velocityCanvas, {
+            type: "line",
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: "Total Research Events",
+                        data: events,
+                        borderColor: "#042863",
+                        backgroundColor: "rgba(4, 40, 99, 0.08)",
+                        fill: true,
+                        tension: 0.35,
+                        pointBackgroundColor: "#042863",
+                        pointRadius: 4,
+                        yAxisID: "y",
+                    },
+                    {
+                        label: "Active Researchers",
+                        data: users,
+                        borderColor: "#c18e0e",
+                        borderDash: [5, 5],
+                        backgroundColor: "transparent",
+                        tension: 0.35,
+                        pointBackgroundColor: "#c18e0e",
+                        pointRadius: 3,
+                        yAxisID: "y1",
+                    },
+                    {
+                        label: "Distinct Topics Active",
+                        data: topics,
+                        borderColor: "#10b981",
+                        backgroundColor: "transparent",
+                        tension: 0.35,
+                        pointBackgroundColor: "#10b981",
+                        pointRadius: 3,
+                        yAxisID: "y1",
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: "index",
+                    intersect: false
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { font: { size: 10 } }
+                    },
+                    y: {
+                        type: "linear",
+                        display: true,
+                        position: "left",
+                        grid: { color: "#f1f5f9" },
+                        title: { display: true, text: "Total Events", font: { size: 10, weight: "bold" } },
+                        ticks: { font: { size: 10 } }
+                    },
+                    y1: {
+                        type: "linear",
+                        display: true,
+                        position: "right",
+                        grid: { drawOnChartArea: false },
+                        title: { display: true, text: "Researchers / Topics", font: { size: 10, weight: "bold" } },
+                        ticks: { font: { size: 10 } }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: "top",
+                        labels: { boxWidth: 12, font: { size: 11 } }
+                    }
+                }
+            }
+        });
+    }
+
+    // -------------------------------------------------------------
+    // 5. Compact F7 Topic Spike Z-Score Chart
+    // -------------------------------------------------------------
+    const analyticsZCanvas = document.getElementById("analyticsZScoreChart");
+    if (analyticsZCanvas && zScoreData && zScoreData.length > 0) {
+        const zThresholdPlugin = {
+            id: "analyticsZThresholdLine",
+            afterDatasetsDraw(chart) {
+                const { ctx, chartArea: { left, right }, scales: { y } } = chart;
+                if (!y) return;
+                const yPos = y.getPixelForValue(2.0);
+                if (yPos < chart.chartArea.top || yPos > chart.chartArea.bottom) return;
+                ctx.save();
+                ctx.beginPath();
+                ctx.setLineDash([6, 4]);
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = "#dc2626";
+                ctx.moveTo(left, yPos);
+                ctx.lineTo(right, yPos);
+                ctx.stroke();
+                ctx.fillStyle = "#dc2626";
+                ctx.font = "bold 10px Inter, sans-serif";
+                ctx.textAlign = "right";
+                ctx.fillText("Z = 2.0 Threshold", right - 6, yPos - 5);
+                ctx.restore();
+            }
+        };
+        new Chart(analyticsZCanvas, {
+            type: "bar",
+            data: {
+                labels: zScoreData.map(d => d.topic.length > 20 ? d.topic.substring(0, 18) + "…" : d.topic),
+                datasets: [{
+                    label: "Z-Score",
+                    data: zScoreData.map(d => d.z_score),
+                    backgroundColor: zScoreData.map(d => d.z_score >= 2.0 ? "#dc2626" : "#042863"),
+                    borderRadius: 5,
+                    barPercentage: 0.6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+                    y: { beginAtZero: true, suggestedMax: 4, grid: { color: "#f1f5f9" }, title: { display: true, text: "Z-Score (σ)", font: { size: 10, weight: "bold" } } }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function (ctx) {
+                                const item = zScoreData[ctx.dataIndex];
+                                return [
+                                    `Z-Score: ${item.z_score} (${item.z_score >= 2.0 ? "Anomaly / Spike" : "Normal"})`,
+                                    `7-Day Volume: ${item.current_count} vs Baseline: ${item.baseline_count}/wk`
+                                ];
+                            }
+                        }
+                    }
+                }
+            },
+            plugins: [zThresholdPlugin]
+        });
+    }
+});
+</script>
 {% endblock %}

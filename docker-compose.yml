@@ -39,6 +39,8 @@ services:
       pull: false
     container_name: research_commons_web
     restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       db:
         condition: service_healthy
@@ -54,7 +56,7 @@ services:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:-admin}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-admin12345}
       MINIO_SECURE: "False"
-      MINIO_BUCKET_RAW: ${MINIO_BUCKET_RAW:-raw-ingestion}
+      MINIO_BUCKET_RAW: ${MINIO_BUCKET_RAW:-chanakya-lakehouse}
       MINIO_BUCKET_PARQUET: ${MINIO_BUCKET_PARQUET:-analytics-parquet}
       OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
       OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.2}
@@ -63,6 +65,40 @@ services:
       SECRET_KEY: ${SECRET_KEY:-django-insecure-m@o9=-d&z4l*b3abkgjj(m)ftv1!i%7dm30^r2p&doz6)=g&su}
     ports:
       - "${WEB_PORT:-8080}:8000"
+    volumes:
+      - .:/app
+
+  scheduler:
+    build:
+      context: .
+      pull: false
+    container_name: research_commons_scheduler
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      db:
+        condition: service_healthy
+      minio:
+        condition: service_started
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-research_commons}
+      POSTGRES_USER: ${POSTGRES_USER:-research_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-research_password}
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-admin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-admin12345}
+      MINIO_SECURE: "False"
+      MINIO_BUCKET_RAW: ${MINIO_BUCKET_RAW:-chanakya-lakehouse}
+      MINIO_BUCKET_PARQUET: ${MINIO_BUCKET_PARQUET:-analytics-parquet}
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.2}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-all-MiniLM-L6-v2}
+      DEBUG: ${DEBUG:-True}
+      SECRET_KEY: ${SECRET_KEY:-django-insecure-m@o9=-d&z4l*b3abkgjj(m)ftv1!i%7dm30^r2p&doz6)=g&su}
+    command: python manage.py run_scheduled_ingestion --daemon --interval 3600
     volumes:
       - .:/app
 

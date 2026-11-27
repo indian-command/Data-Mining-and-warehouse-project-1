@@ -252,9 +252,45 @@ class RecommendationService:
         return scored_members[:limit]
 
     @classmethod
+    def compute_save_association_rules(
+        cls, min_support: Optional[float] = None, min_lift: float = 1.0
+    ) -> pd.DataFrame:
+        """
+        Builds a binary user-item save transaction matrix and executes
+        mlxtend.frequent_patterns.fpgrowth and association_rules.
+        Returns a DataFrame with columns: antecedents, consequents, support, confidence, lift.
+        """
+        saves = list(SavedResearchItem.objects.values("user_id", "resource_id"))
+        if len(saves) < 2:
+            return pd.DataFrame()
+
+        try:
+            df = pd.DataFrame(saves)
+            # Binary user-item transaction matrix (rows: users, columns: items)
+            basket = pd.crosstab(df["user_id"], df["resource_id"]).astype(bool)
+            if basket.empty or basket.shape[0] < 1 or basket.shape[1] < 2:
+                return pd.DataFrame()
+
+            # Dynamic support threshold based on active saver count
+            n_baskets = len(basket)
+            threshold = min_support if min_support is not None else max(0.01, min(0.04, 1.0 / n_baskets))
+
+            frequent_itemsets = fpgrowth(basket, min_support=threshold, use_colnames=True, max_len=2)
+            if frequent_itemsets.empty:
+                return pd.DataFrame()
+
+            rules = association_rules(frequent_itemsets, metric="lift", min_threshold=min_lift)
+            return rules
+        except Exception:
+            return pd.DataFrame()
+
+    @classmethod
     def get_also_saved_for_paper(cls, paper: Any, limit: int = 5) -> List[Dict[str, Any]]:
         """
-        'Members who saved this also saved' co-occurrence & association rules using mlxtend FP-Growth or lift/support.
+        'Members who saved this also saved' association rules & co-occurrence pipeline:
+        1. Constructs binary user-item transaction matrix.
+        2. Executes mlxtend.frequent_patterns.fpgrowth & association_rules (support, confidence, lift).
+        3. Seamlessly falls back to direct co-occurrence counting when baskets or candidate sets are sparse.
         """
         # Determine the target resource_id
         target_resource_id = getattr(paper, "resource_id", None)
@@ -266,18 +302,60 @@ class RecommendationService:
         if not target_resource_id:
             return []
 
-        # Find users who saved this item
+        # -------------------------------------------------------------
+        # STEP 1: Attempt Association Rule Mining via mlxtend FP-Growth
+        # -------------------------------------------------------------
+        try:
+            rules_df = cls.compute_save_association_rules(min_lift=1.0)
+            if not rules_df.empty:
+                # Find rules where antecedent contains our target item
+                matching_rules = rules_df[
+                    rules_df["antecedents"].apply(lambda s: target_resource_id in s)
+                ].sort_values(by=["lift", "confidence"], ascending=[False, False])
+
+                if not matching_rules.empty:
+                    results = []
+                    seen_consequents = set()
+                    for _, rule in matching_rules.iterrows():
+                        consequents = list(rule["consequents"])
+                        for cons_id in consequents:
+                            if cons_id == target_resource_id or cons_id in seen_consequents:
+                                continue
+                            seen_consequents.add(cons_id)
+                            res = ResearchResource.objects.filter(id=cons_id).first()
+                            if res:
+                                linked_paper = getattr(res, "papers", None)
+                                first_paper = linked_paper.first() if linked_paper else None
+                                results.append({
+                                    "resource": res,
+                                    "paper": first_paper,
+                                    "co_save_count": int(round(rule["support"] * 100)),
+                                    "confidence": round(float(rule["confidence"]), 2),
+                                    "lift": round(float(rule["lift"]), 2),
+                                    "support": round(float(rule["support"]), 4),
+                                })
+                            if len(results) >= limit:
+                                break
+                        if len(results) >= limit:
+                            break
+
+                    if results:
+                        return results
+        except Exception:
+            pass
+
+        # -------------------------------------------------------------
+        # STEP 2: Direct Co-Occurrence Fallback (Sparse or Cold-Start Baskets)
+        # -------------------------------------------------------------
         users_who_saved = set(
             SavedResearchItem.objects.filter(resource_id=target_resource_id).values_list("user_id", flat=True)
         )
         if not users_who_saved:
-            # Fallback to papers in the same topics
             return cls._get_topic_fallback_recommendations(paper, limit)
 
         total_users_count = max(1, User.objects.filter(is_active=True).count())
         target_save_count = len(users_who_saved)
 
-        # Other items saved by these same users
         co_saved_counts = (
             SavedResearchItem.objects.filter(user_id__in=users_who_saved)
             .exclude(resource_id=target_resource_id)
@@ -295,7 +373,6 @@ class RecommendationService:
             res_id = item["resource_id"]
             co_count = item["co_count"]
 
-            # Compute Lift and Support
             other_total_saves = SavedResearchItem.objects.filter(resource_id=res_id).count() or 1
             support = co_count / total_users_count
             confidence = co_count / target_save_count
@@ -312,6 +389,7 @@ class RecommendationService:
                     "co_save_count": co_count,
                     "confidence": round(confidence, 2),
                     "lift": round(lift, 2),
+                    "support": round(support, 4),
                 })
 
         results.sort(key=lambda x: (x["lift"], x["co_save_count"]), reverse=True)

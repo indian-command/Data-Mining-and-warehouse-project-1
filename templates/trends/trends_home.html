@@ -53,6 +53,51 @@
         </div>
     {% endif %}
 
+    <!-- 1B. Interactive Anomaly & Spike Detection Graphs (Chart.js) -->
+    <div class="row g-4 mb-5">
+        <!-- Topic Spike Z-Score Chart -->
+        <div class="col-lg-7">
+            <div class="card border-0 bg-white shadow-sm h-100">
+                <div class="p-4 border-b border-border-subtle flex justify-between items-center">
+                    <div>
+                        <h3 class="font-display text-base font-bold text-primary mb-0">Topic Spike Z-Score Monitor</h3>
+                        <p class="text-xs text-text-muted mb-0">Top 10 research topics: 7-day window vs. 30-day baseline (threshold Z = 2.0)</p>
+                    </div>
+                    <span class="badge bg-status-error-surface text-status-error border border-status-error/30 text-[10px] font-bold">Z &ge; 2.0 = Spike</span>
+                </div>
+                <div class="p-4">
+                    <div style="position: relative; height: 300px; width: 100%;">
+                        <canvas id="topicZScoreChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Account Activity Anomaly (Burst Detection) Plot -->
+        <div class="col-lg-5">
+            <div class="card border-0 bg-white shadow-sm h-100">
+                <div class="p-4 border-b border-border-subtle flex justify-between items-center">
+                    <div>
+                        <h3 class="font-display text-base font-bold text-primary mb-0">Account Burst Detection Plot</h3>
+                        <p class="text-xs text-text-muted mb-0">Post velocity (2h) vs. rapid event burst (5m)</p>
+                    </div>
+                    {% if user.is_staff %}
+                        <a href="{% url 'trends:moderation_queue' %}" class="badge bg-status-error text-white text-[10px] text-decoration-none">
+                            Inspect Flags &rarr;
+                        </a>
+                    {% else %}
+                        <span class="badge badge-gold text-[10px]">Bot Guard</span>
+                    {% endif %}
+                </div>
+                <div class="p-4">
+                    <div style="position: relative; height: 300px; width: 100%;">
+                        <canvas id="accountBurstChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- 2. Trending Topics Grid & Live Activity -->
     <div class="row g-4 mb-5">
         <!-- Left: Active Topics by Velocity -->
@@ -128,4 +173,156 @@
     </div>
 
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const zData = {{ zscore_chart_json|safe }};
+    const burstData = {{ burst_chart_json|safe }};
+
+    // Custom Chart.js plugin to draw horizontal red dashed threshold line at Z = 2.0
+    const zThresholdPlugin = {
+        id: "zThresholdLine",
+        afterDatasetsDraw(chart) {
+            const { ctx, chartArea: { left, right }, scales: { y } } = chart;
+            if (!y) return;
+            const yPos = y.getPixelForValue(2.0);
+            if (yPos < chart.chartArea.top || yPos > chart.chartArea.bottom) return;
+            ctx.save();
+            ctx.beginPath();
+            ctx.setLineDash([6, 4]);
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = "#dc2626";
+            ctx.moveTo(left, yPos);
+            ctx.lineTo(right, yPos);
+            ctx.stroke();
+            ctx.fillStyle = "#dc2626";
+            ctx.font = "bold 10px Inter, sans-serif";
+            ctx.textAlign = "right";
+            ctx.fillText("Threshold Z = 2.0", right - 6, yPos - 6);
+            ctx.restore();
+        }
+    };
+
+    const zCanvas = document.getElementById("topicZScoreChart");
+    if (zCanvas && zData.length > 0) {
+        const labels = zData.map(d => d.topic.length > 20 ? d.topic.substring(0, 18) + "…" : d.topic);
+        const scores = zData.map(d => d.z_score);
+        const colors = zData.map(d => d.z_score >= 2.0 ? "#dc2626" : "#042863");
+
+        new Chart(zCanvas, {
+            type: "bar",
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: "Sliding-Window Z-Score",
+                    data: scores,
+                    backgroundColor: colors,
+                    borderRadius: 6,
+                    barPercentage: 0.65
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { font: { size: 10, weight: "600" }, maxRotation: 30, minRotation: 15 }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        suggestedMax: 4,
+                        grid: { color: "#f1f5f9" },
+                        title: { display: true, text: "Z-Score (σ)", font: { size: 11, weight: "bold" } }
+                    }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function (ctx) {
+                                const item = zData[ctx.dataIndex];
+                                const status = item.z_score >= 2.0 ? "ANOMALY / SPIKE" : "Normal Activity";
+                                return [
+                                    `Z-Score: ${item.z_score} (${status})`,
+                                    `7-Day Volume: ${item.current_count} events`,
+                                    `30-Day Baseline: ${item.baseline_count} / wk (+${item.growth_rate}%)`
+                                ];
+                            }
+                        }
+                    }
+                }
+            },
+            plugins: [zThresholdPlugin]
+        });
+    }
+
+    const burstCanvas = document.getElementById("accountBurstChart");
+    if (burstCanvas && burstData.length > 0) {
+        const normalPts = burstData.filter(d => !d.is_flagged).map(d => ({ x: d.posts_2h, y: d.events_5m, meta: d }));
+        const flaggedPts = burstData.filter(d => d.is_flagged).map(d => ({ x: d.posts_2h, y: d.events_5m, meta: d }));
+
+        new Chart(burstCanvas, {
+            type: "scatter",
+            data: {
+                datasets: [
+                    {
+                        label: "Flagged Anomaly / Bot",
+                        data: flaggedPts,
+                        backgroundColor: "#dc2626",
+                        borderColor: "#991b1b",
+                        borderWidth: 1.5,
+                        pointRadius: 7,
+                        pointHoverRadius: 9
+                    },
+                    {
+                        label: "Normal Researcher",
+                        data: normalPts,
+                        backgroundColor: "rgba(4, 40, 99, 0.7)",
+                        borderColor: "#042863",
+                        pointRadius: 4.5,
+                        pointHoverRadius: 6
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        suggestedMax: 8,
+                        title: { display: true, text: "Post Velocity (posts / 2 hours)", font: { size: 10, weight: "bold" } },
+                        grid: { color: "#f1f5f9" }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        suggestedMax: 35,
+                        title: { display: true, text: "Event Burst (actions / 5 mins)", font: { size: 10, weight: "bold" } },
+                        grid: { color: "#f1f5f9" }
+                    }
+                },
+                plugins: {
+                    legend: { position: "top", labels: { boxWidth: 10, font: { size: 11 } } },
+                    tooltip: {
+                        callbacks: {
+                            label: function (ctx) {
+                                const m = ctx.raw.meta;
+                                return [
+                                    `@${m.username}`,
+                                    `Posts (2h): ${m.posts_2h} | Events (5m): ${m.events_5m}`,
+                                    `Status: ${m.reason}`
+                                ];
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
 {% endblock %}

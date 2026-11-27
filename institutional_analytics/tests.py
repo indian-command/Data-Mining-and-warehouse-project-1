@@ -1,4 +1,7 @@
-from django.test import TestCase
+import shutil
+import tempfile
+from pathlib import Path
+from django.test import TestCase, override_settings
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from accounts.models import Department, School, Topic, Profile
@@ -7,9 +10,16 @@ from trends.models import ActivityEvent
 from institutional_analytics.services import StarSchemaETLService, DuckDBAnalyticsService
 
 User = get_user_model()
+_TEST_ANALYTICS_DIR = Path(tempfile.mkdtemp(prefix="chanakya_test_analytics_"))
 
 
+@override_settings(ANALYTICS_DATA_DIR=_TEST_ANALYTICS_DIR)
 class InstitutionalAnalyticsTests(TestCase):
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(_TEST_ANALYTICS_DIR, ignore_errors=True)
+        super().tearDownClass()
 
     def setUp(self):
         self.staff_user = User.objects.create_user(

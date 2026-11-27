@@ -19,6 +19,22 @@
         </div>
     </div>
 
+    <!-- Account Activity Anomaly (Burst Detection) Chart -->
+    <div class="card border-0 bg-white shadow-sm mb-4">
+        <div class="p-4 border-b border-border-subtle flex justify-between items-center">
+            <div>
+                <h3 class="font-display text-base font-bold text-primary mb-0">Account Activity Anomaly Chart (Burst Detection Plot)</h3>
+                <p class="text-xs text-text-muted mb-0">Compares Post Velocity (posts per 2 hours) vs. Total Event Burst (events per 5 minutes); flagged spam accounts highlighted in red.</p>
+            </div>
+            <span class="badge bg-status-error-surface text-status-error border border-status-error/30 text-[10px] font-bold">Real-Time Bot Monitor</span>
+        </div>
+        <div class="p-4">
+            <div style="position: relative; height: 270px; width: 100%;">
+                <canvas id="moderationBurstChart"></canvas>
+            </div>
+        </div>
+    </div>
+
     <!-- Pending Flags Card -->
     <div class="card border-0 bg-white shadow-sm mb-5">
         <div class="p-4 border-b border-border-subtle flex justify-between items-center">
@@ -130,4 +146,76 @@
     {% endif %}
 
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const burstData = {{ burst_chart_json|safe }};
+    const canvas = document.getElementById("moderationBurstChart");
+    if (canvas && burstData.length > 0) {
+        const normalPts = burstData.filter(d => !d.is_flagged).map(d => ({ x: d.posts_2h, y: d.events_5m, meta: d }));
+        const flaggedPts = burstData.filter(d => d.is_flagged).map(d => ({ x: d.posts_2h, y: d.events_5m, meta: d }));
+
+        new Chart(canvas, {
+            type: "scatter",
+            data: {
+                datasets: [
+                    {
+                        label: "Flagged Spam / Anomaly Account",
+                        data: flaggedPts,
+                        backgroundColor: "#dc2626",
+                        borderColor: "#991b1b",
+                        borderWidth: 1.5,
+                        pointRadius: 8,
+                        pointHoverRadius: 10
+                    },
+                    {
+                        label: "Normal Active Account",
+                        data: normalPts,
+                        backgroundColor: "rgba(4, 40, 99, 0.7)",
+                        borderColor: "#042863",
+                        pointRadius: 4.5,
+                        pointHoverRadius: 6
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        suggestedMax: 8,
+                        title: { display: true, text: "Post Velocity (posts per 2 hours)", font: { size: 11, weight: "bold" } },
+                        grid: { color: "#f1f5f9" }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        suggestedMax: 35,
+                        title: { display: true, text: "Total Event Burst (events per 5 minutes)", font: { size: 11, weight: "bold" } },
+                        grid: { color: "#f1f5f9" }
+                    }
+                },
+                plugins: {
+                    legend: { position: "top", labels: { boxWidth: 12, font: { size: 11 } } },
+                    tooltip: {
+                        callbacks: {
+                            label: function (ctx) {
+                                const m = ctx.raw.meta;
+                                return [
+                                    `@${m.username}`,
+                                    `Post Velocity (2h): ${m.posts_2h} | Event Burst (5m): ${m.events_5m}`,
+                                    `Status: ${m.reason}`
+                                ];
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
 {% endblock %}

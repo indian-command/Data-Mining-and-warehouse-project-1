@@ -24,12 +24,13 @@ load_dotenv(BASE_DIR / ".env")
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-m@o9=-d&z4l*b3abkgjj(m)ftv1!i%7dm30^r2p&doz6)=g&su'
+SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-m@o9=-d&z4l*b3abkgjj(m)ftv1!i%7dm30^r2p&doz6)=g&su")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get("DEBUG", "True").lower() in ("true", "1", "t", "yes")
 
-ALLOWED_HOSTS = ["*"]
+_allowed_hosts_raw = os.environ.get("ALLOWED_HOSTS", "*")
+ALLOWED_HOSTS = [h.strip() for h in _allowed_hosts_raw.split(",") if h.strip()]
 
 # CSRF Trusted Origins for local development & containerized environments
 CSRF_TRUSTED_ORIGINS = [
@@ -178,11 +179,11 @@ MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT", "localhost:9000")
 MINIO_ROOT_USER = os.getenv("MINIO_ROOT_USER", "admin")
 MINIO_ROOT_PASSWORD = os.getenv("MINIO_ROOT_PASSWORD", "admin12345")
 MINIO_SECURE = os.getenv("MINIO_SECURE", "False").lower() in ("true", "1", "yes")
-MINIO_BUCKET_RAW = os.getenv("MINIO_BUCKET_RAW", "raw-ingestion")
+MINIO_BUCKET_RAW = os.getenv("MINIO_BUCKET_RAW", "chanakya-lakehouse")
 MINIO_BUCKET_PARQUET = os.getenv("MINIO_BUCKET_PARQUET", "analytics-parquet")
 
 # Local LLM (Ollama) & Vector Embeddings
-OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://host.docker.internal:11434")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.2")
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "all-MiniLM-L6-v2")
 

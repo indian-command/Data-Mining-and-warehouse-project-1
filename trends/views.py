@@ -1,3 +1,4 @@
+import json
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.shortcuts import get_object_or_404, redirect, render
@@ -23,6 +24,9 @@ def trends_home_view(request):
         .order_by("-timestamp")[:15]
     )
 
+    zscore_chart_data = TrendAnalyzer.get_topic_zscore_chart_data(limit=10)
+    burst_chart_data = AnomalyDetector.get_account_burst_metrics(limit=30)
+
     return render(
         request,
         "trends/trends_home.html",
@@ -30,6 +34,8 @@ def trends_home_view(request):
             "spike_alerts": spike_alerts,
             "top_trending": top_trending,
             "recent_events": recent_events,
+            "zscore_chart_json": json.dumps(zscore_chart_data),
+            "burst_chart_json": json.dumps(burst_chart_data),
         },
     )
 
@@ -43,6 +49,7 @@ def moderation_queue_view(request):
     flags = ModerationFlag.objects.select_related("user").order_by("-created_at")
     pending_flags = flags.filter(status="pending")
     resolved_flags = flags.exclude(status="pending")[:20]
+    burst_chart_data = AnomalyDetector.get_account_burst_metrics(limit=30)
 
     return render(
         request,
@@ -50,6 +57,7 @@ def moderation_queue_view(request):
         {
             "pending_flags": pending_flags,
             "resolved_flags": resolved_flags,
+            "burst_chart_json": json.dumps(burst_chart_data),
         },
     )
 

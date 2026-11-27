@@ -208,12 +208,17 @@ def create_collection_view(request):
 
         collection = form.save(commit=False)
         collection.owner = request.user
-        collection.save()
-
-        messages.success(
-            request,
-            f"Collection '{collection.name}' created successfully."
-        )
+        try:
+            collection.save()
+            messages.success(
+                request,
+                f"Collection '{collection.name}' created successfully."
+            )
+        except Exception:
+            messages.warning(
+                request,
+                f"You already have a collection named '{collection.name}'."
+            )
 
     else:
 

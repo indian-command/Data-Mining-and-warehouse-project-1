@@ -9,9 +9,6 @@ from trends.services import AnomalyDetector, TrendAnalyzer
 
 def trends_home_view(request):
     """Displays sliding-window trending topics, growth velocity, and statistical spike alerts."""
-    if request.user.is_authenticated and hasattr(request.user, "profile") and request.user.profile.role == "student":
-        messages.info(request, "Velocity Trends & Moderation features are reserved for faculty and research scholars.")
-        return redirect("home")
     # Ensure trends are freshly calculated or retrieved
     trends = TopicTrend.objects.select_related("topic").order_by("-is_spike", "-z_score", "-growth_rate")
     if not trends.exists():

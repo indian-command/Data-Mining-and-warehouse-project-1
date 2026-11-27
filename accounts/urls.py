@@ -74,4 +74,35 @@ urlpatterns = [
         views.toggle_topic_follow_view,
         name="toggle_topic_follow"
     ),
+    # Admin User Directory & Access Control Console
+    path(
+        "admin/users/",
+        views.admin_user_directory_view,
+        name="admin_users"
+    ),
+    path(
+        "admin/users/<int:user_id>/role/",
+        views.admin_update_role_view,
+        name="admin_update_role"
+    ),
+    path(
+        "admin/users/<int:user_id>/toggle-status/",
+        views.admin_toggle_status_view,
+        name="admin_toggle_status"
+    ),
+    path(
+        "admin/users/<int:user_id>/toggle-verify/",
+        views.admin_toggle_verify_view,
+        name="admin_toggle_verify"
+    ),
+    path(
+        "admin/users/<int:user_id>/reset-password/",
+        views.admin_reset_password_view,
+        name="admin_reset_password"
+    ),
+    path(
+        "admin/users/<int:user_id>/delete/",
+        views.admin_delete_user_view,
+        name="admin_delete_user"
+    ),
 ]

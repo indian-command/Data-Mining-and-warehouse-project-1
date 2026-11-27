@@ -1,16 +1,19 @@
+from functools import wraps
 from django.contrib import messages
 from django.contrib.auth import login, get_user_model
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
+from django.db import transaction
+from django.db.models import Q
+from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_GET, require_POST
-from django.db import transaction
 
 from .forms import RegisterForm, UserUpdateForm, ProfileUpdateForm
 from .models import (
     Department,
     Profile,
     MemberFollow,
+    School,
     Topic,
     TopicFollow,
 )
@@ -401,3 +404,177 @@ def toggle_topic_follow_view(request, topic_id):
         )
 
     return redirect("discussions:post_list")
+
+
+# =====================================
+# ADMIN USER DIRECTORY & ACCESS CONTROL
+# =====================================
+
+def _admin_required(view_func):
+    """Allows staff/superuser/admin-role accounts; redirects guests and returns 403 for non-admins."""
+    @wraps(view_func)
+    def _wrapped(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect("accounts:login")
+        profile = getattr(request.user, "profile", None)
+        is_admin = (
+            request.user.is_staff
+            or request.user.is_superuser
+            or (profile is not None and profile.role == "admin")
+        )
+        if not is_admin:
+            return HttpResponseForbidden("403 Forbidden: Administrator access required.")
+        return view_func(request, *args, **kwargs)
+    return _wrapped
+
+
+@_admin_required
+def admin_user_directory_view(request):
+    """Admin-only User Directory & Access Control Console."""
+    query = request.GET.get("q", "").strip()
+    role_filter = request.GET.get("role", "").strip()
+    school_filter = request.GET.get("school", "").strip()
+    status_filter = request.GET.get("status", "").strip()
+
+    all_users = User.objects.select_related(
+        "profile", "profile__department", "profile__department__school"
+    ).order_by("-is_active", "first_name", "username")
+
+    # KPI Summary metrics (university-wide)
+    total_accounts = User.objects.count()
+    active_count = User.objects.filter(is_active=True).count()
+    suspended_count = User.objects.filter(is_active=False).count()
+    faculty_count = Profile.objects.filter(role="faculty").count()
+    student_count = Profile.objects.filter(role="student").count()
+    researcher_count = Profile.objects.filter(role="researcher").count()
+    admin_count = Profile.objects.filter(role="admin").count()
+    schools = School.objects.all().order_by("name")
+    schools_count = schools.count() or 6
+
+    # Apply filters
+    users_qs = all_users
+    if query:
+        users_qs = users_qs.filter(
+            Q(username__icontains=query)
+            | Q(first_name__icontains=query)
+            | Q(last_name__icontains=query)
+            | Q(email__icontains=query)
+            | Q(profile__department__name__icontains=query)
+            | Q(profile__department__school__name__icontains=query)
+        ).distinct()
+
+    if role_filter:
+        users_qs = users_qs.filter(profile__role=role_filter)
+
+    if school_filter:
+        users_qs = users_qs.filter(profile__department__school__code=school_filter)
+
+    if status_filter == "active":
+        users_qs = users_qs.filter(is_active=True)
+    elif status_filter == "suspended":
+        users_qs = users_qs.filter(is_active=False)
+
+    return render(
+        request,
+        "accounts/admin_users.html",
+        {
+            "users_list": users_qs,
+            "filtered_count": users_qs.count(),
+            "total_accounts": total_accounts,
+            "active_count": active_count,
+            "suspended_count": suspended_count,
+            "faculty_count": faculty_count,
+            "student_count": student_count,
+            "researcher_count": researcher_count,
+            "admin_count": admin_count,
+            "schools": schools,
+            "schools_count": schools_count,
+            "role_choices": Profile.ROLE_CHOICES,
+            "query": query,
+            "role_filter": role_filter,
+            "school_filter": school_filter,
+            "status_filter": status_filter,
+        },
+    )
+
+
+@_admin_required
+@require_POST
+def admin_update_role_view(request, user_id):
+    """Updates a scholar's academic role track via POST."""
+    target_user = get_object_or_404(User, pk=user_id)
+    new_role = request.POST.get("role", "").strip()
+    valid_roles = {r[0] for r in Profile.ROLE_CHOICES}
+    if new_role not in valid_roles:
+        messages.error(request, "Invalid role selection.")
+        return redirect("accounts:admin_users")
+
+    profile, _ = Profile.objects.get_or_create(user=target_user)
+    profile.role = new_role
+    profile.save(update_fields=["role"])
+
+    if new_role == "admin" and not target_user.is_staff:
+        target_user.is_staff = True
+        target_user.save(update_fields=["is_staff"])
+
+    messages.success(request, f"Updated role for {target_user.username} to {profile.get_role_display()}.")
+    return redirect("accounts:admin_users")
+
+
+@_admin_required
+@require_POST
+def admin_toggle_status_view(request, user_id):
+    """Suspends or reactivates a user account (self-suspension blocked)."""
+    target_user = get_object_or_404(User, pk=user_id)
+    if target_user.pk == request.user.pk:
+        messages.error(request, "You cannot suspend your own logged-in administrator account.")
+        return redirect("accounts:admin_users")
+
+    target_user.is_active = not target_user.is_active
+    target_user.save(update_fields=["is_active"])
+    state_label = "reactivated" if target_user.is_active else "suspended"
+    messages.success(request, f"Account {target_user.username} has been {state_label}.")
+    return redirect("accounts:admin_users")
+
+
+@_admin_required
+@require_POST
+def admin_toggle_verify_view(request, user_id):
+    """Toggles a scholar's verification status between Verified and Pending."""
+    target_user = get_object_or_404(User, pk=user_id)
+    profile, _ = Profile.objects.get_or_create(user=target_user)
+    profile.is_verified = not profile.is_verified
+    profile.save(update_fields=["is_verified"])
+    status_label = "Verified" if profile.is_verified else "Pending"
+    messages.success(request, f"Verification status for {target_user.username} set to {status_label}.")
+    return redirect("accounts:admin_users")
+
+
+@_admin_required
+@require_POST
+def admin_reset_password_view(request, user_id):
+    """Sets a temporary password for a user account."""
+    target_user = get_object_or_404(User, pk=user_id)
+    temp_password = request.POST.get("temp_password", "").strip() or "Chanakya@2026"
+    target_user.set_password(temp_password)
+    target_user.save(update_fields=["password"])
+    messages.success(
+        request,
+        f"Temporary password for {target_user.username} set to '{temp_password}'.",
+    )
+    return redirect("accounts:admin_users")
+
+
+@_admin_required
+@require_POST
+def admin_delete_user_view(request, user_id):
+    """Permanently deletes a user account with database cascading (self-deletion blocked)."""
+    target_user = get_object_or_404(User, pk=user_id)
+    if target_user.pk == request.user.pk:
+        messages.error(request, "You cannot delete your own logged-in administrator account.")
+        return redirect("accounts:admin_users")
+
+    username = target_user.username
+    target_user.delete()
+    messages.warning(request, f"User account '{username}' and all associated records were permanently deleted.")
+    return redirect("accounts:admin_users")

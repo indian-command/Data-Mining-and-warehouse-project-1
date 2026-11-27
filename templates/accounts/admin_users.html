@@ -1,0 +1,318 @@
+{% extends "base.html" %}
+
+{% block title %}User Directory & Access Control Console | Chanakya University{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-lg-5 py-4" style="background-color: #faf8f5; min-height: 100vh;">
+
+    <!-- 1. Page Header -->
+    <div class="flex flex-wrap justify-between items-start gap-3 pb-4 mb-4 border-b border-border-subtle">
+        <div>
+            <div class="inline-flex items-center gap-2 mb-2">
+                <span class="badge bg-primary text-white text-[10px] font-bold px-2.5 py-1 tracking-wider">ADMIN-01 &amp; 02</span>
+                <span class="text-xs font-bold text-accent-gold-dark uppercase tracking-wider">Identity Governance &amp; User Control</span>
+            </div>
+            <h1 class="section-title mb-1">User Directory &amp; Access Control Console</h1>
+            <p class="text-xs sm:text-sm text-text-secondary mb-0 max-w-3xl">
+                Manage institutional scholars, assign academic roles, suspend unauthorized accounts, and execute permanent deletions with full database cascading.
+            </p>
+        </div>
+        <div class="flex items-center gap-2">
+            <a href="{% url 'trends:moderation_queue' %}" class="btn btn-outline-primary text-xs py-2 px-3 flex items-center gap-1 bg-white">
+                <span class="material-symbols-outlined text-[16px]">shield</span>
+                <span>Moderation Queue</span>
+            </a>
+            <a href="{% url 'institutional_analytics:dashboard' %}" class="btn btn-navy text-xs py-2 px-3 flex items-center gap-1">
+                <span class="material-symbols-outlined text-[16px]">query_stats</span>
+                <span>Analytics Dashboard</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- 2. 4 KPI Summary Cards -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4">
+        <div class="card p-4 border-0 bg-white shadow-sm rounded-2xl">
+            <span class="text-[11px] font-bold text-text-muted uppercase tracking-wider block mb-1">Total Accounts</span>
+            <div class="font-display text-3xl font-extrabold text-primary">{{ total_accounts }}</div>
+            <span class="text-[11px] text-text-secondary font-semibold mt-1 block">
+                {{ faculty_count }} Faculty &middot; {{ student_count }} Students
+            </span>
+        </div>
+
+        <div class="card p-4 border-0 bg-white shadow-sm rounded-2xl">
+            <span class="text-[11px] font-bold text-text-muted uppercase tracking-wider block mb-1">Active Status</span>
+            <div class="font-display text-3xl font-extrabold text-status-success">{{ active_count }}</div>
+            <span class="text-[11px] text-status-success font-semibold mt-1 block">
+                Permitted for auth &amp; research
+            </span>
+        </div>
+
+        <div class="card p-4 border-0 bg-white shadow-sm rounded-2xl">
+            <span class="text-[11px] font-bold text-text-muted uppercase tracking-wider block mb-1">Suspended</span>
+            <div class="font-display text-3xl font-extrabold text-status-error">{{ suspended_count }}</div>
+            <span class="text-[11px] text-status-error font-semibold mt-1 block">
+                Access blocked by administrator
+            </span>
+        </div>
+
+        <div class="card p-4 border-0 bg-white shadow-sm rounded-2xl">
+            <span class="text-[11px] font-bold text-text-muted uppercase tracking-wider block mb-1">Constituent Schools</span>
+            <div class="font-display text-3xl font-extrabold text-accent-gold-dark">{{ schools_count }}</div>
+            <span class="text-[11px] text-text-secondary font-semibold mt-1 block">
+                Chanakya University
+            </span>
+        </div>
+    </div>
+
+    <!-- 3. Live Search & Filter Bar -->
+    <div class="card p-3.5 sm:p-4 border-0 bg-white shadow-sm rounded-2xl mb-4">
+        <form method="get" action="{% url 'accounts:admin_users' %}" id="adminUserFilterForm" class="row g-2.5 align-items-center">
+            <div class="col-lg-5">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-surface-subtle border-border-subtle text-text-muted">
+                        <span class="material-symbols-outlined text-[18px]">search</span>
+                    </span>
+                    <input type="text"
+                           name="q"
+                           id="scholarSearchInput"
+                           value="{{ query }}"
+                           class="form-control border-border-subtle text-xs py-2"
+                           placeholder="Search scholars by name, email, department...">
+                </div>
+            </div>
+
+            <div class="col-sm-4 col-lg-2">
+                <select name="role" class="form-select form-select-sm border-border-subtle text-xs py-2" onchange="this.form.submit()">
+                    <option value="">All Roles</option>
+                    {% for val, label in role_choices %}
+                        <option value="{{ val }}" {% if role_filter == val %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-sm-4 col-lg-2">
+                <select name="school" class="form-select form-select-sm border-border-subtle text-xs py-2" onchange="this.form.submit()">
+                    <option value="">All Schools</option>
+                    {% for s in schools %}
+                        <option value="{{ s.code }}" {% if school_filter == s.code %}selected{% endif %}>{{ s.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-sm-4 col-lg-2">
+                <select name="status" class="form-select form-select-sm border-border-subtle text-xs py-2" onchange="this.form.submit()">
+                    <option value="">All Status</option>
+                    <option value="active" {% if status_filter == "active" %}selected{% endif %}>Active</option>
+                    <option value="suspended" {% if status_filter == "suspended" %}selected{% endif %}>Suspended</option>
+                </select>
+            </div>
+
+            <div class="col-lg-1 d-grid">
+                <button type="submit" class="btn btn-navy btn-sm text-xs py-2 font-bold">Filter</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- 4. Scholar Governance Table -->
+    <div class="card border-0 bg-white shadow-sm rounded-2xl overflow-hidden">
+        <div class="p-4 border-b border-border-subtle flex flex-wrap justify-between items-center gap-2">
+            <div>
+                <h3 class="font-display text-base font-bold text-primary mb-0">Scholar Governance Directory</h3>
+                <p class="text-xs text-text-muted mb-0">Showing {{ filtered_count }} of {{ total_accounts }} institutional accounts</p>
+            </div>
+            {% if query or role_filter or school_filter or status_filter %}
+                <a href="{% url 'accounts:admin_users' %}" class="text-xs text-primary font-semibold hover:underline">Clear All Filters</a>
+            {% endif %}
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 text-xs" id="scholarGovernanceTable">
+                <thead class="table-light text-[11px] uppercase tracking-wider text-text-muted">
+                    <tr>
+                        <th class="ps-4 py-3">Scholar &amp; Identity</th>
+                        <th class="py-3">Role Track</th>
+                        <th class="py-3">School &amp; Department</th>
+                        <th class="py-3">Account Status</th>
+                        <th class="py-3">Verification</th>
+                        <th class="text-end pe-4 py-3">Admin Controls</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in users_list %}
+                        <tr class="scholar-row" data-search="{{ u.get_full_name|lower }} {{ u.username|lower }} {{ u.email|lower }} {{ u.profile.department.name|default:''|lower }} {{ u.profile.department.school.name|default:''|lower }}">
+                            <!-- 1. SCHOLAR & IDENTITY -->
+                            <td class="ps-4 py-3">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs shrink-0"
+                                         style="background-color: #042863; color: #c18e0e; border: 1.5px solid #c18e0e;">
+                                        {{ u.first_name|default:u.username|slice:":1"|upper }}{{ u.last_name|slice:":1"|upper }}
+                                    </div>
+                                    <div>
+                                        <div class="font-bold text-primary text-xs sm:text-sm">
+                                            {{ u.get_full_name|default:u.username }}
+                                            {% if u.pk == request.user.pk %}
+                                                <span class="badge bg-surface-subtle text-primary border border-border-subtle text-[10px] ms-1">You</span>
+                                            {% endif %}
+                                        </div>
+                                        <div class="text-[11px] text-text-muted">@{{ u.username }} &middot; {{ u.email|default:"no-email@chanakya.edu.in" }}</div>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <!-- 2. ROLE TRACK -->
+                            <td class="py-3">
+                                {% with role=u.profile.role|default:"student" %}
+                                <form method="post" action="{% url 'accounts:admin_update_role' u.id %}" class="m-0">
+                                    {% csrf_token %}
+                                    <select name="role"
+                                            onchange="this.form.submit()"
+                                            class="form-select form-select-sm fw-bold rounded-pill px-3 py-1 text-[11px] border-0 shadow-xs"
+                                            style="width: auto; cursor: pointer;
+                                            {% if role == 'faculty' %}background-color: #fef3c7; color: #b45309;
+                                            {% elif role == 'researcher' %}background-color: #e0e7ff; color: #4338ca;
+                                            {% elif role == 'admin' %}background-color: #fee2e2; color: #b91c1c;
+                                            {% else %}background-color: #dbeafe; color: #1d4ed8;{% endif %}">
+                                        {% for val, label in role_choices %}
+                                            <option value="{{ val }}" {% if role == val %}selected{% endif %}>{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </form>
+                                {% endwith %}
+                            </td>
+
+                            <!-- 3. SCHOOL & DEPARTMENT -->
+                            <td class="py-3">
+                                <div class="font-bold text-primary text-xs">
+                                    {{ u.profile.department.school.name|default:"Chanakya University" }}
+                                </div>
+                                <div class="text-[11px] text-text-muted">
+                                    {{ u.profile.department.name|default:"General Academic Division" }}
+                                </div>
+                            </td>
+
+                            <!-- 4. ACCOUNT STATUS -->
+                            <td class="py-3">
+                                <div class="flex items-center gap-2">
+                                    {% if u.is_active %}
+                                        <span class="badge rounded-pill px-2.5 py-1 text-[11px] font-bold" style="background-color: #dcfce7; color: #15803d;">Active</span>
+                                    {% else %}
+                                        <span class="badge rounded-pill px-2.5 py-1 text-[11px] font-bold" style="background-color: #fee2e2; color: #b91c1c;">Suspended</span>
+                                    {% endif %}
+
+                                    <form method="post" action="{% url 'accounts:admin_toggle_status' u.id %}" class="m-0">
+                                        {% csrf_token %}
+                                        <button type="submit"
+                                                class="btn btn-sm btn-outline-secondary p-1 rounded-lg"
+                                                title="{% if u.pk == request.user.pk %}Cannot suspend your own account{% elif u.is_active %}Suspend Account{% else %}Reactivate Account{% endif %}"
+                                                {% if u.pk == request.user.pk %}disabled{% endif %}>
+                                            <span class="material-symbols-outlined text-[15px]">{% if u.is_active %}lock_open{% else %}lock{% endif %}</span>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+
+                            <!-- 5. VERIFICATION -->
+                            <td class="py-3">
+                                <form method="post" action="{% url 'accounts:admin_toggle_verify' u.id %}" class="m-0">
+                                    {% csrf_token %}
+                                    {% if u.profile.is_verified|default:True %}
+                                        <button type="submit" class="badge rounded-pill border-0 px-2.5 py-1 text-[11px] font-bold cursor-pointer" style="background-color: #e0f2fe; color: #0369a1;" title="Click to mark Pending">
+                                            ✓ Verified
+                                        </button>
+                                    {% else %}
+                                        <button type="submit" class="badge rounded-pill border-0 px-2.5 py-1 text-[11px] font-bold cursor-pointer" style="background-color: #fef3c7; color: #b45309;" title="Click to Verify">
+                                            ⏳ Pending
+                                        </button>
+                                    {% endif %}
+                                </form>
+                            </td>
+
+                            <!-- 6. ADMIN CONTROLS -->
+                            <td class="text-end pe-4 py-3">
+                                <div class="inline-flex items-center gap-1.5">
+                                    <!-- Reset Password Button -->
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-primary p-1.5 rounded-lg"
+                                            title="Reset / Set Temporary Password"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#resetPwModal{{ u.id }}">
+                                        <span class="material-symbols-outlined text-[16px]">key</span>
+                                    </button>
+
+                                    <!-- Open Public Profile -->
+                                    <a href="{% url 'accounts:member_profile' u.username %}"
+                                       class="btn btn-sm btn-outline-secondary p-1.5 rounded-lg"
+                                       title="Open Public Profile">
+                                        <span class="material-symbols-outlined text-[16px]">open_in_new</span>
+                                    </a>
+
+                                    <!-- Delete Account -->
+                                    {% if u.pk != request.user.pk %}
+                                        <form method="post" action="{% url 'accounts:admin_delete_user' u.id %}" class="m-0" onsubmit="return confirm('Permanently delete {{ u.username }} and cascade all associated records? This cannot be undone.');">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-outline-danger p-1.5 rounded-lg" title="Delete Account">
+                                                <span class="material-symbols-outlined text-[16px]">delete</span>
+                                            </button>
+                                        </form>
+                                    {% else %}
+                                        <button type="button" class="btn btn-sm btn-outline-secondary p-1.5 rounded-lg" disabled title="Cannot delete your own logged-in account">
+                                            <span class="material-symbols-outlined text-[16px]">delete</span>
+                                        </button>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Reset Password Modal -->
+                                <div class="modal fade text-start" id="resetPwModal{{ u.id }}" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered modal-sm">
+                                        <div class="modal-content border-0 shadow-lg rounded-2xl">
+                                            <form method="post" action="{% url 'accounts:admin_reset_password' u.id %}">
+                                                {% csrf_token %}
+                                                <div class="modal-header border-b border-border-subtle">
+                                                    <h5 class="modal-title font-display text-sm font-bold text-primary">Set Temporary Password</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p class="text-xs text-text-muted mb-2">Resetting password for <strong>@{{ u.username }}</strong>:</p>
+                                                    <input type="text" name="temp_password" class="form-control form-control-sm text-xs" value="Chanakya@2026" required>
+                                                </div>
+                                                <div class="modal-footer border-t border-border-subtle">
+                                                    <button type="button" class="btn btn-sm btn-outline-secondary text-xs" data-bs-dismiss="modal">Cancel</button>
+                                                    <button type="submit" class="btn btn-sm btn-navy text-xs font-bold">Save Password</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-text-muted">
+                                No scholar accounts match your current search or filter criteria.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const searchInput = document.getElementById("scholarSearchInput");
+    const rows = document.querySelectorAll(".scholar-row");
+    if (searchInput && rows.length > 0) {
+        searchInput.addEventListener("input", function () {
+            const term = searchInput.value.trim().toLowerCase();
+            rows.forEach(function (row) {
+                const hay = row.getAttribute("data-search") || "";
+                row.style.display = (!term || hay.includes(term)) ? "" : "none";
+            });
+        });
+    }
+});
+</script>
+{% endblock %}

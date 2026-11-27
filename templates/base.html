@@ -596,6 +596,16 @@
                             </li>
                             <li>
                                 <a class="dropdown-item rounded-lg py-2 d-flex align-items-center gap-2"
+                                    href="{% url 'accounts:admin_users' %}">
+                                    <span class="material-symbols-outlined text-accent-gold-dark text-[20px]">manage_accounts</span>
+                                    <div>
+                                        <span class="d-block font-semibold">User Directory & Access</span>
+                                        <small class="text-muted text-[11px]">Roles, Suspensions & Verification</small>
+                                    </div>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item rounded-lg py-2 d-flex align-items-center gap-2"
                                     href="{% url 'trends:moderation_queue' %}">
                                     <span class="material-symbols-outlined text-status-error text-[20px]">shield</span>
                                     <div>

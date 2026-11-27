@@ -137,6 +137,10 @@ class Profile(models.Model):
         blank=True
     )
 
+    is_verified = models.BooleanField(
+        default=True
+    )
+
     created_at = models.DateTimeField(
         auto_now_add=True
     )

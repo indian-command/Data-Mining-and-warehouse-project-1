@@ -12,7 +12,11 @@
             <h1 class="section-title mb-0">Automated Moderation Queue</h1>
             <p class="text-xs text-text-secondary mt-1">Review automated anomaly alerts, suspicious burst posting, and duplicate floods.</p>
         </div>
-        <div>
+        <div class="flex items-center gap-2">
+            <a href="{% url 'accounts:admin_users' %}" class="btn btn-navy text-xs py-2 px-3 flex items-center gap-1">
+                <span class="material-symbols-outlined text-[16px]">manage_accounts</span>
+                <span>User Directory &amp; Access</span>
+            </a>
             <a href="{% url 'trends:trends_home' %}" class="btn btn-outline-primary text-xs py-2 px-3">
                 ← Back to Trends
             </a>

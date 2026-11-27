@@ -97,8 +97,16 @@ class EntityResolver:
 
             if target_cluster_idx is None:
                 matches = lsh.query(paper_mh)
-                if matches:
-                    target_cluster_idx = int(matches[0].replace("cluster_", ""))
+                for m in matches:
+                    cand_idx = int(m.replace("cluster_", ""))
+                    if cand_idx < len(clusters):
+                        cand_c = clusters[cand_idx]
+                        cand_tw = set(re.sub(r"[^a-z0-9\s]", "", cand_c.get("title", "").lower()).split())
+                        curr_tw = set(re.sub(r"[^a-z0-9\s]", "", raw_title.lower()).split())
+                        tj = len(cand_tw & curr_tw) / len(cand_tw | curr_tw) if (cand_tw and curr_tw) else 0.0
+                        if tj >= 0.40:
+                            target_cluster_idx = cand_idx
+                            break
 
             if target_cluster_idx is not None and target_cluster_idx < len(clusters):
                 # Merge into existing cluster
@@ -111,6 +119,8 @@ class EntityResolver:
                 if not target.get("arxiv_id") and arxiv_id:
                     target["arxiv_id"] = arxiv_id
                     arxiv_to_cluster_idx[arxiv_id] = target_cluster_idx
+                if norm_title:
+                    norm_title_to_cluster_idx[norm_title] = target_cluster_idx
                 if len(paper.get("abstract", "")) > len(target.get("abstract", "")):
                     target["abstract"] = paper["abstract"]
                 if paper.get("pagerank_score", 0.0) > target.get("pagerank_score", 0.0):
@@ -144,6 +154,50 @@ class EntityResolver:
 # 2. 4-Panel Hybrid Unified Search Service
 # =====================================================================
 
+def normalize_research_query(query: str) -> str:
+    """Normalizes and corrects common research typing errors and typos."""
+    replacements = {
+        r"\bmachinelaerning\b": "machine learning",
+        r"\bmachinelearning\b": "machine learning",
+        r"\blearing\b": "learning",
+        r"\blerning\b": "learning",
+        r"\bdeeplearing\b": "deep learning",
+        r"\bdeeplearning\b": "deep learning",
+        r"\bartifical\b": "artificial",
+        r"\bintellegence\b": "intelligence",
+        r"\bquantam\b": "quantum",
+        r"\btransfomer\b": "transformer",
+        r"\btransfomers\b": "transformers",
+        r"\bnueral\b": "neural",
+        r"\bnetwrok\b": "network",
+        r"\bnetwroks\b": "networks",
+        r"\bgenomics\b": "genomics",
+        r"\balgo\b": "algorithm",
+        r"\balgoritm\b": "algorithm",
+        r"\breinforcment\b": "reinforcement",
+    }
+    normalized = query.strip()
+    for pattern, repl in replacements.items():
+        normalized = re.sub(pattern, repl, normalized, flags=re.IGNORECASE)
+    return normalized
+
+
+def _resolve_legacy_member_user(query: str) -> Optional[Any]:
+    """Helper to resolve legacy member_X queries or name queries to a User instance."""
+    clean = query.strip().lower()
+    if clean.startswith("member_"):
+        try:
+            m_num = int(clean.replace("member_", ""))
+            return User.objects.filter(id=m_num + 1).first() or User.objects.filter(id=m_num).first()
+        except ValueError:
+            pass
+    return User.objects.filter(
+        Q(username__iexact=clean)
+        | Q(first_name__iexact=clean)
+        | Q(last_name__iexact=clean)
+    ).first()
+
+
 class UnifiedSearchService:
     """Executes 4-panel hybrid search: Scholarly Sources, Library, Members, and Discussions."""
 
@@ -156,7 +210,11 @@ class UnifiedSearchService:
             candidates = [cls._paper_to_dict(p, score=p.pagerank_score) for p in papers]
             return EntityResolver.resolve_and_deduplicate(candidates)
 
-        query_emb = EmbeddingService.generate_embedding(query)
+        clean_q = normalize_research_query(query)
+        matched_user = _resolve_legacy_member_user(query)
+        author_name = matched_user.get_full_name() if matched_user else query.strip()
+
+        query_emb = EmbeddingService.generate_embedding(clean_q)
 
         # 1. Semantic vector search using pgvector CosineDistance
         vector_results = (
@@ -170,27 +228,50 @@ class UnifiedSearchService:
             sim = max(0.0, 1.0 - float(p.distance or 1.0))
             vector_scores[p.id] = (p, sim)
 
-        # 2. Full-text keyword search
-        search_query = SearchQuery(query, config="english")
+        # 2. Full-text keyword & author search
+        search_query = SearchQuery(clean_q, config="english")
         search_vector = SearchVector("title", weight="A") + SearchVector("abstract", weight="B")
+        
+        # Build comprehensive filter including authors and title variants
+        keyword_filter = (
+            Q(rank__gte=0.01)
+            | Q(title__icontains=clean_q)
+            | Q(title__icontains=query)
+            | Q(abstract__icontains=clean_q)
+            | Q(authors__icontains=clean_q)
+            | Q(authors__icontains=query)
+        )
+        if author_name and author_name != query:
+            keyword_filter |= Q(authors__icontains=author_name)
+
         keyword_results = (
             Paper.objects.annotate(rank=SearchRank(search_vector, search_query))
-            .filter(Q(rank__gte=0.01) | Q(title__icontains=query) | Q(abstract__icontains=query))
+            .filter(keyword_filter)
             .order_by("-rank")[: limit * 2]
         )
 
         keyword_scores = {}
         for p in keyword_results:
-            rank = getattr(p, "rank", 0.1) or 0.1
+            rank = getattr(p, "rank", 0.2) or 0.2
+            # Boost explicit author match
+            if author_name and author_name.lower() in str(p.authors).lower():
+                rank = max(rank, 0.6)
             keyword_scores[p.id] = (p, float(rank))
 
         # 3. Combine scores into Hybrid Score
         all_ids = set(vector_scores.keys()) | set(keyword_scores.keys())
         if not all_ids:
-            # Fallback simple substring search
-            fallback = Paper.objects.filter(
-                Q(title__icontains=query) | Q(abstract__icontains=query)
-            )[:limit]
+            # Fallback simple substring search across title, abstract, authors
+            fallback_filter = (
+                Q(title__icontains=clean_q)
+                | Q(title__icontains=query)
+                | Q(abstract__icontains=clean_q)
+                | Q(authors__icontains=clean_q)
+                | Q(authors__icontains=query)
+            )
+            if author_name:
+                fallback_filter |= Q(authors__icontains=author_name)
+            fallback = Paper.objects.filter(fallback_filter)[:limit]
             candidates = [cls._paper_to_dict(p, score=0.5) for p in fallback]
             return EntityResolver.resolve_and_deduplicate(candidates)
 
@@ -211,7 +292,11 @@ class UnifiedSearchService:
             pr_score = float(paper_obj.pagerank_score or 0.0)
             # Weighted Hybrid Score: 0.40 Keyword + 0.45 Vector + 0.15 PageRank
             hybrid_score = (0.40 * min(1.0, k_score * 2.0)) + (0.45 * v_score) + (0.15 * min(1.0, pr_score * 10.0))
-            combined.append(cls._paper_to_dict(paper_obj, score=round(hybrid_score, 4)))
+            if k_score > 0.01 or (v_score >= 0.35 and hybrid_score >= 0.20):
+                combined.append(cls._paper_to_dict(paper_obj, score=round(hybrid_score, 4)))
+
+        if not combined:
+            return []
 
         # 4. Deduplication & Entity Resolution
         return EntityResolver.resolve_and_deduplicate(combined)[:limit]
@@ -225,13 +310,24 @@ class UnifiedSearchService:
                 .order_by("-member_save_count")[:limit]
             )
 
+        clean_q = normalize_research_query(query)
+        matched_user = _resolve_legacy_member_user(query)
+
+        resource_filter = (
+            Q(title__icontains=clean_q)
+            | Q(title__icontains=query)
+            | Q(description__icontains=clean_q)
+            | Q(doi__icontains=query)
+            | Q(arxiv_id__icontains=query)
+            | Q(uploaded_by__username__icontains=query)
+            | Q(uploaded_by__first_name__icontains=query)
+            | Q(uploaded_by__last_name__icontains=query)
+        )
+        if matched_user:
+            resource_filter |= Q(uploaded_by=matched_user)
+
         return list(
-            ResearchResource.objects.filter(
-                Q(title__icontains=query)
-                | Q(description__icontains=query)
-                | Q(doi__icontains=query)
-                | Q(arxiv_id__icontains=query)
-            )
+            ResearchResource.objects.filter(resource_filter)
             .annotate(member_save_count=Count("saves__user", distinct=True))
             .order_by("-member_save_count", "-created_at")[:limit]
         )
@@ -246,17 +342,32 @@ class UnifiedSearchService:
                 .order_by("-date_joined")[:limit]
             )
 
+        clean_q = normalize_research_query(query)
+        matched_user = _resolve_legacy_member_user(query)
+
+        member_filter = (
+            Q(username__icontains=query)
+            | Q(first_name__icontains=query)
+            | Q(first_name__icontains=clean_q)
+            | Q(last_name__icontains=query)
+            | Q(last_name__icontains=clean_q)
+            | Q(email__icontains=query)
+            | Q(profile__bio__icontains=query)
+            | Q(profile__bio__icontains=clean_q)
+            | Q(profile__research_interests__icontains=query)
+            | Q(profile__research_interests__icontains=clean_q)
+            | Q(profile__department__name__icontains=query)
+            | Q(profile__department__name__icontains=clean_q)
+            | Q(profile__department__code__icontains=query)
+            | Q(profile__topics__name__icontains=query)
+            | Q(profile__topics__name__icontains=clean_q)
+        )
+        if matched_user:
+            member_filter |= Q(id=matched_user.id)
+
         return list(
             User.objects.filter(is_active=True)
-            .filter(
-                Q(username__icontains=query)
-                | Q(first_name__icontains=query)
-                | Q(last_name__icontains=query)
-                | Q(profile__bio__icontains=query)
-                | Q(profile__research_interests__icontains=query)
-                | Q(profile__department__name__icontains=query)
-                | Q(profile__topics__name__icontains=query)
-            )
+            .filter(member_filter)
             .select_related("profile", "profile__department")
             .distinct()[:limit]
         )
@@ -271,12 +382,25 @@ class UnifiedSearchService:
                 .order_by("-created_at")[:limit]
             )
 
+        clean_q = normalize_research_query(query)
+        matched_user = _resolve_legacy_member_user(query)
+
+        post_filter = (
+            Q(title__icontains=clean_q)
+            | Q(title__icontains=query)
+            | Q(content__icontains=clean_q)
+            | Q(content__icontains=query)
+            | Q(tags__name__icontains=clean_q)
+            | Q(tags__name__icontains=query)
+            | Q(author__username__icontains=query)
+            | Q(author__first_name__icontains=query)
+            | Q(author__last_name__icontains=query)
+        )
+        if matched_user:
+            post_filter |= Q(author=matched_user)
+
         return list(
-            DiscussionPost.objects.filter(
-                Q(title__icontains=query)
-                | Q(content__icontains=query)
-                | Q(tags__name__icontains=query)
-            )
+            DiscussionPost.objects.filter(post_filter)
             .select_related("author")
             .prefetch_related("tags")
             .distinct()

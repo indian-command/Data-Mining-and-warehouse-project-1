@@ -147,3 +147,23 @@ class PaperChunk(models.Model):
 
     def __str__(self):
         return f"Paper {self.paper_id} - Chunk {self.chunk_index}"
+
+
+class IngestionRunLog(models.Model):
+    """Tracks scheduled batch ingestion runs, status, incremental watermarks, and error logs."""
+    source = models.CharField(max_length=50, default="scheduled_batch")  # openalex, arxiv, rss, all
+    status = models.CharField(max_length=20, default="pending")  # pending, running, success, failed, partial
+    started_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    records_fetched = models.IntegerField(default=0)
+    records_created = models.IntegerField(default=0)
+    records_updated = models.IntegerField(default=0)
+    watermark = models.CharField(max_length=255, blank=True, default="")
+    error_message = models.TextField(blank=True, default="")
+    details = models.JSONField(default=dict, blank=True)
+
+    class Meta:
+        ordering = ["-started_at"]
+
+    def __str__(self):
+        return f"[{self.source}] {self.status} at {self.started_at.strftime('%Y-%m-%d %H:%M')}"

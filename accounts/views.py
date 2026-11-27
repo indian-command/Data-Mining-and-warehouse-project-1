@@ -251,7 +251,7 @@ def toggle_follow_view(request, user_id):
 
         messages.info(
             request,
-            "You have unfollowed this member."
+            f"You have unfollowed @{target_user.username}."
         )
 
     else:
@@ -263,10 +263,105 @@ def toggle_follow_view(request, user_id):
 
         messages.success(
             request,
-            "You are now following this member!"
+            f"You are now following @{target_user.username}!"
         )
 
+    next_url = request.POST.get("next") or request.META.get("HTTP_REFERER")
+    if next_url:
+        return redirect(next_url)
+
     return redirect("accounts:members")
+
+
+# =====================================
+# INDIVIDUAL MEMBER PROFILE VIEW
+# =====================================
+
+def member_profile_view(request, username):
+    """
+    Public academic profile page for an individual university researcher/student.
+    Displays user metadata, role, department, bio, topics, followers, following,
+    and all discussion posts authored by the member.
+    """
+    target_user = User.objects.select_related(
+        "profile",
+        "profile__department",
+        "profile__department__school"
+    ).prefetch_related("profile__topics").filter(username=username).first()
+
+    # Graceful redirection for legacy member_X handles
+    if not target_user and username.startswith("member_"):
+        try:
+            m_num = int(username.replace("member_", ""))
+            cand_user = User.objects.filter(id=m_num + 1).first() or User.objects.filter(id=m_num).first()
+            if cand_user:
+                return redirect("accounts:member_profile", username=cand_user.username)
+        except ValueError:
+            pass
+
+    if not target_user:
+        target_user = get_object_or_404(
+            User.objects.select_related(
+                "profile",
+                "profile__department",
+                "profile__department__school"
+            ).prefetch_related("profile__topics"),
+            username=username
+        )
+
+    target_profile = getattr(target_user, "profile", None)
+
+    posts = (
+        target_user.discussion_posts
+        .select_related("author", "author__profile")
+        .prefetch_related("tags", "comments", "votes")
+        .order_by("-created_at")
+    )
+    posts_count = posts.count()
+
+    followers_qs = (
+        MemberFollow.objects
+        .filter(followed=target_user)
+        .select_related("follower", "follower__profile", "follower__profile__department")
+    )
+    followers_count = followers_qs.count()
+
+    following_qs = (
+        MemberFollow.objects
+        .filter(follower=target_user)
+        .select_related("followed", "followed__profile", "followed__profile__department")
+    )
+    following_count = following_qs.count()
+
+    is_following = False
+    if request.user.is_authenticated and request.user != target_user:
+        is_following = MemberFollow.objects.filter(
+            follower=request.user,
+            followed=target_user
+        ).exists()
+
+    my_followed_ids = set()
+    if request.user.is_authenticated:
+        my_followed_ids = set(
+            MemberFollow.objects.filter(
+                follower=request.user
+            ).values_list("followed_id", flat=True)
+        )
+
+    context = {
+        "target_user": target_user,
+        "target_profile": target_profile,
+        "posts": posts,
+        "posts_count": posts_count,
+        "followers": followers_qs,
+        "followers_count": followers_count,
+        "following": following_qs,
+        "following_count": following_count,
+        "is_following": is_following,
+        "is_self": (request.user == target_user),
+        "my_followed_ids": my_followed_ids,
+    }
+    return render(request, "accounts/member_profile.html", context)
 
 # =====================================
 # FOLLOW / UNFOLLOW RESEARCH TOPICS

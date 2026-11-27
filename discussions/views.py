@@ -58,10 +58,16 @@ def post_list_view(request):
         ).values_list("topic_id", flat=True)
     )
 
-    # 1. POSTS FROM FOLLOWED MEMBERS
-    following_posts = base_posts.filter(
-        author_id__in=followed_member_ids
-    ).order_by("-created_at")
+    # 1. POSTS FROM FOLLOWED MEMBERS AND FOLLOWED TOPICS (Personal Follow Feed)
+    following_filter = Q(author_id__in=followed_member_ids)
+    if followed_topic_ids:
+        following_filter |= Q(tags__id__in=followed_topic_ids)
+
+    following_posts = (
+        base_posts.filter(following_filter)
+        .distinct()
+        .order_by("-created_at")
+    )
 
     # 2. POSTS MATCHING FOLLOWED TOPICS
     topic_posts = (

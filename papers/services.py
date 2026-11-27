@@ -582,3 +582,106 @@ class IngestionPipeline:
         object_name = "papers/papers.parquet"
         return MinIOService.upload_parquet(object_name, parquet_bytes)
 
+
+# =====================================================================
+# 6. Scheduled Batch Ingestion Service (F4)
+# =====================================================================
+
+class ScheduledIngestionService:
+    """
+    Automates incremental scheduled batch ingestion across scholarly sources.
+    Features:
+    - Topic watermark rotation across university departments.
+    - Idempotent incremental saving (reuses existing DOIs/arXiv IDs).
+    - Error isolation and run logging in IngestionRunLog.
+    - Admin inspection reporting.
+    """
+
+    ROTATING_TOPICS = [
+        "quantum computing",
+        "deep learning",
+        "transformer architectures",
+        "genomics bioinformatics",
+        "renewable energy storage",
+        "reinforcement learning",
+        "computational neuroscience",
+        "natural language processing",
+    ]
+
+    @classmethod
+    def execute_scheduled_batch(
+        cls, source: str = "all", topic: Optional[str] = None, batch_limit: int = 15
+    ) -> Any:
+        """Executes a single scheduled batch run, logs the status, and returns the run log."""
+        from .models import IngestionRunLog
+
+        # Determine topic watermark
+        if not topic:
+            last_run = IngestionRunLog.objects.filter(status="success").order_by("-started_at").first()
+            last_watermark = last_run.watermark if last_run else ""
+            try:
+                next_idx = (cls.ROTATING_TOPICS.index(last_watermark) + 1) % len(cls.ROTATING_TOPICS)
+                topic = cls.ROTATING_TOPICS[next_idx]
+            except ValueError:
+                topic = cls.ROTATING_TOPICS[0]
+
+        run_log = IngestionRunLog.objects.create(
+            source=source,
+            status="running",
+            watermark=topic,
+            details={"batch_limit": batch_limit, "target_topic": topic},
+        )
+
+        try:
+            logger.info(f"Executing scheduled batch ingestion for '{topic}' from '{source}'")
+            records: List[Dict[str, Any]] = []
+
+            # 1. Fetch from sources with error isolation
+            if source in ("openalex", "all"):
+                try:
+                    records.extend(OpenAlexIngester.fetch(query=topic, limit=batch_limit // 2 or 10))
+                except Exception as e:
+                    logger.error(f"OpenAlex scheduled fetch failed: {e}")
+
+            if source in ("arxiv", "all"):
+                try:
+                    records.extend(ArxivIngester.fetch(query=topic, limit=batch_limit // 2 or 10))
+                except Exception as e:
+                    logger.error(f"arXiv scheduled fetch failed: {e}")
+
+            if source in ("rss", "all"):
+                try:
+                    records.extend(RSSIngester.fetch(limit=5))
+                except Exception as e:
+                    logger.error(f"RSS scheduled fetch failed: {e}")
+
+            run_log.records_fetched = len(records)
+
+            # 2. Incrementally persist
+            created = 0
+            updated = 0
+            for r in records:
+                try:
+                    _, is_created = IngestionPipeline.save_paper_record(r)
+                    if is_created:
+                        created += 1
+                    else:
+                        updated += 1
+                except Exception as e:
+                    logger.warning(f"Error persisting paper record: {e}")
+
+            run_log.records_created = created
+            run_log.records_updated = updated
+            run_log.status = "success"
+            run_log.completed_at = timezone.now()
+            run_log.save()
+            return run_log
+
+        except Exception as e:
+            run_log.status = "failed"
+            run_log.error_message = str(e)
+            run_log.completed_at = timezone.now()
+            run_log.save()
+            return run_log
+
+

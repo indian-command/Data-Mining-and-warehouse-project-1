@@ -1,0 +1,374 @@
+{% extends "base.html" %}
+
+{% block title %}@{{ target_user.username }} ({{ target_user.get_full_name|default:target_user.username }}) | Chanakya University{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-lg-5 py-4">
+
+    <!-- Breadcrumb Navigation -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb text-xs">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-primary text-decoration-none">Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'accounts:members' %}" class="text-primary text-decoration-none">Find Researchers</a></li>
+            <li class="breadcrumb-item active text-text-muted" aria-current="page">@{{ target_user.username }}</li>
+        </ol>
+    </nav>
+
+    <!-- ====================================================================
+         INSTAGRAM-STYLE MEMBER PROFILE BANNER
+    ==================================================================== -->
+    <section class="card p-4 sm:p-6 border-0 bg-white shadow-sm mb-4 rounded-2xl">
+        <div class="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
+
+            <!-- Profile Photo with Story Ring -->
+            <div class="relative shrink-0">
+                <div class="w-20 h-20 sm:w-28 sm:h-28 rounded-full p-[3px] bg-gradient-to-tr from-[#FE932C] via-[#D97706] to-[#00236F] shadow-md flex items-center justify-center">
+                    <div class="w-full h-full rounded-full bg-white p-[2px] flex items-center justify-center">
+                        <div class="w-full h-full rounded-full bg-primary flex items-center justify-center text-white font-display font-extrabold text-2xl sm:text-4xl shadow-inner select-none">
+                            {{ target_user.first_name|first|default:target_user.username|first|upper }}
+                        </div>
+                    </div>
+                </div>
+                <span class="absolute bottom-1 right-1 w-6 h-6 rounded-full bg-status-success ring-2 ring-white flex items-center justify-center shadow-xs" title="Active University Member">
+                    <span class="material-symbols-outlined text-[14px] text-white font-bold">check</span>
+                </span>
+            </div>
+
+            <!-- Profile Info & Counts -->
+            <div class="flex-grow text-center sm:text-start min-w-0">
+                <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 mb-2">
+                    <h1 class="font-display text-xl sm:text-2xl font-bold text-primary mb-0 flex items-center gap-1.5">
+                        <span>@{{ target_user.username }}</span>
+                        <span class="material-symbols-outlined text-primary text-[20px]" title="Verified Chanakya University Member" style="font-variation-settings: 'FILL' 1;">verified</span>
+                    </h1>
+                    <span class="badge topic-badge text-xs">
+                        {{ target_profile.get_role_display|default:"Researcher" }}
+                    </span>
+
+                    <!-- Action Buttons -->
+                    <div class="flex items-center gap-2 ms-0 sm:ms-3 mt-2 sm:mt-0">
+                        {% if is_self %}
+                            <a href="{% url 'accounts:profile_edit' %}" class="btn btn-sm btn-outline-primary text-xs py-1.5 px-3 rounded-xl font-semibold flex items-center gap-1">
+                                <span class="material-symbols-outlined text-[15px]">edit</span>
+                                <span>Edit Profile</span>
+                            </a>
+                            <a href="{% url 'accounts:dashboard' %}" class="btn btn-sm btn-outline-secondary text-xs py-1.5 px-3 rounded-xl font-semibold flex items-center gap-1">
+                                <span class="material-symbols-outlined text-[15px]">dashboard</span>
+                                <span>Dashboard</span>
+                            </a>
+                        {% else %}
+                            <form method="POST" action="{% url 'accounts:toggle_follow' target_user.id %}" class="m-0 inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="next" value="{{ request.path }}">
+                                {% if is_following %}
+                                    <button type="submit"
+                                            class="btn btn-sm btn-outline-secondary py-1.5 px-4 text-xs font-bold rounded-xl flex items-center gap-1 group hover:border-status-error hover:bg-status-error-surface hover:text-status-error transition-all"
+                                            title="Click to unfollow">
+                                        <span class="material-symbols-outlined text-[16px] text-status-success group-hover:text-status-error">check</span>
+                                        <span class="group-hover:hidden">Following</span>
+                                        <span class="hidden group-hover:inline">Unfollow</span>
+                                    </button>
+                                {% else %}
+                                    <button type="submit" class="btn btn-sm btn-navy py-1.5 px-4 text-xs font-bold rounded-xl flex items-center gap-1 shadow-xs">
+                                        <span class="material-symbols-outlined text-[16px]">person_add</span>
+                                        <span>Follow</span>
+                                    </button>
+                                {% endif %}
+                            </form>
+                            <a href="{% url 'discussions:post_create' %}" class="btn btn-sm btn-outline-primary text-xs py-1.5 px-3 rounded-xl font-semibold flex items-center gap-1" title="Start a discussion with community">
+                                <span class="material-symbols-outlined text-[15px]">forum</span>
+                                <span>Discuss</span>
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <h2 class="text-base font-bold text-text-primary mb-1">
+                    {{ target_user.get_full_name|default:target_user.username }}
+                </h2>
+
+                <p class="text-xs text-text-secondary mb-2 flex flex-wrap items-center justify-center sm:justify-start gap-x-2 gap-y-1">
+                    {% if target_profile.department %}
+                        <span class="inline-flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[14px] text-accent-gold-dark">school</span>
+                            <strong>{{ target_profile.department.name }}</strong>
+                        </span>
+                        {% if target_profile.department.school %}
+                            <span class="text-text-muted">• {{ target_profile.department.school.name }}</span>
+                        {% endif %}
+                    {% else %}
+                        <span>Chanakya University Research Network</span>
+                    {% endif %}
+                    {% if target_user.email %}
+                        <span class="text-text-muted">•</span>
+                        <a href="mailto:{{ target_user.email }}" class="text-primary hover:underline">{{ target_user.email }}</a>
+                    {% endif %}
+                </p>
+
+                <!-- Instagram-Style Stats Row -->
+                <div class="flex items-center justify-center sm:justify-start gap-6 py-2 border-t border-b border-border-subtle my-2 text-xs sm:text-sm">
+                    <div>
+                        <strong class="font-extrabold text-primary text-sm sm:text-base">{{ posts_count }}</strong>
+                        <span class="text-text-secondary ms-1">posts</span>
+                    </div>
+                    <div>
+                        <strong class="font-extrabold text-primary text-sm sm:text-base">{{ followers_count }}</strong>
+                        <span class="text-text-secondary ms-1">followers</span>
+                    </div>
+                    <div>
+                        <strong class="font-extrabold text-primary text-sm sm:text-base">{{ following_count }}</strong>
+                        <span class="text-text-secondary ms-1">following</span>
+                    </div>
+                </div>
+
+                <!-- Bio & Research Topics -->
+                <div class="mt-2 text-xs leading-relaxed text-text-secondary max-w-3xl">
+                    <p class="mb-2">{{ target_profile.bio|default:"Academic researcher investigating modern frontiers in university science and technology." }}</p>
+
+                    {% if target_profile.personal_website %}
+                        <div class="mb-2">
+                            <a href="{{ target_profile.personal_website }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-[11px] text-primary font-semibold hover:underline">
+                                <span class="material-symbols-outlined text-[13px] text-accent-gold">link</span>
+                                <span>{{ target_profile.personal_website }}</span>
+                                <span class="material-symbols-outlined text-[11px]">open_in_new</span>
+                            </a>
+                        </div>
+                    {% endif %}
+
+                    {% if target_profile.topics.all %}
+                        <div class="flex flex-wrap items-center gap-1 mt-2">
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-text-muted me-1">Topics:</span>
+                            {% for topic in target_profile.topics.all %}
+                                <a href="{% url 'unified_search:search' %}?q={{ topic.name }}" class="badge topic-badge text-decoration-none text-[10px]">
+                                    #{{ topic.name }}
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================================================================
+         CONTENT TABS: POSTS (23), FOLLOWERS (5), FOLLOWING (0), TOPICS
+    ==================================================================== -->
+    <ul class="nav nav-tabs border-border-subtle mb-4" id="profileTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active font-bold text-xs py-2 px-3.5 flex items-center gap-1.5" id="posts-tab" data-bs-toggle="tab" data-bs-target="#posts-pane" type="button" role="tab">
+                <span class="material-symbols-outlined text-[16px]">forum</span>
+                <span>Discussion Posts ({{ posts_count }})</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link font-bold text-xs py-2 px-3.5 flex items-center gap-1.5" id="followers-tab" data-bs-toggle="tab" data-bs-target="#followers-pane" type="button" role="tab">
+                <span class="material-symbols-outlined text-[16px]">group</span>
+                <span>Followers ({{ followers_count }})</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link font-bold text-xs py-2 px-3.5 flex items-center gap-1.5" id="following-tab" data-bs-toggle="tab" data-bs-target="#following-pane" type="button" role="tab">
+                <span class="material-symbols-outlined text-[16px]">person_check</span>
+                <span>Following ({{ following_count }})</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link font-bold text-xs py-2 px-3.5 flex items-center gap-1.5" id="topics-tab" data-bs-toggle="tab" data-bs-target="#topics-pane" type="button" role="tab">
+                <span class="material-symbols-outlined text-[16px]">tag</span>
+                <span>Research Topics</span>
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="profileTabsContent">
+
+        <!-- ==============================================
+             TAB 1: DISCUSSION POSTS (e.g. 23 posts)
+        =============================================== -->
+        <div class="tab-pane fade show active" id="posts-pane" role="tabpanel">
+            <div class="space-y-4">
+                {% for post in posts %}
+                    <article class="card p-4 border-0 bg-white shadow-sm hover:shadow-md transition-shadow rounded-2xl">
+                        <div class="flex items-start justify-between gap-3 mb-2">
+                            <div>
+                                <span class="badge {% if post.post_type == 'paper' %}bg-primary text-white{% elif post.post_type == 'update' %}bg-accent-gold-light text-accent-gold-dark{% else %}bg-surface-subtle text-text-secondary{% endif %} text-[10px] font-bold uppercase tracking-wider mb-1 inline-block">
+                                    {{ post.get_post_type_display }}
+                                </span>
+                                <h3 class="font-display text-base sm:text-lg font-bold text-primary mb-1">
+                                    <a href="{% url 'discussions:post_detail' post.id %}" class="hover:underline text-primary text-decoration-none">
+                                        {{ post.title }}
+                                    </a>
+                                </h3>
+                                <p class="text-[11px] text-text-muted mb-0">
+                                    Published on {{ post.created_at|date:"F d, Y \a\\t h:i A" }}
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Post Snippet -->
+                        <p class="text-xs text-text-secondary leading-relaxed mb-3 whitespace-pre-line">
+                            {{ post.content|truncatechars:260 }}
+                        </p>
+
+                        <!-- Tags -->
+                        {% if post.tags.all %}
+                            <div class="flex flex-wrap gap-1 mb-3">
+                                {% for tag in post.tags.all %}
+                                    <span class="badge topic-badge text-[9.5px]">#{{ tag.name }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        <!-- Footer: Upvotes & Comments -->
+                        <div class="pt-2 border-t border-border-subtle flex items-center justify-between text-xs">
+                            <div class="flex items-center gap-4 text-text-muted">
+                                <span class="flex items-center gap-1 font-semibold text-primary">
+                                    <span class="material-symbols-outlined text-[16px] text-accent-gold-dark">thumb_up</span>
+                                    <span>{{ post.upvote_count }} upvotes</span>
+                                </span>
+                                <span class="flex items-center gap-1 font-semibold text-text-secondary">
+                                    <span class="material-symbols-outlined text-[16px]">comment</span>
+                                    <span>{{ post.comment_count }} comments</span>
+                                </span>
+                            </div>
+                            <a href="{% url 'discussions:post_detail' post.id %}" class="btn btn-sm btn-outline-primary text-xs py-1 px-3 rounded-lg font-semibold flex items-center gap-1">
+                                <span>Read Thread</span>
+                                <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+                            </a>
+                        </div>
+                    </article>
+                {% empty %}
+                    <div class="card p-5 text-center border-0 bg-white shadow-sm rounded-2xl">
+                        <div class="w-14 h-14 rounded-full bg-surface-subtle flex items-center justify-center text-text-muted mx-auto mb-3">
+                            <span class="material-symbols-outlined text-[28px]">article_off</span>
+                        </div>
+                        <h4 class="font-display text-sm font-bold text-primary mb-1">No Discussion Posts Yet</h4>
+                        <p class="text-xs text-text-muted mb-0">@{{ target_user.username }} has not published any academic discussion posts yet.</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- ==============================================
+             TAB 2: FOLLOWERS (e.g. 5 followers)
+        =============================================== -->
+        <div class="tab-pane fade" id="followers-pane" role="tabpanel">
+            <div class="row g-3">
+                {% for f in followers %}
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card p-3 border-0 bg-white shadow-sm rounded-xl h-100 flex flex-col justify-between">
+                            <div class="flex items-center gap-3 mb-2">
+                                <a href="{% url 'accounts:member_profile' f.follower.username %}" class="dashboard-avatar mb-0 shrink-0 text-decoration-none" style="width: 42px; height: 42px; font-size: 16px;">
+                                    {{ f.follower.first_name|first|default:f.follower.username|first|upper }}
+                                </a>
+                                <div class="min-w-0 flex-grow">
+                                    <a href="{% url 'accounts:member_profile' f.follower.username %}" class="text-sm font-bold text-primary hover:underline block truncate text-decoration-none">
+                                        {{ f.follower.get_full_name|default:f.follower.username }}
+                                    </a>
+                                    <span class="text-[11px] text-text-muted block truncate">@{{ f.follower.username }}</span>
+                                    <span class="badge topic-badge text-[9px] mt-0.5">{{ f.follower.profile.get_role_display|default:"Researcher" }}</span>
+                                </div>
+                            </div>
+                            <p class="text-xs text-text-secondary truncate mb-2">
+                                {{ f.follower.profile.department.name|default:"Chanakya University" }}
+                            </p>
+                            <div class="pt-2 border-t border-border-subtle flex items-center justify-between">
+                                <a href="{% url 'accounts:member_profile' f.follower.username %}" class="btn btn-sm btn-outline-primary text-xs py-1 px-2.5">
+                                    View Profile
+                                </a>
+                                {% if f.follower.id != request.user.id %}
+                                    <form method="POST" action="{% url 'accounts:toggle_follow' f.follower.id %}" class="m-0 inline">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="next" value="{{ request.path }}">
+                                        {% if f.follower.id in my_followed_ids %}
+                                            <button type="submit" class="btn btn-sm btn-outline-secondary text-xs py-1 px-2">Following</button>
+                                        {% else %}
+                                            <button type="submit" class="btn btn-sm btn-navy text-xs py-1 px-2">+ Follow</button>
+                                        {% endif %}
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="col-12 text-center py-5">
+                        <p class="text-xs text-text-muted">No followers yet.</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- ==============================================
+             TAB 3: FOLLOWING (e.g. 0 following)
+        =============================================== -->
+        <div class="tab-pane fade" id="following-pane" role="tabpanel">
+            <div class="row g-3">
+                {% for f in following %}
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card p-3 border-0 bg-white shadow-sm rounded-xl h-100 flex flex-col justify-between">
+                            <div class="flex items-center gap-3 mb-2">
+                                <a href="{% url 'accounts:member_profile' f.followed.username %}" class="dashboard-avatar mb-0 shrink-0 text-decoration-none" style="width: 42px; height: 42px; font-size: 16px;">
+                                    {{ f.followed.first_name|first|default:f.followed.username|first|upper }}
+                                </a>
+                                <div class="min-w-0 flex-grow">
+                                    <a href="{% url 'accounts:member_profile' f.followed.username %}" class="text-sm font-bold text-primary hover:underline block truncate text-decoration-none">
+                                        {{ f.followed.get_full_name|default:f.followed.username }}
+                                    </a>
+                                    <span class="text-[11px] text-text-muted block truncate">@{{ f.followed.username }}</span>
+                                    <span class="badge topic-badge text-[9px] mt-0.5">{{ f.followed.profile.get_role_display|default:"Researcher" }}</span>
+                                </div>
+                            </div>
+                            <p class="text-xs text-text-secondary truncate mb-2">
+                                {{ f.followed.profile.department.name|default:"Chanakya University" }}
+                            </p>
+                            <div class="pt-2 border-t border-border-subtle flex items-center justify-between">
+                                <a href="{% url 'accounts:member_profile' f.followed.username %}" class="btn btn-sm btn-outline-primary text-xs py-1 px-2.5">
+                                    View Profile
+                                </a>
+                                {% if f.followed.id != request.user.id %}
+                                    <form method="POST" action="{% url 'accounts:toggle_follow' f.followed.id %}" class="m-0 inline">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="next" value="{{ request.path }}">
+                                        {% if f.followed.id in my_followed_ids %}
+                                            <button type="submit" class="btn btn-sm btn-outline-secondary text-xs py-1 px-2">Following</button>
+                                        {% else %}
+                                            <button type="submit" class="btn btn-sm btn-navy text-xs py-1 px-2">+ Follow</button>
+                                        {% endif %}
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="col-12 text-center py-5">
+                        <p class="text-xs text-text-muted">Not following any researchers yet.</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- ==============================================
+             TAB 4: RESEARCH TOPICS
+        =============================================== -->
+        <div class="tab-pane fade" id="topics-pane" role="tabpanel">
+            <div class="card p-4 border-0 bg-white shadow-sm rounded-2xl">
+                <h3 class="font-display text-base font-bold text-primary mb-3">Academic Domains & Research Areas</h3>
+                <div class="flex flex-wrap gap-2">
+                    {% for topic in target_profile.topics.all %}
+                        <div class="p-3 rounded-xl bg-surface-subtle border border-border-subtle flex items-center justify-between gap-3">
+                            <span class="text-xs font-bold text-primary">#{{ topic.name }}</span>
+                            <a href="{% url 'unified_search:search' %}?q={{ topic.name }}" class="btn btn-sm btn-outline-primary text-[10px] py-0.5 px-2">
+                                Search Papers ↗
+                            </a>
+                        </div>
+                    {% empty %}
+                        <p class="text-xs text-text-muted">No specific research topics tagged on this profile.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

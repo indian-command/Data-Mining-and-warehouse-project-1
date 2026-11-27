@@ -1,0 +1,63 @@
+W1127 02:51:04.994000 11306 torch/distributed/elastic/multiprocessing/redirects.py:35] NOTE: Redirects are currently not supported in MacOs.
+================================================================================
+CHANAKYA RESEARCH COMMONS: QUANTITATIVE EVALUATION BENCHMARK SUITE
+================================================================================
+
+[BENCHMARK 1] SEARCH RETRIEVAL QUALITY (Hybrid + PageRank vs. Keyword-Only Baseline)
+--------------------------------------------------------------------------------
+Loading weights:   0%|          | 0/103 [00:00<?, ?it/s]Loading weights: 100%|██████████| 103/103 [00:00<00:00, 8126.81it/s]
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Metric               | Keyword Baseline   | Hybrid + PageRank  | Gain      
+------------------------------------------------------------------------
+Precision@5          | 0.0000             | 0.2000             | +20.0%    
+Precision@10         | 0.0000             | 0.1000             | +10.0%    
+Recall@10            | 0.0000             | 1.0000             | +100.0%   
+NDCG@10              | 0.0000             | 1.0000             | +100.0%   
+
+[BENCHMARK 2] DUPLICATE DETECTION & ENTITY RESOLUTION (MinHash LSH & DOI Matching)
+--------------------------------------------------------------------------------
+Input Paper Records Evaluated   : 75
+Planted Duplicate Pairs         : 25
+True Duplicate Merges (TP)      : 25
+Missed Duplicate Pairs (FN)     : 0
+False Positive Merges (FP)      : 0
+Precision                       : 1.0000 (100.0%)
+Recall                          : 1.0000 (100.0%)
+F1 Score                        : 1.0000
+
+[BENCHMARK 3] RECOMMENDATION QUALITY (HitRate@10 & MRR@10 vs. Popularity Baseline)
+--------------------------------------------------------------------------------
+Evaluation Set (Leave-one-out)  : 20 members
+Metric               | Popularity Baseline  | Personalized Recs    | Gain      
+---------------------------------------------------------------------------
+HitRate@10           | 0.0500               | 0.5000               | +45.0%    
+MRR@10               | 0.0063               | 0.2967               | +29.0%    
+
+[BENCHMARK 4] ANOMALY & SPIKE DETECTION (Spam Accounts & Topic Spikes)
+--------------------------------------------------------------------------------
+--- Spam & Anomaly Account Detection ---
+Planted Spam Accounts           : 5
+Detected Spam Accounts (TP)     : 5
+False Positives (FP)            : 0
+Precision                       : 1.0000 (100.0%)
+Recall                          : 1.0000 (100.0%)
+F1 Score                        : 1.0000
+
+--- Statistical Topic Spike Detection (Z-score >= 2.0) ---
+Planted Topic Spikes            : 3
+Detected Spikes (TP)            : 3
+False Positive Spikes (FP)      : 0
+Precision                       : 1.0000
+Recall                          : 1.0000
+F1 Score                        : 1.0000
+
+[BENCHMARK 5] RAG RESEARCH ASSISTANT (Retrieval Recall@5 & Citation Faithfulness)
+--------------------------------------------------------------------------------
+Questions Evaluated             : 3
+Retrieval Recall@5              : 1.0000 (100.0%)
+Citation Inclusion Rate [1], [2]: 1.0000 (100.0%)
+Factual Faithfulness Score      : 0.8000 (80.0%)
+
+================================================================================
+ALL QUANTITATIVE EVALUATIONS FINISHED WITH NUMERIC BENCHMARK OUTPUTS
+================================================================================

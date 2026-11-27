@@ -1,0 +1,19 @@
+W1127 02:51:11.652000 11492 .venv/lib/python3.12/site-packages/torch/distributed/elastic/multiprocessing/redirects.py:35] NOTE: Redirects are currently not supported in MacOs.
+======================================================================
+INDEPENDENT AUDIT: EXECUTING COMPLETE FUNCTIONAL TEST SUITE F1-F9
+======================================================================
+F1 Results: {'registration_success': True, 'profile_created': True, 'role_assigned': 'student', 'duplicate_prevention': True, 'invalid_login_rejected': True, 'valid_login_success': True, 'follow_member': True, 'follow_topic': True, 'student_trends_redirect': True, 'student_analytics_redirect': True}
+F2 Results: {'post_creation': True, 'comment_creation': True, 'nested_reply_creation': True, 'upvote_added': True, 'upvote_toggled_off': True, 'post_saved': True, 'feed_following_200': True}
+F3 Results: {'save_paper_status': 302, 'save_count_incremented': True, 'saved_item_in_library': True, 'save_by_doi_status': 302, 'collection_create_status': 302, 'collection_created': True, 'item_in_collection': True, 'private_notes_isolated': True}
+F4 Results: {'papers_in_db': 642, 'citations_in_db': 2292, 'chunks_in_db': 267, 'papers_with_doi': 642, 'papers_with_arxiv': 642, 'papers_with_embeddings': 642}
+Loading weights:   0%|          | 0/103 [00:00<?, ?it/s]Loading weights: 100%|██████████| 103/103 [00:00<00:00, 21688.50it/s]
+F5 Results: {'quantum computing': {'total_count': 30, 'scholarly_sources': 8, 'library_resources': 2, 'university_members': 10, 'discussions': 10}, 'deep learning': {'total_count': 26, 'scholarly_sources': 5, 'library_resources': 2, 'university_members': 9, 'discussions': 10}, 'transformer': {'total_count': 29, 'scholarly_sources': 9, 'library_resources': 10, 'university_members': 0, 'discussions': 10}, 'chanakya': {'total_count': 13, 'scholarly_sources': 0, 'library_resources': 10, 'university_members': 3, 'discussions': 0}, 'xyznotfoundquery999': {'total_count': 0, 'scholarly_sources': 0, 'library_resources': 0, 'university_members': 0, 'discussions': 0}, 'entity_resolution_merges': True, 'merged_sources_count': 2}
+F6 Results: {'student_recommendations_count': 5, 'algorithm_tag': 'personalized_hybrid', 'co_saved_count': 1, 'cold_start_count': 5, 'cold_start_algo': 'cold_start_pagerank'}
+F7 Results: {'trends_calculated': 20, 'spikes_detected': 0, 'anomalies_detected': 5, 'admin_moderation_queue_status': 200}
+F8 Results: {'rag_query': 'How does attention mechanism function in transformers?', 'has_answer': True, 'citations_count': 5, 'retrieved_passages_count': 5, 'grounded': True}
+F9 Results: {'dashboard_status': 200, 'duckdb_dept_topics_count': 1, 'duckdb_collab_matrix_count': 25, 'duckdb_most_engaged_papers_count': 15, 'drill_down_department_data': True}
+
+--- END-TO-END INTEGRATION WORKFLOW AUDIT ---
+End-to-End Workflow Results: {'Workflow_A_Discovery': {'step1_search_has_results': True, 'step2_save_response': 302, 'step3_item_in_user_library': True, 'step4_recs_strategy': 'personalized_hybrid', 'step4_recs_count': 5}, 'Workflow_B_Collaboration': {'step1_faculty_post_created': True, 'step2_student_feed_sees_post': True, 'step3_student_comment_status': 302, 'step3_comment_logged_in_db': True}, 'Workflow_C_RAG': {'step1_chunks_retrieved': 5, 'step2_answer_generated': True, 'step3_citations_present': True, 'step4_grounded_flag': True}, 'Workflow_D_Institutional_Intelligence': {'step1_activity_events_logged': 10414, 'step2_duckdb_returns_data': True, 'step3_drill_down_supported': True}}
+
+ALL AUDIT TESTS COMPLETED! Saved to audit_evidence/audit_test_results.json

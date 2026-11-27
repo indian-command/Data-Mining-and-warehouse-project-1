@@ -1,0 +1,25 @@
+W1127 02:51:38.896000 11879 .venv/lib/python3.12/site-packages/torch/distributed/elastic/multiprocessing/redirects.py:35] NOTE: Redirects are currently not supported in MacOs.
+/Users/nagnishal/chanakya-research-commons/papers/services.py:65: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  timestamp_str = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+/Users/nagnishal/chanakya-research-commons/papers/services.py:68: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  object_name = f"raw/{source}/{datetime.utcnow().strftime('%Y-%m')}/{timestamp_str}_{safe_id}.{ext}"
+/Users/nagnishal/chanakya-research-commons/papers/services.py:65: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  timestamp_str = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+/Users/nagnishal/chanakya-research-commons/papers/services.py:68: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  object_name = f"raw/{source}/{datetime.utcnow().strftime('%Y-%m')}/{timestamp_str}_{safe_id}.{ext}"
+/Users/nagnishal/chanakya-research-commons/papers/services.py:65: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  timestamp_str = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+/Users/nagnishal/chanakya-research-commons/papers/services.py:68: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  object_name = f"raw/{source}/{datetime.utcnow().strftime('%Y-%m')}/{timestamp_str}_{safe_id}.{ext}"
+/Users/nagnishal/chanakya-research-commons/papers/services.py:65: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  timestamp_str = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+/Users/nagnishal/chanakya-research-commons/papers/services.py:68: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  object_name = f"raw/{source}/{datetime.utcnow().strftime('%Y-%m')}/{timestamp_str}_{safe_id}.{ext}"
+/Users/nagnishal/chanakya-research-commons/papers/services.py:65: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  timestamp_str = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+/Users/nagnishal/chanakya-research-commons/papers/services.py:68: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  object_name = f"raw/{source}/{datetime.utcnow().strftime('%Y-%m')}/{timestamp_str}_{safe_id}.{ext}"
+Running single scheduled ingestion batch for topic 'auto-watermark'...
+Loading weights:   0%|          | 0/103 [00:00<?, ?it/s]Loading weights: 100%|██████████| 103/103 [00:00<00:00, 16628.69it/s]
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Batch 6 finished: status=success, fetched=30, created=30, updated=0, watermark=renewable energy storage.

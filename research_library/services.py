@@ -273,22 +273,82 @@ def save_research_item(user, cleaned_data):
     return resource, saved_item, created
 
 # ==========================================
-# 4. SEARCH CROSSREF AND ARXIV
+# 4. SEARCH CROSSREF, ARXIV, AND REPOSITORY
 # ==========================================
+
+def normalize_research_query(query: str) -> str:
+    """Normalizes and corrects common research typing errors and typos."""
+    replacements = {
+        r"\bmachinelaerning\b": "machine learning",
+        r"\bmachinelearning\b": "machine learning",
+        r"\blearing\b": "learning",
+        r"\blerning\b": "learning",
+        r"\bdeeplearing\b": "deep learning",
+        r"\bdeeplearning\b": "deep learning",
+        r"\bartifical\b": "artificial",
+        r"\bintellegence\b": "intelligence",
+        r"\bquantam\b": "quantum",
+        r"\btransfomer\b": "transformer",
+        r"\btransfomers\b": "transformers",
+        r"\bnueral\b": "neural",
+        r"\bnetwrok\b": "network",
+        r"\bnetwroks\b": "networks",
+        r"\bgenomics\b": "genomics",
+        r"\balgo\b": "algorithm",
+        r"\balgoritm\b": "algorithm",
+        r"\breinforcment\b": "reinforcement",
+    }
+    normalized = query.strip()
+    for pattern, repl in replacements.items():
+        normalized = re.sub(pattern, repl, normalized, flags=re.IGNORECASE)
+    return normalized
+
 
 def search_research_sources(query, max_results=5):
 
     results = []
     errors = []
+    clean_q = normalize_research_query(query)
 
     # ----------------------------------
-    # CROSSREF SEARCH
+    # 0. INSTITUTIONAL REPOSITORY SEARCH
+    # ----------------------------------
+    try:
+        from papers.models import Paper
+        from django.db.models import Q
+        
+        # Split tokens for multi-keyword matching
+        tokens = [t for t in clean_q.split() if len(t) > 2]
+        token_q = Q()
+        for t in tokens:
+            token_q |= Q(title__icontains=t) | Q(abstract__icontains=t)
+
+        local_papers = Paper.objects.filter(
+            Q(title__icontains=clean_q)
+            | Q(abstract__icontains=clean_q)
+            | token_q
+        ).order_by("-pagerank_score", "-save_count")[:max_results]
+
+        for p in local_papers:
+            results.append({
+                "provider": "Chanakya Institutional Repository",
+                "source_type": "doi" if p.canonical_doi else ("arxiv" if p.arxiv_id else "url"),
+                "identifier": p.canonical_doi or p.arxiv_id or p.url,
+                "title": p.title,
+                "description": f"{p.authors_display} • {p.venue or 'University Repository'} ({p.published_year or ''})",
+                "url": p.url or f"https://scholar.google.com/scholar?q={quote(p.title)}",
+            })
+    except Exception:
+        pass
+
+    # ----------------------------------
+    # 1. CROSSREF SEARCH
     # ----------------------------------
 
     crossref_url = (
         "https://api.crossref.org/works?"
         + urlencode({
-            "query.bibliographic": query,
+            "query.bibliographic": clean_q,
             "rows": max_results,
         })
     )
@@ -359,7 +419,7 @@ def search_research_sources(query, max_results=5):
     arxiv_url = (
         "https://export.arxiv.org/api/query?"
         + urlencode({
-            "search_query": f"all:{query}",
+            "search_query": f"all:{clean_q}",
             "start": 0,
             "max_results": max_results,
         })

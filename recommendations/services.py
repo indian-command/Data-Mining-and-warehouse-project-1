@@ -232,6 +232,23 @@ class RecommendationService:
                 })
 
         scored_members.sort(key=lambda x: x["score"], reverse=True)
+
+        if not scored_members:
+            # Fallback for cold-start users with no department/topics: Leading university faculty
+            fallback_faculty = (
+                User.objects.filter(is_active=True, profile__role__in=["faculty", "researcher"])
+                .exclude(id__in=following_ids)
+                .select_related("profile", "profile__department")[:limit]
+            )
+            for f_user in fallback_faculty:
+                f_prof = getattr(f_user, "profile", None)
+                dept_name = f_prof.department.name if (f_prof and f_prof.department) else "Faculty"
+                scored_members.append({
+                    "user": f_user,
+                    "score": 0.35,
+                    "reasons": [f"Leading researcher in {dept_name}"],
+                })
+
         return scored_members[:limit]
 
     @classmethod

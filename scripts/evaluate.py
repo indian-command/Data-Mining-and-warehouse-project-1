@@ -22,7 +22,7 @@ from papers.services import EmbeddingService
 from recommendations.services import RecommendationService
 from research_assistant.services import ResearchAssistantService
 from research_library.models import SavedResearchItem
-from trends.models import ModerationFlag
+from trends.models import ModerationFlag, ActivityEvent
 from trends.services import AnomalyDetector, TrendAnalyzer
 from unified_search.services import EntityResolver, UnifiedSearchService
 
@@ -306,7 +306,9 @@ def run_evaluation_suite():
     print(f"{'F1 Score':<32}: {spam_f1:.4f}")
 
     # 4b. Topic Spike Detection
-    calculated_trends = TrendAnalyzer.calculate_topic_trends(window_days=7, baseline_days=30)
+    latest_topic_event = ActivityEvent.objects.filter(metadata__has_key="topic_id").order_by("-timestamp").first()
+    ref_eval_time = latest_topic_event.timestamp if latest_topic_event else timezone.now()
+    calculated_trends = TrendAnalyzer.calculate_topic_trends(window_days=7, baseline_days=30, ref_time=ref_eval_time)
     detected_spikes = {t.topic_id for t in calculated_trends if t.is_spike}
     planted_spikes = ground_truth.get("planted_topic_spikes", [])
     expected_spike_ids = {s["topic_id"] for s in planted_spikes}

@@ -49,20 +49,29 @@ urlpatterns = [
     name="members"
 ),
 
-path(
-    "members/<int:user_id>/follow/",
-    views.toggle_follow_view,
-    name="toggle_follow"
-),
-path(
-    "topics/<int:topic_id>/follow/",
-    views.toggle_topic_follow_view,
-    name="toggle_topic_follow"
-),
-
     path(
-    "profile/edit/",
-    views.profile_edit_view,
-    name="profile_edit"
-),
+        "profile/edit/",
+        views.profile_edit_view,
+        name="profile_edit"
+    ),
+    path(
+        "members/<int:user_id>/follow/",
+        views.toggle_follow_view,
+        name="toggle_follow"
+    ),
+    path(
+        "members/<str:username>/",
+        views.member_profile_view,
+        name="member_profile"
+    ),
+    path(
+        "profile/<str:username>/",
+        views.member_profile_view,
+        name="profile_detail"
+    ),
+    path(
+        "topics/<int:topic_id>/follow/",
+        views.toggle_topic_follow_view,
+        name="toggle_topic_follow"
+    ),
 ]

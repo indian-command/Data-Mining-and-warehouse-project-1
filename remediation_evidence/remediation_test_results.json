@@ -1,0 +1,133 @@
+{
+  "F1": {
+    "registration_success": true,
+    "profile_created": true,
+    "role_assigned": "student",
+    "duplicate_prevention": true,
+    "invalid_login_rejected": true,
+    "valid_login_success": true,
+    "follow_member": true,
+    "follow_topic": true,
+    "student_trends_redirect": true,
+    "student_analytics_redirect": true
+  },
+  "F2": {
+    "post_creation": true,
+    "comment_creation": true,
+    "nested_reply_creation": true,
+    "upvote_added": true,
+    "upvote_toggled_off": true,
+    "post_saved": true,
+    "feed_following_200": true
+  },
+  "F3": {
+    "save_paper_status": 302,
+    "save_count_incremented": true,
+    "saved_item_in_library": true,
+    "save_by_doi_status": 302,
+    "collection_create_status": 302,
+    "collection_created": true,
+    "item_in_collection": true,
+    "private_notes_isolated": true
+  },
+  "F4": {
+    "papers_in_db": 601,
+    "citations_in_db": 2292,
+    "chunks_in_db": 200,
+    "papers_with_doi": 601,
+    "papers_with_arxiv": 601,
+    "papers_with_embeddings": 601
+  },
+  "F5": {
+    "quantum computing": {
+      "total_count": 29,
+      "scholarly_sources": 7,
+      "library_resources": 2,
+      "university_members": 10,
+      "discussions": 10
+    },
+    "deep learning": {
+      "total_count": 22,
+      "scholarly_sources": 3,
+      "library_resources": 0,
+      "university_members": 9,
+      "discussions": 10
+    },
+    "transformer": {
+      "total_count": 26,
+      "scholarly_sources": 6,
+      "library_resources": 10,
+      "university_members": 0,
+      "discussions": 10
+    },
+    "chanakya": {
+      "total_count": 13,
+      "scholarly_sources": 0,
+      "library_resources": 10,
+      "university_members": 3,
+      "discussions": 0
+    },
+    "xyznotfoundquery999": {
+      "total_count": 0,
+      "scholarly_sources": 0,
+      "library_resources": 0,
+      "university_members": 0,
+      "discussions": 0
+    },
+    "entity_resolution_merges": true,
+    "merged_sources_count": 2
+  },
+  "F6": {
+    "student_recommendations_count": 5,
+    "algorithm_tag": "personalized_hybrid",
+    "co_saved_count": 1,
+    "cold_start_count": 5,
+    "cold_start_algo": "cold_start_pagerank"
+  },
+  "F7": {
+    "trends_calculated": 20,
+    "spikes_detected": 0,
+    "anomalies_detected": 5,
+    "admin_moderation_queue_status": 200
+  },
+  "F8": {
+    "rag_query": "How does attention mechanism function in transformers?",
+    "has_answer": true,
+    "citations_count": 5,
+    "retrieved_passages_count": 5,
+    "grounded": true
+  },
+  "F9": {
+    "dashboard_status": 200,
+    "duckdb_dept_topics_count": 1,
+    "duckdb_collab_matrix_count": 25,
+    "duckdb_most_engaged_papers_count": 15,
+    "drill_down_department_data": true
+  },
+  "EndToEnd_Workflows": {
+    "Workflow_A_Discovery": {
+      "step1_search_has_results": true,
+      "step2_save_response": 302,
+      "step3_item_in_user_library": true,
+      "step4_recs_strategy": "personalized_hybrid",
+      "step4_recs_count": 5
+    },
+    "Workflow_B_Collaboration": {
+      "step1_faculty_post_created": true,
+      "step2_student_feed_sees_post": true,
+      "step3_student_comment_status": 302,
+      "step3_comment_logged_in_db": true
+    },
+    "Workflow_C_RAG": {
+      "step1_chunks_retrieved": 5,
+      "step2_answer_generated": true,
+      "step3_citations_present": true,
+      "step4_grounded_flag": true
+    },
+    "Workflow_D_Institutional_Intelligence": {
+      "step1_activity_events_logged": 10395,
+      "step2_duckdb_returns_data": true,
+      "step3_drill_down_supported": true
+    }
+  }
+}

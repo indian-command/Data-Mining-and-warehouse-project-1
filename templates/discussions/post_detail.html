@@ -28,20 +28,22 @@
                 <!-- Author Header & Metadata -->
                 <div class="flex items-start justify-between gap-3 mb-4">
                     <div class="flex items-center gap-3">
-                        <div class="dashboard-avatar mb-0 shrink-0" style="width: 48px; height: 48px; font-size: 18px; border: 2px solid var(--cu-gold);">
+                        <a href="{% url 'accounts:member_profile' post.author.username %}" class="dashboard-avatar mb-0 shrink-0 text-decoration-none" style="width: 48px; height: 48px; font-size: 18px; border: 2px solid var(--cu-gold);">
                             {{ post.author.first_name|first|default:post.author.username|first|upper }}
-                        </div>
+                        </a>
                         <div>
                             <div class="flex items-center gap-2 flex-wrap">
                                 <h4 class="text-base font-bold text-primary mb-0">
-                                    {{ post.author.get_full_name|default:post.author.username }}
+                                    <a href="{% url 'accounts:member_profile' post.author.username %}" class="text-primary hover:underline text-decoration-none">
+                                        {{ post.author.get_full_name|default:post.author.username }}
+                                    </a>
                                 </h4>
                                 <span class="badge {% if post.author.profile.role == 'faculty' %}bg-primary text-white{% elif post.author.profile.role == 'student' %}bg-accent-gold-light text-accent-gold-dark border border-accent-gold/30{% else %}bg-surface-subtle text-text-secondary border border-border-subtle{% endif %} text-[10px] uppercase tracking-wider font-bold">
                                     {{ post.author.profile.get_role_display|default:"Researcher" }}
                                 </span>
                             </div>
                             <span class="text-xs text-text-muted">
-                                @{{ post.author.username }} &bull; {{ post.created_at|date:"d M Y, h:i A" }}
+                                <a href="{% url 'accounts:member_profile' post.author.username %}" class="text-text-muted hover:underline text-decoration-none">@{{ post.author.username }}</a> &bull; {{ post.created_at|date:"d M Y, h:i A" }}
                             </span>
                         </div>
                     </div>
